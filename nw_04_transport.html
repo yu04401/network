@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第4章 トランスポート層（L4） ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: port number range rule */
+  .portbar{margin-top:30px}
+  .portbar .bar{display:flex; height:26px; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .portbar .bar span{
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; color:#fff; white-space:nowrap;
+  }
+  .pb1{background:#A61E4D; flex:0 0 16%}
+  .pb2{background:#3B3E86; flex:0 0 50%}
+  .pb3{background:#0E7C86; flex:1 1 auto}
+  .portbar .ticks{
+    display:flex; justify-content:space-between;
+    font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:7px;
+  }
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .portbar .bar span{font-size:0}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第4章　トランスポート層（L4）
+      <span class="en">Transport Layer</span>
+    </h1>
+    <p class="lede">
+      L3までが「パケットを相手の機器へ届ける」層だったのに対し、L4は
+      <b>「相手機器のどのアプリケーションへ、どれだけ確実に届けるか」</b>を担う。
+      午後では、<b>ファイアウォールの通過条件</b>・<b>負荷分散装置の振分け</b>・<b>スループットの計算</b>・
+      <b>SYN Flood などの攻撃</b>という4つの顔で登場する。
+    </p>
+    <div class="portbar" aria-hidden="true">
+      <div class="bar">
+        <span class="pb1">ウェルノウン</span><span class="pb2">登録済み</span><span class="pb3">エフェメラル</span>
+      </div>
+      <div class="ticks"><span>0</span><span>1023 / 1024</span><span>49151 / 49152</span><span>65535</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 TCPとUDP・ポート番号</a>
+    <a href="#s2">2 コネクション管理</a>
+    <a href="#s3">3 信頼性の仕組み</a>
+    <a href="#s4">4 フロー制御・輻輳制御</a>
+    <a href="#s5">5 MSSとMTU</a>
+    <a href="#s6">6 攻撃と中継機器</a>
+    <a href="#s7">7 QUIC</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">4.1</span>TCP と UDP・ポート番号 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>TCP と UDP</caption>
+    <thead><tr><th></th><th>TCP</th><th>UDP</th></tr></thead>
+    <tbody>
+      <tr><th>接続</th><td><b>コネクション型</b>（3wayハンドシェイクで確立）</td><td><b>コネクションレス</b>（いきなり送る）</td></tr>
+      <tr><th>信頼性</th><td>順序保証・再送あり</td><td>保証なし（届かなくても関知しない）</td></tr>
+      <tr><th>制御</th><td>フロー制御・輻輳制御あり</td><td>なし</td></tr>
+      <tr><th>ヘッダ長</th><td>20バイト（最小）</td><td><b>8バイト</b></td></tr>
+      <tr><th>遅延</th><td>確立と確認の分だけ増える</td><td>小さい</td></tr>
+      <tr><th>用途</th><td>HTTP、SMTP、FTP、SSH、BGP など<b>取りこぼしが許されない通信</b></td><td>DNS、DHCP、SNMP、NTP、Syslog、<b>RTP（音声・映像）</b>、TFTP</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>音声・映像に UDP を使う理由</b>は「速いから」ではなく、
+    <b>再送が届いた頃には再生時刻を過ぎており役に立たない</b>ため。
+    欠落を補うより、遅延とジッタを抑えるほうが品質に効く。記述ではこの理由を書く。
+  </div>
+
+  <h3>ポート番号</h3>
+  <p>
+    宛先IPアドレスで機器が決まり、<span class="kw">ポート番号</span>でその機器上のアプリケーションが決まる。
+    通信は <b>［送信元IP・送信元ポート・宛先IP・宛先ポート・プロトコル］の5つ組</b>で一意に識別される。
+    クライアントは接続のたびに <span class="kw">エフェメラルポート</span>（一時ポート）を自動で選ぶため、
+    <b>同じサーバに同時に複数接続しても区別できる</b>。
+  </p>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>覚えておくべきポート番号</caption>
+    <thead><tr><th>番号</th><th>プロトコル</th><th>L4</th><th>番号</th><th>プロトコル</th><th>L4</th></tr></thead>
+    <tbody>
+      <tr><td class="c m">20/21</td><td>FTP（データ／制御）</td><td class="c">TCP</td><td class="c m">161/162</td><td>SNMP／SNMPトラップ</td><td class="c">UDP</td></tr>
+      <tr><td class="c m">22</td><td>SSH、SFTP、SCP</td><td class="c">TCP</td><td class="c m">179</td><td>BGP</td><td class="c">TCP</td></tr>
+      <tr><td class="c m">23</td><td>Telnet</td><td class="c">TCP</td><td class="c m">389</td><td>LDAP</td><td class="c">TCP</td></tr>
+      <tr><td class="c m">25</td><td>SMTP</td><td class="c">TCP</td><td class="c m">443</td><td>HTTPS／<b>QUIC(UDP)</b></td><td class="c">両方</td></tr>
+      <tr><td class="c m">53</td><td>DNS</td><td class="c"><b>両方</b></td><td class="c m">500</td><td>IKE</td><td class="c">UDP</td></tr>
+      <tr><td class="c m">67/68</td><td>DHCP（サーバ／クライアント）</td><td class="c">UDP</td><td class="c m">514</td><td>Syslog</td><td class="c">UDP</td></tr>
+      <tr><td class="c m">80</td><td>HTTP</td><td class="c">TCP</td><td class="c m">587</td><td>Submission</td><td class="c">TCP</td></tr>
+      <tr><td class="c m">110/143</td><td>POP3／IMAP4</td><td class="c">TCP</td><td class="c m">1812/1813</td><td>RADIUS（認証／課金）</td><td class="c">UDP</td></tr>
+      <tr><td class="c m">123</td><td>NTP</td><td class="c">UDP</td><td class="c m">4500</td><td><b>NAT-T（IPsec）</b></td><td class="c">UDP</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>DNS が TCP と UDP の両方を使う理由</b>：通常の問い合わせは軽量な UDP、
+    <b>ゾーン転送（AXFR）や、応答が512バイトを超える場合</b>は確実性が必要なため TCP。
+    ファイアウォールで UDP53 しか開けていないとゾーン転送が失敗する、という形で問われる。
+  </div>
+
+  <h3>TCPヘッダとフラグ</h3>
+  <figure>
+    <svg viewBox="0 0 700 200" role="img" aria-label="TCPヘッダの構造">
+      <g font-size="11.5" text-anchor="middle">
+        <rect x="0" y="20" width="350" height="32" fill="#E6E7F2" stroke="#3B3E86"/><text x="175" y="41" fill="#3B3E86">送信元ポート番号（16bit）</text>
+        <rect x="350" y="20" width="350" height="32" fill="#E6E7F2" stroke="#3B3E86"/><text x="525" y="41" fill="#3B3E86">宛先ポート番号（16bit）</text>
+        <rect x="0" y="52" width="700" height="32" fill="#E4F0F1" stroke="#0E7C86"/><text x="350" y="73" fill="#0E7C86">シーケンス番号（32bit）</text>
+        <rect x="0" y="84" width="700" height="32" fill="#E4F0F1" stroke="#0E7C86"/><text x="350" y="105" fill="#0E7C86">確認応答番号（32bit）</text>
+        <rect x="0" y="116" width="180" height="32" fill="#F2F5F6" stroke="#D3DBDF"/><text x="90" y="137" fill="#6C7F88">データオフセット／予約</text>
+        <rect x="180" y="116" width="240" height="32" fill="#F7E6EC" stroke="#A61E4D"/><text x="300" y="137" fill="#A61E4D">制御フラグ</text>
+        <rect x="420" y="116" width="280" height="32" fill="#E4F0F1" stroke="#0E7C86"/><text x="560" y="137" fill="#0E7C86">ウィンドウサイズ（16bit）</text>
+        <rect x="0" y="148" width="350" height="32" fill="#F2F5F6" stroke="#D3DBDF"/><text x="175" y="169" fill="#6C7F88">チェックサム</text>
+        <rect x="350" y="148" width="350" height="32" fill="#F2F5F6" stroke="#D3DBDF"/><text x="525" y="169" fill="#6C7F88">緊急ポインタ</text>
+      </g>
+      <text x="0" y="14" font-size="11" fill="#6C7F88" text-anchor="start">← 32bit →　※オプション（MSS、ウィンドウスケールなど）はこの後に続く</text>
+      <text x="0" y="196" font-size="11" fill="#6C7F88" text-anchor="start">最小20バイト。UDPヘッダは送信元/宛先ポート・長さ・チェックサムの8バイトのみ。</text>
+    </svg>
+    <figcaption>ヘッダを見れば TCP の仕事が分かる。<b>ポート番号＝多重化</b>、<b>シーケンス番号と確認応答番号＝信頼性</b>、<b>ウィンドウサイズ＝フロー制御</b>。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>制御フラグ</caption>
+    <thead><tr><th>フラグ</th><th>意味</th><th>使われ方</th></tr></thead>
+    <tbody>
+      <tr><th>SYN</th><td>コネクション確立要求</td><td>3wayハンドシェイクの1・2番目。<b>シーケンス番号の同期</b></td></tr>
+      <tr><th>ACK</th><td>確認応答番号が有効</td><td>確立後のセグメントには基本的に常に立つ</td></tr>
+      <tr><th>FIN</th><td>データ送信の終了</td><td>正常な切断。<b>片方向ずつ閉じる</b></td></tr>
+      <tr><th>RST</th><td>コネクションの<b>強制切断</b></td><td>閉じているポートへの接続、異常検知。<b>FWが拒否したことを即座に返す場合にも使う</b></td></tr>
+      <tr><th>PSH</th><td>バッファせず即座にアプリへ渡せ</td><td>対話型通信（Telnet など）</td></tr>
+      <tr><th>URG</th><td>緊急データを含む</td><td>現在ほとんど使われない</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">4.2</span>コネクションの確立と切断 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <figure>
+    <svg viewBox="0 0 700 400" role="img" aria-label="3wayハンドシェイクと4way切断のシーケンス図">
+      <line x1="120" y1="30" x2="120" y2="380" stroke="#D3DBDF" stroke-width="1.5"/>
+      <line x1="560" y1="30" x2="560" y2="380" stroke="#D3DBDF" stroke-width="1.5"/>
+      <text x="120" y="20" font-size="13" text-anchor="middle" fill="#16232B" font-weight="700">クライアント</text>
+      <text x="560" y="20" font-size="13" text-anchor="middle" fill="#16232B" font-weight="700">サーバ</text>
+
+      <!-- 3way -->
+      <text x="0" y="50" font-size="12" font-weight="700" fill="#0E7C86">確立（3wayハンドシェイク）</text>
+      <line x1="120" y1="70" x2="556" y2="70" stroke="#0E7C86" stroke-width="2" marker-end="url(#a)"/>
+      <text x="338" y="63" font-size="11.5" text-anchor="middle" font-family="monospace" fill="#0E7C86">① SYN　seq=x</text>
+      <line x1="560" y1="105" x2="124" y2="105" stroke="#0E7C86" stroke-width="2" marker-end="url(#a)"/>
+      <text x="338" y="98" font-size="11.5" text-anchor="middle" font-family="monospace" fill="#0E7C86">② SYN+ACK　seq=y, ack=x+1</text>
+      <line x1="120" y1="140" x2="556" y2="140" stroke="#0E7C86" stroke-width="2" marker-end="url(#a)"/>
+      <text x="338" y="133" font-size="11.5" text-anchor="middle" font-family="monospace" fill="#0E7C86">③ ACK　seq=x+1, ack=y+1</text>
+      <text x="580" y="88" font-size="10.5" fill="#A61E4D">SYN_RECEIVED</text>
+      <text x="580" y="103" font-size="10.5" fill="#A61E4D">（ハーフオープン）</text>
+
+      <rect x="150" y="158" width="380" height="26" fill="#E7EDEE"/>
+      <text x="340" y="176" font-size="11.5" text-anchor="middle" fill="#16232B">ESTABLISHED ── データ転送 ──</text>
+
+      <!-- 4way -->
+      <text x="0" y="216" font-size="12" font-weight="700" fill="#3B3E86">切断（4wayハンドシェイク）</text>
+      <line x1="120" y1="236" x2="556" y2="236" stroke="#3B3E86" stroke-width="2" marker-end="url(#b)"/>
+      <text x="338" y="229" font-size="11.5" text-anchor="middle" font-family="monospace" fill="#3B3E86">① FIN</text>
+      <line x1="560" y1="268" x2="124" y2="268" stroke="#3B3E86" stroke-width="2" marker-end="url(#b)"/>
+      <text x="338" y="261" font-size="11.5" text-anchor="middle" font-family="monospace" fill="#3B3E86">② ACK</text>
+      <text x="580" y="290" font-size="10.5" fill="#6C7F88">残りデータを送り切る</text>
+      <line x1="560" y1="308" x2="124" y2="308" stroke="#3B3E86" stroke-width="2" marker-end="url(#b)"/>
+      <text x="338" y="301" font-size="11.5" text-anchor="middle" font-family="monospace" fill="#3B3E86">③ FIN</text>
+      <line x1="120" y1="340" x2="556" y2="340" stroke="#3B3E86" stroke-width="2" marker-end="url(#b)"/>
+      <text x="338" y="333" font-size="11.5" text-anchor="middle" font-family="monospace" fill="#3B3E86">④ ACK</text>
+      <rect x="10" y="352" width="200" height="30" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="110" y="372" font-size="11.5" text-anchor="middle" fill="#A61E4D" font-weight="700">TIME_WAIT（2MSL 待機）</text>
+
+      <defs>
+        <marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+        <marker id="b" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#3B3E86"/></marker>
+      </defs>
+    </svg>
+    <figcaption>切断が<b>4回</b>なのは、TCPが<b>全二重（送受信が独立）</b>だから。片方が「もう送るものがない」と言っても、相手にはまだ送るデータが残っている可能性があるため、方向ごとに閉じる。</figcaption>
+  </figure>
+
+  <div class="card">
+    <h4 style="margin-top:0">3wayハンドシェイクの目的 ― 記述用</h4>
+    <ul style="margin-bottom:0">
+      <li><b>相手の存在と受信可能状態を確認する</b></li>
+      <li><b>互いの初期シーケンス番号を交換・同期する</b>（＝SYN は Synchronize の略）</li>
+      <li>MSS やウィンドウスケールなどの<b>オプションを合意する</b></li>
+    </ul>
+  </div>
+
+  <h3>TIME_WAIT <span class="star">頻出</span></h3>
+  <p>
+    <b>先に切断を始めた側</b>が、最後のACKを送った後に <b>2MSL</b>（Maximum Segment Lifetime の2倍、
+    一般に数分）だけ留まる状態。理由は2つ。
+  </p>
+  <ol>
+    <li><b>最後のACKが失われた場合に備える</b>：相手がFINを再送してきたら、もう一度ACKを返す必要がある</li>
+    <li><b>古い重複セグメントの混入を防ぐ</b>：ネットワーク上を遅れて漂っているセグメントが、
+      同じポート番号の組で張り直された<b>新しいコネクションに紛れ込むのを防ぐ</b></li>
+  </ol>
+  <div class="note">
+    <b>実務・出題での意味</b>：短時間に大量の接続を張って切るサーバ（負荷分散装置の背後など）では、
+    TIME_WAIT が積み上がって<b>ポートが枯渇し、新規接続が確立できなくなる</b>。
+    対策は<b>コネクションの再利用（キープアライブ）</b>や、送信元IPを複数用意すること。
+  </div>
+
+  <h3>ハーフオープン</h3>
+  <p>
+    SYN を受け取って SYN+ACK を返したが、<b>3番目の ACK が来ない</b>状態（SYN_RECEIVED）。
+    サーバは接続情報を保持したまま待ち続けるため、この状態を大量に作られると
+    <b>接続待ちキュー（バックログ）が枯渇し、正規の接続を受け付けられなくなる</b>。
+    これを悪用したのが <b>SYN Flood</b>（4.6節）。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">4.3</span>信頼性の仕組み</h2>
+  <div class="rule"></div>
+
+  <h3>シーケンス番号と確認応答番号 <span class="star">頻出</span></h3>
+  <ul>
+    <li><span class="kw">シーケンス番号</span>：送るデータの<b>先頭バイトが、通信全体の何バイト目にあたるか</b>を示す。
+      セグメント番号ではなく<b>バイト単位</b>である点が重要</li>
+    <li><span class="kw">確認応答番号</span>：<b>「次に受け取りたいバイトの番号」</b>を示す。
+      「ここまで受け取った」ではなく「次はここから」と表す点に注意</li>
+  </ul>
+  <div class="card">
+    <p style="margin-bottom:0">
+      <b>例</b>：seq=1001 で 500バイト送ると、受信側は <b>ack=1501</b> を返す。
+      これは「1500バイト目までは受け取った、次は1501から」という意味。
+      3wayハンドシェイクで <code>ack=x+1</code> になるのは、<b>SYNフラグが1バイト分を消費する</b>ためである。
+    </p>
+  </div>
+
+  <h3>再送の2つの契機</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>再送のトリガ</caption>
+    <thead><tr><th>方式</th><th>契機</th><th>特徴</th></tr></thead>
+    <tbody>
+      <tr><th>再送タイムアウト<br>（RTO）</th><td>ACKが一定時間返らない</td><td>RTT の実測値から動的に算出する。<b>待ち時間が長く、スループット低下が大きい</b>。輻輳とみなしてウィンドウを大きく絞る</td></tr>
+      <tr><th>高速再送</th><td><b>同じ確認応答番号のACK（重複ACK）を3回</b>受信</td><td>「そのセグメントだけ抜けている」と判断し、<b>タイムアウトを待たずに即再送</b>。損失が単発なら回復が速い</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <span class="kw">遅延ACK</span>は、受信するたびにACKを返すのではなく、
+    <b>数十〜200ミリ秒ほど待って複数分をまとめて確認応答する</b>仕組み。ACKパケットの数を減らせるが、
+    送信側の Nagle アルゴリズムと組み合わさると<b>互いに待ち合って遅延が発生する</b>ことがある。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">4.4</span>フロー制御と輻輳制御 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="card">
+    <h4 style="margin-top:0">2つの制御は「誰を守るか」が違う</h4>
+    <ul style="margin-bottom:0">
+      <li><b>フロー制御</b>＝<b>受信側の処理能力</b>を守る。受信側がウィンドウサイズで「これだけなら受け取れる」と通知する</li>
+      <li><b>輻輳制御</b>＝<b>ネットワークそのもの</b>を守る。送信側がパケットロスなどから混雑を推測し、自主的に送信量を絞る</li>
+    </ul>
+  </div>
+
+  <h3>スライディングウィンドウ</h3>
+  <p>
+    1つ送るたびにACKを待っていては、RTTの分だけ待ち時間が積み上がって効率が悪い。
+    そこで<b>ACKを待たずに連続して送れる量</b>＝<span class="kw">ウィンドウサイズ</span>を設け、
+    ACKが返るたびに窓を前へずらしていく。これが <span class="kw">スライディングウィンドウ</span>。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 160" role="img" aria-label="スライディングウィンドウの動作">
+      <text x="0" y="16" font-size="12" fill="#6C7F88">送信データ（バイト列）</text>
+      <g>
+        <rect x="0" y="26" width="140" height="30" fill="#E7EDEE" stroke="#D3DBDF"/>
+        <rect x="140" y="26" width="280" height="30" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/>
+        <rect x="420" y="26" width="280" height="30" fill="#F2F5F6" stroke="#D3DBDF"/>
+      </g>
+      <text x="70" y="46" font-size="11.5" text-anchor="middle" fill="#6C7F88">送信済み＆ACK受領</text>
+      <text x="280" y="46" font-size="11.5" text-anchor="middle" fill="#0E7C86" font-weight="700">ウィンドウ（ACK待たずに送信可）</text>
+      <text x="560" y="46" font-size="11.5" text-anchor="middle" fill="#6C7F88">まだ送れない</text>
+
+      <path d="M140,66 L140,80 L420,80 L420,66" fill="none" stroke="#0E7C86"/>
+      <text x="280" y="96" font-size="11.5" text-anchor="middle" fill="#0E7C86">ACK受信でウィンドウが右へスライド →</text>
+
+      <rect x="0" y="110" width="700" height="44" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="12" y="130" font-size="12" fill="#A61E4D" font-weight="700">帯域遅延積（BDP）＝ 帯域幅 × RTT</text>
+      <text x="12" y="148" font-size="12" fill="#16232B">ウィンドウサイズがこの値を下回ると、<tspan font-weight="700">回線に余裕があってもACK待ちで速度が頭打ちになる</tspan>（長距離回線で顕著）。</text>
+    </svg>
+    <figcaption>ウィンドウサイズフィールドは16ビット＝最大64KBしかないため、高速・長距離回線では足りない。これを拡張するのが <b>ウィンドウスケールオプション</b>（3wayハンドシェイク時に合意する）。</figcaption>
+  </figure>
+
+  <h3>輻輳制御</h3>
+  <p>
+    送信側は輻輳ウィンドウ（cwnd）を持ち、<b>実際に送れる量＝受信側の通知ウィンドウと輻輳ウィンドウの小さい方</b>とする。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 230" role="img" aria-label="輻輳制御におけるウィンドウサイズの変化">
+      <line x1="50" y1="190" x2="680" y2="190" stroke="#16232B"/>
+      <line x1="50" y1="20" x2="50" y2="190" stroke="#16232B"/>
+      <text x="365" y="216" font-size="11.5" text-anchor="middle" fill="#6C7F88">時間 →</text>
+      <text x="10" y="105" font-size="11.5" fill="#6C7F88" transform="rotate(-90 18,105)">ウィンドウ</text>
+      <line x1="50" y1="70" x2="680" y2="70" stroke="#D3DBDF" stroke-dasharray="4 4"/>
+      <text x="686" y="74" font-size="10.5" fill="#6C7F88" text-anchor="end">閾値</text>
+
+      <path d="M50,190 C 90,180 120,120 150,70" fill="none" stroke="#0E7C86" stroke-width="2.5"/>
+      <path d="M150,70 L280,36" fill="none" stroke="#3B3E86" stroke-width="2.5"/>
+      <path d="M280,36 L280,120" fill="none" stroke="#A61E4D" stroke-width="2.5" stroke-dasharray="5 3"/>
+      <path d="M280,120 L440,86" fill="none" stroke="#3B3E86" stroke-width="2.5"/>
+      <path d="M440,86 L440,190" fill="none" stroke="#A61E4D" stroke-width="2.5"/>
+      <path d="M440,190 C 480,180 510,130 540,90" fill="none" stroke="#0E7C86" stroke-width="2.5"/>
+      <path d="M540,90 L670,60" fill="none" stroke="#3B3E86" stroke-width="2.5"/>
+
+      <text x="88" y="150" font-size="11" fill="#0E7C86" font-weight="700">スロースタート</text>
+      <text x="96" y="166" font-size="10.5" fill="#0E7C86">（指数的に増加）</text>
+      <text x="200" y="30" font-size="11" fill="#3B3E86" font-weight="700">輻輳回避（線形増加）</text>
+      <text x="292" y="60" font-size="10.5" fill="#A61E4D">重複ACK3回</text>
+      <text x="292" y="74" font-size="10.5" fill="#A61E4D">→高速再送・半減</text>
+      <text x="452" y="140" font-size="10.5" fill="#A61E4D">タイムアウト</text>
+      <text x="452" y="154" font-size="10.5" fill="#A61E4D">→1から再スタート</text>
+    </svg>
+    <figcaption>「まず慎重に、様子を見ながら増やし、詰まったら下げる」。<b>タイムアウトは深刻な輻輳とみなして大きく落とす</b>のに対し、高速再送は軽度とみなして半減に留める、という差が重要。</figcaption>
+  </figure>
+  <ul>
+    <li><span class="kw">スロースタート</span>：cwnd を1セグメントから始め、ACKごとに倍々（指数的）に増やす。
+      名前に反して<b>増加は急激</b>で、「開始点が小さい」という意味である</li>
+    <li><b>輻輳回避</b>：閾値（ssthresh）を超えたら、RTTあたり1セグメントずつの<b>線形増加</b>に切り替える</li>
+  </ul>
+  <div class="note">
+    <b>計算問題での使いどころ</b>：「1セッションの実効スループット」を問われたら
+    <b>ウィンドウサイズ ÷ RTT</b> で概算する。
+    例：ウィンドウ64KB、RTT 20ms → 65,536 × 8 ÷ 0.02 ＝ 約26Mbps。
+    回線が1Gbpsでもここが上限になる、という結論に至る問題が出る。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">4.5</span>MSS と MTU <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">MSS</span><span class="en">（Maximum Segment Size）</span>は、
+    <b>TCPが1セグメントで運べるデータ部の最大長</b>。MTU からIPヘッダとTCPヘッダを引いた値になる。
+    3wayハンドシェイクの SYN でオプションとして通知し合い、<b>小さい方に合わせる</b>。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 170" role="img" aria-label="MTUとMSSの関係">
+      <text x="0" y="16" font-size="12" fill="#6C7F88">イーサネットフレームのペイロード = MTU 1500バイト</text>
+      <g font-size="11.5" text-anchor="middle">
+        <rect x="0" y="26" width="90" height="34" fill="#E6E7F2" stroke="#3B3E86"/><text x="45" y="48" fill="#3B3E86">IPヘッダ 20</text>
+        <rect x="90" y="26" width="90" height="34" fill="#F7E6EC" stroke="#A61E4D"/><text x="135" y="48" fill="#A61E4D">TCPヘッダ 20</text>
+        <rect x="180" y="26" width="520" height="34" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/><text x="440" y="48" fill="#0E7C86" font-weight="700">MSS = 1460</text>
+      </g>
+      <text x="0" y="84" font-family="monospace" font-size="13" fill="#16232B">MSS = MTU − IPヘッダ(20) − TCPヘッダ(20) = 1500 − 40 = <tspan font-weight="700" fill="#0E7C86">1460</tspan></text>
+
+      <rect x="0" y="102" width="700" height="60" fill="#E7EDEE"/>
+      <text x="12" y="122" font-size="12" fill="#16232B" font-weight="700">経路にカプセル化が入るとMTUが減る</text>
+      <text x="12" y="140" font-size="12" fill="#16232B">PPPoE（8バイト増）→ MTU 1492 → MSS 1452　／　IPsecトンネル・VXLAN ではさらに減る</text>
+      <text x="12" y="156" font-size="12" fill="#A61E4D">→ 端末は 1460 のつもりで送るため、途中で <tspan font-weight="700">破棄（DF=1）またはフラグメント</tspan> が起きる</text>
+    </svg>
+    <figcaption>ジャンボフレーム（MTU 9000）なら MSS は 8960。第1章・第3章と一直線につながる論点。</figcaption>
+  </figure>
+
+  <p>
+    <span class="kw">MSSクランプ</span><span class="en">（MSS書き換え／MSS調整）</span>は、
+    経路上のルータやファイアウォールが、<b>通過する SYN パケットのMSSオプション値を、
+    その経路で実際に通せるサイズへ書き換える</b>機能。端末側の設定を一切変えずに問題を解消できるため、
+    <b>PMTUD が ICMP 遮断で機能しない環境（PMTUDブラックホール）の実務的な解決策</b>として定番になっている。
+  </p>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>「小さいファイルは転送できるが、大きいファイルの転送だけ途中で止まる」→
+        <b>PMTUDが機能していない</b>。原因は経路上のICMP遮断、対策は<b>ICMP Type3 Code4の許可、またはMSSクランプ</b></li>
+      <li>IPsec VPN や VXLAN 導入時に<b>MTU/MSS の設計が必要な理由</b>を書かせる →
+        <b>カプセル化ヘッダの分だけ実効MTUが減るため</b></li>
+      <li>MSS の計算（MTU から何を引くか）を数値で答えさせる</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">4.6</span>攻撃と中継機器の関与 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>SYN Flood と SYNクッキー</h3>
+  <p>
+    <span class="kw">SYN Flood</span>は、<b>送信元IPアドレスを詐称した SYN を大量に送りつけ、
+    サーバをハーフオープン状態で埋め尽くす</b>DoS攻撃。サーバは SYN+ACK を返すが、
+    詐称された宛先からは ACK が返らないため、接続待ちキューが枯渇し正規利用者が接続できなくなる。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 200" role="img" aria-label="SYN FloodとSYNクッキーの比較">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#A61E4D">通常：接続情報をキューに保持する</text>
+      <rect x="0" y="26" width="330" height="70" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="14" y="48" font-size="11.5" fill="#16232B">SYN受信 → <tspan font-weight="700">接続情報をメモリに確保</tspan> → SYN+ACK送信</text>
+      <text x="14" y="68" font-size="11.5" fill="#A61E4D">ACKが来ないまま蓄積 → <tspan font-weight="700">バックログ枯渇</tspan></text>
+      <text x="14" y="88" font-size="11.5" fill="#A61E4D">→ 正規ユーザが接続できない</text>
+
+      <text x="370" y="16" font-size="12.5" font-weight="700" fill="#0E7C86">SYNクッキー：状態を持たない</text>
+      <rect x="370" y="26" width="330" height="70" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="384" y="48" font-size="11.5" fill="#16232B">SYN受信 → <tspan font-weight="700">メモリを確保せず</tspan>、接続情報から</text>
+      <text x="384" y="68" font-size="11.5" fill="#16232B">計算した値をシーケンス番号に埋めて返す</text>
+      <text x="384" y="88" font-size="11.5" fill="#0E7C86">ACKが返った時点で検証し、接続を復元する</text>
+
+      <rect x="0" y="112" width="700" height="80" fill="#E7EDEE"/>
+      <text x="14" y="134" font-size="12.5" font-weight="700" fill="#16232B">記述のポイント</text>
+      <text x="14" y="156" font-size="12" fill="#16232B">「3wayハンドシェイクが完了するまでサーバ側で接続情報を保持しないため、</text>
+      <text x="14" y="176" font-size="12" fill="#16232B">　大量のSYNを受けてもメモリ（接続待ちキュー）を消費せず、正規の接続を受け付け続けられる」</text>
+    </svg>
+    <figcaption>SYNクッキーの副作用として、SYNに付いていた一部のオプション情報が失われる。常時有効ではなく、キューが一定量を超えたときだけ発動させる実装が多い。</figcaption>
+  </figure>
+
+  <h3>ステートフルインスペクション</h3>
+  <p>
+    <span class="kw">ステートフル</span>なファイアウォールは、<b>TCPコネクションの状態（3wayハンドシェイクの進行、
+    どちら向きの通信か）を記憶し、その文脈に合致するパケットだけを通す</b>。
+    これにより、「内側から出た通信の戻りだけを自動的に許可する」ことができ、
+    <b>戻り通信用のルールを個別に書かなくてよくなる</b>。
+  </p>
+  <div class="note">
+    <b>第3章の非対称経路とつながる。</b>往路と復路が別のファイアウォールを通ると、
+    復路側の機器は3wayハンドシェイクを見ていないため<b>「状態表にない不正なパケット」として破棄</b>する。
+    冗長構成では、状態情報を機器間で同期させるか、経路を対称にする設計が必要になる。
+  </div>
+  <p>
+    <span class="kw">ディレイドバインディング</span><span class="star b">差がつく</span>は、
+    負荷分散装置がクライアントとの3wayハンドシェイクを<b>自分で完結させてから</b>、
+    最初のリクエスト（HTTPのURLやCookie）を読み取り、<b>その内容を見て振分け先サーバを決めてから</b>
+    サーバ側との接続を確立する方式。<b>L7負荷分散を成立させるために必須</b>であり、
+    副次的に<b>3wayを完了しない SYN Flood をサーバへ通さない</b>という防御効果も持つ（第9章）。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 7 ===================== -->
+<section id="s7">
+<div class="wrap">
+  <h2><span class="num">4.7</span>QUIC <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">QUIC</span>は、<b>UDP上に構築された、TCP相当の信頼性とTLSによる暗号化を統合した</b>
+    トランスポートプロトコル。HTTP/3 の土台であり、通常 <b>UDP 443番</b>を使う。
+    TCPそのものはOSカーネルに実装されていて改良が進みにくいため、
+    <b>アプリケーション側で実装できるUDPの上に、より良いトランスポートを作り直した</b>という位置づけ。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 190" role="img" aria-label="TCP+TLSとQUICの接続確立の比較">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#A61E4D">TCP + TLS1.3</text>
+      <g font-size="11" text-anchor="middle">
+        <rect x="0" y="26" width="150" height="32" fill="#F7E6EC" stroke="#A61E4D"/><text x="75" y="47" fill="#A61E4D">3wayハンドシェイク</text>
+        <rect x="150" y="26" width="150" height="32" fill="#F7E6EC" stroke="#A61E4D"/><text x="225" y="47" fill="#A61E4D">TLSハンドシェイク</text>
+        <rect x="300" y="26" width="120" height="32" fill="#E7EDEE" stroke="#D3DBDF"/><text x="360" y="47" fill="#6C7F88">データ</text>
+      </g>
+      <text x="0" y="76" font-size="11.5" fill="#A61E4D">→ 接続とセキュリティが別々の層のため、往復が積み重なる</text>
+
+      <text x="0" y="110" font-size="12.5" font-weight="700" fill="#0E7C86">QUIC</text>
+      <g font-size="11" text-anchor="middle">
+        <rect x="0" y="120" width="180" height="32" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/><text x="90" y="141" fill="#0E7C86" font-weight="700">接続確立＋鍵交換を同時に</text>
+        <rect x="180" y="120" width="120" height="32" fill="#E7EDEE" stroke="#D3DBDF"/><text x="240" y="141" fill="#6C7F88">データ</text>
+      </g>
+      <text x="0" y="170" font-size="11.5" fill="#0E7C86">→ <tspan font-weight="700">1-RTT</tspan> で通信開始。再接続時は <tspan font-weight="700">0-RTT</tspan>（鍵を再利用）も可能</text>
+    </svg>
+    <figcaption>暗号化が前提に組み込まれているため、QUICには「暗号化しない通信」が存在しない。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>QUIC の主な特徴</caption>
+    <thead><tr><th>特徴</th><th>内容</th><th>解決している問題</th></tr></thead>
+    <tbody>
+      <tr><th>接続確立の高速化</th><td>トランスポートの確立とTLSの鍵交換を<b>まとめて実施</b></td><td>TCP+TLSで発生していた往復回数の削減</td></tr>
+      <tr><th>ストリーム多重化</th><td>1つのコネクション内に<b>独立した複数のストリーム</b>を持つ</td><td><b>HTTP/2 で残っていた TCP レベルのヘッドオブラインブロッキング</b>。1つのストリームでパケットが失われても、他のストリームは止まらない</td></tr>
+      <tr><th>コネクションID</th><td>IPアドレスとポートではなく<b>コネクションIDで接続を識別</b></td><td><b>Wi-Fi ↔ モバイル回線の切替（コネクションマイグレーション）でも接続が切れない</b></td></tr>
+      <tr><th>UDPベース</th><td>OSのカーネル更新を待たずアプリ側で改良できる</td><td>輻輳制御アルゴリズムの改良速度</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li><b>ファイアウォールで UDP443 を許可する必要がある</b>／逆に<b>QUICを遮断すると HTTP/2 へフォールバック</b>する</li>
+      <li>プロキシやSSL可視化装置が<b>QUICに未対応</b>のため、意図的にUDP443を遮断してTCPに落とす、という運用設計</li>
+      <li>QUICの利点を書かせる → <b>「接続確立に要する往復回数を削減でき、かつストリームごとに独立しているため、
+        パケット損失時に他のストリームが影響を受けない」</b></li>
+      <li>UDPなのに信頼性がある理由 → <b>再送・順序制御・輻輳制御をQUIC自身がUDPの上で実装しているため</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第4章 トランスポート層（L4） ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">04 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>

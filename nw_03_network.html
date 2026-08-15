@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第3章 ネットワーク層（L3） ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: 32bit address rule */
+  .addrbar{margin-top:30px}
+  .addrbar .bits{display:flex; height:26px; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .addrbar .net{flex:0 0 75%; background:#3B3E86; color:#fff}
+  .addrbar .host{flex:1 1 auto; background:#0E7C86; color:#fff}
+  .addrbar .bits span{
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; white-space:nowrap;
+  }
+  .addrbar .ticks{
+    display:flex; justify-content:space-between;
+    font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:7px;
+  }
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第3章　ネットワーク層（L3）
+      <span class="en">Network Layer</span>
+    </h1>
+    <p class="lede">
+      本試験の背骨。午後Ⅰ・午後Ⅱのどの問題でも、<b>「このパケットはどの経路を通り、どこで折り返すか」</b>を
+      追えるかどうかが得点を分ける。アドレス設計・ルーティング・OSPF/BGP・IPv6 のいずれも、
+      <b>ルーティングテーブルに何が載り、どの1行が選ばれるか</b>という一点に還元して理解する。
+    </p>
+    <div class="addrbar" aria-hidden="true">
+      <div class="bits">
+        <span class="net">ネットワーク部（プレフィックス）</span><span class="host">ホスト部</span>
+      </div>
+      <div class="ticks"><span>bit 0</span><span>/24</span><span>bit 31</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 IPアドレスとサブネット</a>
+    <a href="#s2">2 IPヘッダとフラグメント</a>
+    <a href="#s3">3 ARP・ICMP</a>
+    <a href="#s4">4 ルーティング</a>
+    <a href="#s5">5 OSPF</a>
+    <a href="#s6">6 BGP</a>
+    <a href="#s7">7 IPv6</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">3.1</span>IPアドレスとサブネット <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    IPv4アドレスは32ビット。前半の <b>ネットワーク部</b>で「どのセグメントか」、後半の <b>ホスト部</b>で
+    「その中の何番目か」を表す。この境界を示すのが <span class="kw">サブネットマスク</span>であり、
+    <code>255.255.255.0</code> のようなドット10進表記と、<code>/24</code> という
+    <span class="kw">プレフィックス長</span>表記は同じものを指す。
+  </p>
+  <p>
+    <span class="kw">CIDR</span><span class="en">（Classless Inter-Domain Routing）</span>は、
+    クラスという固定の区切りを廃し、<b>プレフィックス長を任意に取れるようにした</b>考え方。
+    これにより必要な規模に合わせてアドレスを切り出せるようになった。
+  </p>
+
+  <h3>ネットワークアドレスとブロードキャストアドレス</h3>
+  <ul>
+    <li><span class="kw">ネットワークアドレス</span>：ホスト部が<b>すべて0</b>。そのセグメント自体を指す。ルーティングテーブルに載るのはこの形</li>
+    <li><span class="kw">ブロードキャストアドレス</span>：ホスト部が<b>すべて1</b>。セグメント全体への同報用</li>
+    <li>この2つは端末に割り当てられないため、<b>使用可能ホスト数 ＝ 2<sup>ホスト部ビット数</sup> − 2</b></li>
+  </ul>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>プレフィックス長と収容ホスト数 ― 暗記推奨</caption>
+    <thead><tr><th>プレフィックス</th><th>サブネットマスク</th><th>ブロック単位</th><th>総アドレス数</th><th>使用可ホスト数</th></tr></thead>
+    <tbody>
+      <tr><th class="m">/24</th><td class="m">255.255.255.0</td><td class="c m">256</td><td class="c">256</td><td class="c"><b>254</b></td></tr>
+      <tr><th class="m">/25</th><td class="m">255.255.255.128</td><td class="c m">128</td><td class="c">128</td><td class="c"><b>126</b></td></tr>
+      <tr><th class="m">/26</th><td class="m">255.255.255.192</td><td class="c m">64</td><td class="c">64</td><td class="c"><b>62</b></td></tr>
+      <tr><th class="m">/27</th><td class="m">255.255.255.224</td><td class="c m">32</td><td class="c">32</td><td class="c"><b>30</b></td></tr>
+      <tr><th class="m">/28</th><td class="m">255.255.255.240</td><td class="c m">16</td><td class="c">16</td><td class="c"><b>14</b></td></tr>
+      <tr><th class="m">/29</th><td class="m">255.255.255.248</td><td class="c m">8</td><td class="c">8</td><td class="c"><b>6</b></td></tr>
+      <tr><th class="m">/30</th><td class="m">255.255.255.252</td><td class="c m">4</td><td class="c">4</td><td class="c"><b>2</b>（ルータ間リンク用）</td></tr>
+      <tr><th class="m">/31</th><td class="m">255.255.255.254</td><td class="c m">2</td><td class="c">2</td><td class="c">2（P2P専用の特例）</td></tr>
+      <tr><th class="m">/32</th><td class="m">255.255.255.255</td><td class="c m">1</td><td class="c">1</td><td class="c">1（ホストルート・ループバック）</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">サブネット計算の手順（試験本番での手順）</h4>
+    <p style="margin-bottom:8px">例：<code>192.168.10.100/26</code> が属するネットワークと、使用可能な範囲は？</p>
+    <ol style="margin-bottom:0">
+      <li><b>ブロック単位を出す</b>：/26 → 第4オクテットが2ビット → ブロック単位 <b>64</b></li>
+      <li><b>境界を並べる</b>：0／64／<b>128</b>／192</li>
+      <li><b>100 はどの区間か</b>：64 ≦ 100 &lt; 128 → ネットワークアドレスは <code>192.168.10.64</code></li>
+      <li><b>ブロードキャスト</b>：次の境界の1つ手前 → <code>192.168.10.127</code></li>
+      <li><b>使用可能範囲</b>：<code>192.168.10.65 〜 192.168.10.126</code>（62個）</li>
+    </ol>
+  </div>
+
+  <h3>アドレスの種類</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>特別な用途のアドレス</caption>
+    <thead><tr><th>種別</th><th>範囲</th><th>意味・出題ポイント</th></tr></thead>
+    <tbody>
+      <tr><th>プライベート<br>アドレス</th><td class="m">10.0.0.0/8<br>172.16.0.0/12<br>192.168.0.0/16</td><td>組織内で自由に使える。<b>インターネットにはそのまま出られない</b>ためNAT/NAPTが必要（第6章）。172.16〜172.31 という範囲に注意</td></tr>
+      <tr><th>ループバック<br>アドレス</th><td class="m">127.0.0.0/8<br>（127.0.0.1）</td><td>自分自身。<b>ルータのループバックインタフェース</b>は物理障害の影響を受けないため、OSPFのRouter IDや管理・監視の宛先、iBGPのピア終端に使う</td></tr>
+      <tr><th>リンクローカル<br>／APIPA</th><td class="m">169.254.0.0/16</td><td><b>DHCPサーバから応答が得られなかったときに端末が自動設定する</b>アドレス。ルータを越えられない。<span class="star">頻出</span> 障害切り分けで「このアドレスが付いている＝DHCPに到達できていない」という根拠になる</td></tr>
+      <tr><th>マルチキャスト</th><td class="m">224.0.0.0/4</td><td>クラスD。224.0.0.5/6＝OSPF、224.0.0.18＝VRRP など（第17章）</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>クラス（現在は歴史的知識だが用語として出る）</caption>
+    <thead><tr><th>クラス</th><th>先頭オクテット</th><th>既定プレフィックス</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr><th>A</th><td class="c m">1〜126</td><td class="c m">/8</td><td>大規模</td></tr>
+      <tr><th>B</th><td class="c m">128〜191</td><td class="c m">/16</td><td>中規模</td></tr>
+      <tr><th>C</th><td class="c m">192〜223</td><td class="c m">/24</td><td>小規模</td></tr>
+      <tr><th>D</th><td class="c m">224〜239</td><td class="c">—</td><td>マルチキャスト</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>VLSM と経路集約 <span class="star">頻出</span></h3>
+  <p>
+    <span class="kw">VLSM</span><span class="en">（Variable Length Subnet Mask）</span>は、
+    同じアドレスブロックの中で<b>用途ごとに異なるプレフィックス長を使い分ける</b>設計。
+    端末が100台の拠点は /25、ルータ間リンクは /30、というように過不足なく割り当てられる。
+  </p>
+  <p>
+    <span class="kw">経路集約</span><span class="en">（サマライズ／集約）</span>は、
+    連続する複数のネットワークを<b>1本のより短いプレフィックスにまとめて広告する</b>こと。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 190" role="img" aria-label="経路集約の仕組み">
+      <text x="0" y="16" font-size="12.5" fill="#16232B" font-weight="700">4つの /24 を 1つの /22 に集約する</text>
+      <g font-family="monospace" font-size="12">
+        <text x="0" y="44" fill="#16232B">172.16.<tspan fill="#A61E4D">4</tspan>.0/24</text>
+        <text x="150" y="44" fill="#6C7F88">→ 000001<tspan fill="#A61E4D" font-weight="700">00</tspan></text>
+        <text x="0" y="64" fill="#16232B">172.16.<tspan fill="#A61E4D">5</tspan>.0/24</text>
+        <text x="150" y="64" fill="#6C7F88">→ 000001<tspan fill="#A61E4D" font-weight="700">01</tspan></text>
+        <text x="0" y="84" fill="#16232B">172.16.<tspan fill="#A61E4D">6</tspan>.0/24</text>
+        <text x="150" y="84" fill="#6C7F88">→ 000001<tspan fill="#A61E4D" font-weight="700">10</tspan></text>
+        <text x="0" y="104" fill="#16232B">172.16.<tspan fill="#A61E4D">7</tspan>.0/24</text>
+        <text x="150" y="104" fill="#6C7F88">→ 000001<tspan fill="#A61E4D" font-weight="700">11</tspan></text>
+      </g>
+      <line x1="0" y1="118" x2="330" y2="118" stroke="#D3DBDF"/>
+      <text x="0" y="142" font-family="monospace" font-size="13" font-weight="700" fill="#0E7C86">172.16.4.0/22</text>
+      <text x="150" y="142" font-family="monospace" font-size="12" fill="#0E7C86">共通する上位22bitだけを広告</text>
+      <rect x="360" y="24" width="340" height="124" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="374" y="46" font-size="12.5" font-weight="700" fill="#0E7C86">集約の効果</text>
+      <text x="374" y="68" font-size="12" fill="#16232B">・ルーティングテーブルのエントリ数を削減</text>
+      <text x="374" y="88" font-size="12" fill="#16232B">・メモリ／CPU負荷の軽減、経路検索の高速化</text>
+      <text x="374" y="108" font-size="12" fill="#16232B">・<tspan font-weight="700">集約先の内部で経路が上下しても外に伝播しない</tspan></text>
+      <text x="374" y="128" font-size="12" fill="#16232B">　＝フラッピングの影響を局所化できる</text>
+    </svg>
+    <figcaption>集約できる条件は「連続していること」と「境界がプレフィックス長に揃っていること」。アドレス設計の段階で拠点ごとに連続ブロックを割り当てておかないと、後から集約できない。</figcaption>
+  </figure>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>「拠点数×必要ホスト数」からアドレスブロックを設計させ、<b>集約可能なように連続割当てにする</b>意図を書かせる</li>
+      <li>集約のデメリット →「集約範囲内に<b>実在しない経路も含まれてしまい</b>、その宛先パケットを引き受けてしまう」→ 対策は <b>Null0 へのスタティックルート</b>（3.4節）</li>
+      <li>端末に <code>169.254.x.x</code> が付いている → <b>DHCPサーバからアドレスを取得できていない</b>。DHCPリレーの設定漏れ、VLAN誤設定などを疑う</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">3.2</span>IPヘッダとフラグメント</h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>IPv4ヘッダの主要フィールド</caption>
+    <thead><tr><th>フィールド</th><th>内容</th><th>出題ポイント</th></tr></thead>
+    <tbody>
+      <tr><th>ToS / DSCP</th><td>優先度の表示</td><td>上位6ビットが <b>DSCP</b>。QoSのマーキングに使う（第16章）</td></tr>
+      <tr><th>全長</th><td>ヘッダ+データの総バイト数</td><td>帯域計算で使用</td></tr>
+      <tr><th>識別子</th><td>分割されたパケットを識別する番号</td><td>同じ識別子＝同じ元パケットの断片</td></tr>
+      <tr><th>フラグ<br>（MF / DF）</th><td><b>MF</b>=1 なら後続の断片あり<br><b>DF</b>=1 なら分割禁止</td><td>DF=1 のパケットがMTUを超えると<b>破棄され、ICMPで通知される</b></td></tr>
+      <tr><th>フラグメント<br>オフセット</th><td>元データ内の位置。<b>8バイト単位</b></td><td>再組立ての順序決定に使う</td></tr>
+      <tr><th>TTL <span class="star">頻出</span></th><td>ルータを通過するごとに <b>1減算</b>。0になったら破棄</td><td>ルーティングループでの無限循環を防ぐ。<b>traceroute の原理</b></td></tr>
+      <tr><th>プロトコル番号</th><td>上位プロトコルの識別</td><td>下表参照。ACL の記述で必要</td></tr>
+      <tr><th>ヘッダチェックサム</th><td>ヘッダのみの誤り検出</td><td>TTLが変わるためルータごとに再計算される</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>主要プロトコル番号 ― 覚えておく</caption>
+    <thead><tr><th class="c">1</th><th class="c">6</th><th class="c">17</th><th class="c">47</th><th class="c">50</th><th class="c">51</th><th class="c">89</th><th class="c">112</th></tr></thead>
+    <tbody><tr><td class="c">ICMP</td><td class="c">TCP</td><td class="c">UDP</td><td class="c">GRE</td><td class="c"><b>ESP</b></td><td class="c"><b>AH</b></td><td class="c">OSPF</td><td class="c">VRRP</td></tr></tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>ESP(50)・AH(51) はTCP/UDPではない</b>ため、ポート番号を持たない。
+    このことが NAT を越えられない原因となり、<b>NATトラバーサル（UDP4500でカプセル化）</b>が必要になる（第8章）。
+    ファイアウォールの通過設定を答えさせる問題では、<b>プロトコル番号で許可する</b>と書く。
+  </div>
+
+  <h3>フラグメントとパスMTU探索 <span class="star">頻出</span></h3>
+  <p>
+    送信するIPパケットが出口インタフェースのMTUを超える場合、ルータはパケットを分割（<span class="kw">フラグメント</span>）する。
+    重要なのは<b>再組立てを行うのは最終宛先ホストだけ</b>という点。途中のルータは再組立てしない。
+    そのため断片が1つでも失われると、<b>元のパケット全体が使えなくなる</b>（＝実効的な損失率が上がる）。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="パスMTU探索の動作">
+      <g stroke="#16232B" fill="#FFFFFF" stroke-width="1.4">
+        <rect x="10" y="80" width="90" height="42"/>
+        <rect x="200" y="80" width="90" height="42"/>
+        <rect x="410" y="80" width="90" height="42"/>
+        <rect x="600" y="80" width="90" height="42"/>
+      </g>
+      <g font-size="12" text-anchor="middle" fill="#16232B">
+        <text x="55" y="106">送信元</text><text x="245" y="106">R1</text><text x="455" y="106">R2</text><text x="645" y="106">宛先</text>
+      </g>
+      <line x1="100" y1="101" x2="200" y2="101" stroke="#16232B"/>
+      <line x1="290" y1="101" x2="410" y2="101" stroke="#A61E4D" stroke-width="2.5"/>
+      <line x1="500" y1="101" x2="600" y2="101" stroke="#16232B"/>
+      <text x="150" y="92" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#6C7F88">MTU 1500</text>
+      <text x="350" y="92" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#A61E4D">MTU 1400</text>
+      <text x="550" y="92" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#6C7F88">MTU 1500</text>
+
+      <text x="0" y="30" font-size="12" fill="#16232B">① 1500バイト・<tspan font-family="monospace" font-weight="700">DF=1</tspan> のパケットを送信</text>
+      <path d="M60,40 L280,40" stroke="#3B3E86" stroke-width="2" marker-end="url(#ar1)"/>
+      <text x="0" y="62" font-size="12" fill="#A61E4D">② R1 は分割できず破棄し、<tspan font-weight="700">ICMP Type3 Code4（Fragmentation Needed）</tspan>で「次は1400」と通知</text>
+      <path d="M280,150 L60,150" stroke="#A61E4D" stroke-width="2" marker-end="url(#ar2)"/>
+      <text x="0" y="172" font-size="12" fill="#16232B">③ 送信元がパケットサイズを 1400 に下げて再送 → 経路上の最小MTU（パスMTU）を学習</text>
+      <defs>
+        <marker id="ar1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#3B3E86"/></marker>
+        <marker id="ar2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker>
+      </defs>
+      <rect x="0" y="192" width="700" height="52" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="12" y="212" font-size="12" fill="#A61E4D" font-weight="700">PMTUD ブラックホール</text>
+      <text x="12" y="230" font-size="12" fill="#16232B">経路上のFWが ICMP を一律遮断していると②の通知が届かず、<tspan font-weight="700">小さい通信は通るのに大きい通信だけ無応答</tspan>になる。</text>
+    </svg>
+    <figcaption>対策は、①ICMP Type3 Code4 を通過許可する ②ルータで <b>MSSクランプ</b>（TCPのMSS値を書き換える）を設定する、の2つ。IPsecやVXLANでヘッダが増える構成で頻出。</figcaption>
+  </figure>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">3.3</span>ARP と ICMP <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>ARP</h3>
+  <p>
+    <span class="kw">ARP</span><span class="en">（Address Resolution Protocol）</span>は、
+    <b>IPアドレスから同一セグメント内のMACアドレスを求める</b>プロトコル。
+    パケットを送るには宛先MACが必要だが、アプリケーションが知っているのはIPアドレスだけ、という溝を埋める。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 190" role="img" aria-label="ARPの動作">
+      <rect x="20" y="60" width="110" height="46" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.4"/>
+      <text x="75" y="80" font-size="12" text-anchor="middle" fill="#0E7C86">PC-A</text>
+      <text x="75" y="97" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#0E7C86">.10</text>
+      <rect x="570" y="60" width="110" height="46" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="625" y="80" font-size="12" text-anchor="middle" fill="#16232B">PC-B</text>
+      <text x="625" y="97" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#16232B">.20</text>
+      <rect x="300" y="60" width="100" height="46" fill="#F2F5F6" stroke="#D3DBDF"/>
+      <text x="350" y="88" font-size="12" text-anchor="middle" fill="#6C7F88">SW</text>
+
+      <path d="M130,74 L300,74" stroke="#A61E4D" stroke-width="2"/>
+      <path d="M400,74 L570,74" stroke="#A61E4D" stroke-width="2" stroke-dasharray="5 4"/>
+      <text x="215" y="42" font-size="11.5" text-anchor="middle" fill="#A61E4D">① ARPリクエスト</text>
+      <text x="215" y="26" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#A61E4D">宛先MAC=FF:FF:FF:FF:FF:FF</text>
+      <text x="485" y="42" font-size="11.5" text-anchor="middle" fill="#A61E4D">ブロードキャストで全員に届く</text>
+      <text x="215" y="58" font-size="10.5" text-anchor="middle" fill="#A61E4D">「.20 の MAC を教えて」</text>
+
+      <path d="M570,96 L130,96" stroke="#0E7C86" stroke-width="2"/>
+      <text x="350" y="122" font-size="11.5" text-anchor="middle" fill="#0E7C86">② ARPリプライ（ユニキャストで返す）「.20 は 00-11-… です」</text>
+      <rect x="20" y="140" width="660" height="42" fill="#E7EDEE"/>
+      <text x="32" y="160" font-size="12" fill="#16232B">③ 結果を <tspan font-weight="700">ARPテーブル（ARPキャッシュ）</tspan>に一定時間保持し、以後は問い合わせを省略する。</text>
+      <text x="32" y="176" font-size="12" fill="#16232B">要求はブロードキャスト／応答はユニキャスト —— この非対称性が頻出。</text>
+    </svg>
+    <figcaption>宛先が別セグメントの場合、端末は宛先のMACではなく<b>デフォルトゲートウェイのMAC</b>を ARP で解決する。「宛先IPは相手、宛先MACはルータ」という組み合わせになる点が最重要。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>ARPの派生</caption>
+    <thead><tr><th>名称</th><th>動作</th><th>使われる場面</th></tr></thead>
+    <tbody>
+      <tr><th>GARP<br>（Gratuitous ARP） <span class="star">頻出</span></th><td><b>自分自身のIPアドレスに対するARPリクエスト</b>を送出する。応答は期待していない</td><td>①<b>IPアドレスの重複検出</b>（応答が返ってきたら重複）<br>②<b>VRRPの切替時やサーバのNIC切替時</b>に送出し、周囲の機器のARPテーブルとスイッチのMACアドレステーブルを<b>強制的に更新させる</b></td></tr>
+      <tr><th>Proxy ARP <span class="star b">差がつく</span></th><td>ルータが、<b>別セグメントの端末に代わってARPに応答</b>し、自分のMACアドレスを返す</td><td>端末にデフォルトゲートウェイが設定されていない環境、一部のVPN構成</td></tr>
+      <tr><th>RARP</th><td>MACアドレスからIPアドレスを求める（ARPの逆）</td><td>ディスクレス端末の起動時。現在はDHCPに置き換わった</td></tr>
+      <tr><th>ARPスプーフィング <span class="star">頻出</span></th><td>偽のARPリプライを送り、<b>他人のIPアドレスに対して自分のMACアドレスを覚えさせる</b></td><td><b>中間者攻撃（MITM）</b>の手口。対策は Dynamic ARP Inspection、DHCPスヌーピングとの連携、静的ARP登録</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>ICMP</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>主要な ICMP メッセージ</caption>
+    <thead><tr><th>Type</th><th>名称</th><th>意味と使われ方</th></tr></thead>
+    <tbody>
+      <tr><th class="c">0</th><td>Echo Reply</td><td>ping の応答</td></tr>
+      <tr><th class="c">3</th><td>Destination Unreachable</td><td>宛先に到達できない。<b>Code 3＝ポート到達不能</b>（traceroute の終端判定）、<b>Code 4＝Fragmentation Needed</b>（PMTUD）</td></tr>
+      <tr><th class="c">5</th><td>Redirect</td><td>「その宛先ならもっと良いルータがある」という通知</td></tr>
+      <tr><th class="c">8</th><td>Echo Request</td><td>ping の要求</td></tr>
+      <tr><th class="c">11</th><td>Time Exceeded</td><td><b>TTLが0になった</b>ときに送信元へ通知。<b>traceroute の根幹</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h4>traceroute の仕組み <span class="star">頻出</span></h4>
+  <p>
+    <b>TTL を 1, 2, 3 … と増やしながらパケットを送る。</b>
+    TTL=1 のパケットは1台目のルータで0になり破棄され、そのルータから <b>ICMP Time Exceeded</b> が返る。
+    その送信元アドレスが1台目のルータのIPである。TTL=2 なら2台目 —— と繰り返すことで、経路上のルータを順に暴き出す。
+    最終的に宛先に届いたら、Echo Reply（Windows）または Port Unreachable（UNIX系のUDP方式）が返って終了する。
+  </p>
+  <div class="note">
+    <b>途中の行が <code>* * *</code> になる理由</b>：そのルータがICMPを返さない設定になっている、
+    経路上のファイアウォールがICMPを遮断している、レート制限がかかっている、など。
+    <b>「そこで経路が切れている」とは限らない</b>——この読み方が障害切り分けの設問で問われる。
+  </div>
+
+  <p>
+    <span class="kw">Smurf攻撃</span>は、<b>送信元IPを標的に詐称した ICMP Echo Request を、ブロードキャストアドレス宛に送る</b>攻撃。
+    セグメント内の全端末が標的へ一斉に応答するため、少ない攻撃トラフィックが大量の応答に増幅される（<b>リフレクション／アンプ攻撃</b>）。
+    対策は<b>ルータでのディレクテッドブロードキャストの転送禁止</b>と、送信元詐称を防ぐ <b>Ingressフィルタリング／uRPF</b>。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">3.4</span>ルーティング <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>ルーティングテーブルと転送判断</h3>
+  <p>
+    ルータは受信パケットの<b>宛先IPアドレス</b>をルーティングテーブルと照合し、
+    <span class="kw">ロンゲストマッチ</span>——<b>合致するエントリのうち、最もプレフィックス長が長い（＝具体的な）もの</b>——を選んで、
+    その <span class="kw">ネクストホップ</span>へ転送する。合致するものが何もなければ<b>パケットを破棄</b>する
+    （L2スイッチがフラッディングするのと対照的）。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 170" role="img" aria-label="ロンゲストマッチの例">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#16232B">宛先 192.168.10.130 のパケットが届いたとき</text>
+      <g font-family="monospace" font-size="12.5">
+        <rect x="0" y="30" width="700" height="26" fill="#F2F5F6" stroke="#D3DBDF"/>
+        <text x="12" y="48" fill="#6C7F88">0.0.0.0/0            → R-Ext      （デフォルトルート：すべてに合致）</text>
+        <rect x="0" y="58" width="700" height="26" fill="#F2F5F6" stroke="#D3DBDF"/>
+        <text x="12" y="76" fill="#6C7F88">192.168.0.0/16       → R-Core     （合致するが /16）</text>
+        <rect x="0" y="86" width="700" height="26" fill="#F2F5F6" stroke="#D3DBDF"/>
+        <text x="12" y="104" fill="#6C7F88">192.168.10.0/24      → R-Floor    （合致するが /24）</text>
+        <rect x="0" y="114" width="700" height="26" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.6"/>
+        <text x="12" y="132" fill="#0E7C86" font-weight="700">192.168.10.128/25    → R-Sales   ← 最長一致。これが選ばれる</text>
+      </g>
+      <text x="0" y="160" font-size="11.5" fill="#6C7F88">デフォルトルート 0.0.0.0/0 は「プレフィックス長0」なので、他に合致がないときだけ使われる。</text>
+    </svg>
+    <figcaption>「どのプロトコルで学習したか」より先に「プレフィックス長」で決まる。ADやメトリックの比較は、<b>同じプレフィックスの経路が複数あるとき</b>にだけ行われる。</figcaption>
+  </figure>
+
+  <h3>スタティックとダイナミック</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>アドミニストレーティブディスタンス（AD値）― 情報源の信頼度</caption>
+    <thead><tr><th>情報源</th><th class="c">直接接続</th><th class="c">スタティック</th><th class="c">eBGP</th><th class="c">OSPF</th><th class="c">RIP</th><th class="c">iBGP</th></tr></thead>
+    <tbody><tr><th>AD値</th><td class="c">0</td><td class="c">1</td><td class="c">20</td><td class="c">110</td><td class="c">120</td><td class="c">200</td></tr></tbody>
+  </table>
+  </div>
+  <p>
+    <b>同じ宛先ネットワークを複数のプロトコルから学習した場合、AD値の小さい方を採用する。</b>
+    同一プロトコル内で複数経路がある場合は、そのプロトコルの <span class="kw">メトリック</span>
+    （OSPFならコスト、RIPならホップ数）で比較する。<b>AD → メトリックの順</b>で判断する。
+  </p>
+  <p>
+    <span class="kw">フローティングスタティック</span>は、<b>AD値をあえて大きく設定したスタティックルート</b>。
+    通常時は動的経路（OSPF＝110）が優先され、その経路が消えたときだけ浮上して有効になる。
+    <b>専用線が主・インターネットVPNが予備</b>といったバックアップ回線の実現に使う。
+  </p>
+
+  <h3>設計上よく出るルーティング機能</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>ルーティング関連の機能</caption>
+    <thead><tr><th>用語</th><th>内容</th><th>目的・出題ポイント</th></tr></thead>
+    <tbody>
+      <tr><th>経路再配布 <span class="star">頻出</span></th><td>あるルーティングプロトコルで学習した経路を、別のプロトコルへ注入する</td><td>OSPF と BGP、スタティックと OSPF の境界で必要。<b>再配布ポイントが2箇所以上あるとルーティングループを招く</b>ため、ルートフィルタやタグでの制御が要る</td></tr>
+      <tr><th>ルートフィルタ</th><td>広告・受信する経路をプレフィックス単位で取捨選択する</td><td>不要経路の抑制、ループ防止、他組織への情報漏えい防止</td></tr>
+      <tr><th>ポリシーベース<br>ルーティング <span class="star b">差がつく</span></th><td>宛先IPだけでなく、<b>送信元IPやアプリケーション</b>に基づいて転送先を変える</td><td>「特定部署の通信だけ別回線へ」「業務系は専用線、インターネットはブレイクアウト」</td></tr>
+      <tr><th>VRF <span class="star">頻出</span></th><td>1台のルータ内に<b>独立したルーティングテーブルを複数持つ</b>（仮想ルータ化）</td><td>部門・顧客ごとの完全分離。<b>MPLS-VPN の基盤</b>（第7章）。VLANのL3版と捉えるとよい</td></tr>
+      <tr><th>Null0 /<br>ブラックホールルート</th><td>特定プレフィックス宛を<b>意図的に捨てる</b>仮想インタフェースへ向ける</td><td>経路集約時に、<b>集約範囲内の実在しない宛先へのパケットがループするのを防ぐ</b>。DDoS時の緊急遮断にも使う</td></tr>
+      <tr><th>ECMP／等コスト<br>ロードバランス</th><td>コストが等しい複数経路へパケットを分散する</td><td>帯域の有効活用。LAGと同様に<b>フロー単位で分散</b>するのが一般的（順序逆転を避けるため）</td></tr>
+      <tr><th>非対称経路 <span class="star">頻出</span></th><td>往路と復路が異なる経路を通ること</td><td><b>ステートフルインスペクション型FWや負荷分散装置がある経路では通信が破棄される</b>。往路しか見えないため「戻りパケットが不正」と判断されるから。設計で必ず排除する</td></tr>
+      <tr><th>uRPF <span class="star">頻出</span></th><td>受信パケットの<b>送信元</b>アドレスをルーティングテーブルで逆引きし、その受信インタフェースから来るはずのないパケットを破棄する</td><td><b>IPスプーフィング対策</b>。<b>Strictモード</b>＝受信IFまで一致を要求（厳格だが非対称経路で誤破棄）、<b>Looseモード</b>＝経路が存在すればよい（緩いが非対称経路でも使える）</td></tr>
+      <tr><th>BFD <span class="star">頻出</span></th><td>ミリ秒間隔の軽量なパケットで<b>隣接の死活を高速検知</b>し、ルーティングプロトコルへ通知する</td><td>OSPFのDead 40秒を待たずに<b>1秒未満で切替</b>できる。<b>間に L2 スイッチが挟まりリンクダウンを検知できない構成</b>で特に有効</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>FWを挟む冗長構成で「通信が不安定」→ <b>非対称経路</b>が原因。往復で同じFWを通るよう経路制御する</li>
+      <li>回線切替時間を短縮したい → <b>BFD を併用し、リンクダウンを検知できない区間でも高速に障害を検知する</b></li>
+      <li>集約経路を広告するルータに <b>集約プレフィックス宛の Null0 スタティック</b>を入れる理由を説明させる</li>
+    </ul>
+  </div>
+
+  <h3>ルーティングプロトコルの分類</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>アルゴリズムによる分類</caption>
+    <thead><tr><th>方式</th><th>考え方</th><th>代表</th><th>特徴</th></tr></thead>
+    <tbody>
+      <tr><th>距離ベクトル型</th><td>「その宛先まで何ホップか」を隣接ルータに教え合う。<b>全体像は持たない</b></td><td>RIP</td><td>実装が単純。収束が遅くループが生じやすい</td></tr>
+      <tr><th>リンクステート型</th><td>各ルータが<b>ネットワーク全体の地図（LSDB）を共有</b>し、各自が最短経路を計算する</td><td><b>OSPF</b>、IS-IS</td><td>収束が速くループが起きにくい。CPU・メモリを消費する</td></tr>
+      <tr><th>パスベクタ型</th><td>宛先までに<b>経由するASの並び（AS_PATH）</b>を伝える</td><td><b>BGP</b></td><td>経路制御ポリシーを柔軟に適用できる</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <b>RIP</b> はメトリックにホップ数を使い、<b>最大15ホップ（16は到達不能）</b>という制限がある。
+    ループ対策として、<b>スプリットホライズン</b>（学習したインタフェースへその経路を広告し返さない）、
+    <b>ポイズンリバース</b>（あえてメトリック16で広告し返す）、
+    <b>ホールドダウン</b>（経路消失後しばらく新しい情報を受け付けない）を備えるが、
+    それでも収束は遅く、現在の企業ネットワークでは OSPF が主流。用語として押さえておけばよい。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">3.5</span>OSPF <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">OSPF</span><span class="en">（Open Shortest Path First）</span>は、企業内ネットワークで最も使われる
+    リンクステート型ルーティングプロトコル。動作は次の3段階で理解する。
+  </p>
+  <ol>
+    <li><b>ネイバーを見つける</b>：Helloパケットを交換して隣接関係を確立する</li>
+    <li><b>地図を共有する</b>：LSA を交換し、全ルータが同一の <span class="kw">LSDB</span>（リンクステートデータベース）を持つ</li>
+    <li><b>各自で計算する</b>：LSDB に <span class="kw">SPFアルゴリズム（ダイクストラ法）</span>を適用し、
+      自分を根とする最短経路のツリー（SPFツリー）を作ってルーティングテーブルに載せる</li>
+  </ol>
+  <div class="note">
+    <b>「経路を教え合う」のではなく「地図を配って各自が計算する」</b>——ここが距離ベクトル型との決定的な違い。
+    全員が同じ地図を持つため、矛盾した経路情報によるループが起きにくい。
+  </div>
+
+  <h3>ネイバー確立とタイマ</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>OSPF の基本パラメータ</caption>
+    <thead><tr><th>項目</th><th>値・仕様</th><th>ポイント</th></tr></thead>
+    <tbody>
+      <tr><th>Hello間隔</th><td class="c">10秒<br>（ブロードキャスト／P2P）</td><td>NBMA では 30 秒。<b>両端で一致していないとネイバーにならない</b></td></tr>
+      <tr><th>Deadインターバル</th><td class="c">40秒<br>（Helloの4倍）</td><td>この間 Hello が来なければ障害と判断。<b>切替に最大40秒かかる</b>のが弱点 → BFD 併用</td></tr>
+      <tr><th>ネイバーになる条件</th><td colspan="2">同一サブネット・<b>Hello/Dead間隔が一致</b>・<b>エリアIDが一致</b>・認証の一致・スタブフラグの一致・MTU一致</td></tr>
+      <tr><th>使用アドレス</th><td class="c m">224.0.0.5（全OSPFルータ）<br>224.0.0.6（DR/BDR宛）</td><td>プロトコル番号 <b>89</b>（TCP/UDPを使わない）</td></tr>
+      <tr><th>Router ID</th><td colspan="2">決定順は ①手動設定 → ②<b>ループバックインタフェースの最大IP</b> → ③物理インタフェースの最大IP。<b>物理障害の影響を受けないループバックを明示指定するのが定石</b></td></tr>
+      <tr><th>コスト</th><td class="c">参照帯域幅 ÷ 帯域幅<br>（既定の参照帯域幅 100Mbps）</td><td><b>既定のままだと 100Mbps 以上はすべてコスト1</b>になり、1Gと10Gが区別できない。参照帯域幅の変更が設計論点になる</td></tr>
+      <tr><th>パッシブ<br>インタフェース</th><td colspan="2">そのインタフェースの<b>ネットワークは広告するが、Helloは送らない</b>。端末収容セグメントに設定し、不要なHelloの抑制と、不正ルータとの隣接確立の防止を図る</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>DR と BDR <span class="star">頻出</span></h3>
+  <p>
+    イーサネットのような<b>マルチアクセスネットワーク</b>では、n台のルータが総当たりで隣接関係を結ぶと
+    n(n−1)/2 組にもなり、LSA の交換量が爆発する。そこで代表者
+    <span class="kw">DR</span><span class="en">（Designated Router）</span>を1台選び、
+    <b>各ルータは DR とだけ隣接関係を結んで、DR が全体へ配信する</b>。
+    DR の障害に備えた副代表が <span class="kw">BDR</span> である。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 220" role="img" aria-label="DRを置くことで隣接関係の数が減ることの図">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#A61E4D">DRなし：4台で6組の隣接関係</text>
+      <g fill="#FFFFFF" stroke="#16232B" stroke-width="1.3">
+        <circle cx="60" cy="70" r="20"/><circle cx="220" cy="70" r="20"/>
+        <circle cx="60" cy="170" r="20"/><circle cx="220" cy="170" r="20"/>
+      </g>
+      <g stroke="#A61E4D" stroke-width="1.6">
+        <line x1="80" y1="70" x2="200" y2="70"/><line x1="80" y1="170" x2="200" y2="170"/>
+        <line x1="60" y1="90" x2="60" y2="150"/><line x1="220" y1="90" x2="220" y2="150"/>
+        <line x1="76" y1="86" x2="204" y2="154"/><line x1="204" y1="86" x2="76" y2="154"/>
+      </g>
+      <text x="400" y="16" font-size="12.5" font-weight="700" fill="#0E7C86">DRあり：4台で3組（DR経由）</text>
+      <g fill="#FFFFFF" stroke="#16232B" stroke-width="1.3">
+        <circle cx="420" cy="60" r="20"/><circle cx="620" cy="60" r="20"/>
+        <circle cx="420" cy="180" r="20"/><circle cx="620" cy="180" r="20"/>
+      </g>
+      <circle cx="520" cy="120" r="26" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/>
+      <text x="520" y="125" font-size="12" text-anchor="middle" fill="#0E7C86" font-weight="700">DR</text>
+      <g stroke="#0E7C86" stroke-width="1.6">
+        <line x1="438" y1="72" x2="500" y2="108"/><line x1="602" y1="72" x2="540" y2="108"/>
+        <line x1="438" y1="168" x2="500" y2="132"/><line x1="602" y1="168" x2="540" y2="132"/>
+      </g>
+      <text x="0" y="212" font-size="11.5" fill="#6C7F88">DR/BDR は ①プライオリティが大きい方 ②同値なら Router ID が大きい方 が選ばれる。プライオリティ 0 のルータは立候補しない。</text>
+    </svg>
+    <figcaption><b>DR選出はSTPのルートブリッジと逆で「大きい方が勝つ」</b>。またDRは<b>プリエンプション（横取り）しない</b>ため、後から高プライオリティの機器を入れても既存DRが維持される点も出題される。ポイントツーポイントリンクではDRは選出されない。</figcaption>
+  </figure>
+
+  <h3>エリアと各ルータの役割 <span class="star">頻出</span></h3>
+  <p>
+    全ルータが1つの巨大なLSDBを共有すると、規模拡大にともないメモリ・CPU・再計算の負荷が耐えられなくなる。
+    そこでネットワークを <span class="kw">エリア</span>に分割し、<b>LSDBの共有範囲をエリア内に閉じ込める</b>。
+    エリア間は必ず <span class="kw">バックボーンエリア（Area 0）</span>を経由する構造にする。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="OSPFのエリア構成とABR・ASBRの位置">
+      <rect x="180" y="20" width="340" height="70" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.5"/>
+      <text x="350" y="42" font-size="13" text-anchor="middle" fill="#3B3E86" font-weight="700">Area 0（バックボーンエリア）</text>
+      <circle cx="270" cy="68" r="15" fill="#FFFFFF" stroke="#16232B"/>
+      <circle cx="430" cy="68" r="15" fill="#FFFFFF" stroke="#16232B"/>
+
+      <rect x="20" y="140" width="240" height="70" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="140" y="162" font-size="13" text-anchor="middle" fill="#0E7C86" font-weight="700">Area 1</text>
+      <circle cx="100" cy="188" r="14" fill="#FFFFFF" stroke="#16232B"/>
+      <circle cx="180" cy="188" r="14" fill="#FFFFFF" stroke="#16232B"/>
+
+      <rect x="440" y="140" width="240" height="70" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="560" y="162" font-size="13" text-anchor="middle" fill="#0E7C86" font-weight="700">Area 2</text>
+      <circle cx="520" cy="188" r="14" fill="#FFFFFF" stroke="#16232B"/>
+
+      <!-- ABR -->
+      <rect x="210" y="98" width="80" height="34" fill="#FFFFFF" stroke="#3B3E86" stroke-width="2"/>
+      <text x="250" y="120" font-size="12" text-anchor="middle" fill="#3B3E86" font-weight="700">ABR</text>
+      <line x1="250" y1="90" x2="250" y2="98" stroke="#16232B"/><line x1="250" y1="132" x2="180" y2="174" stroke="#16232B"/>
+      <rect x="410" y="98" width="80" height="34" fill="#FFFFFF" stroke="#3B3E86" stroke-width="2"/>
+      <text x="450" y="120" font-size="12" text-anchor="middle" fill="#3B3E86" font-weight="700">ABR</text>
+      <line x1="450" y1="90" x2="450" y2="98" stroke="#16232B"/><line x1="450" y1="132" x2="520" y2="174" stroke="#16232B"/>
+
+      <!-- ASBR -->
+      <rect x="580" y="20" width="100" height="34" fill="#FFFFFF" stroke="#A61E4D" stroke-width="2"/>
+      <text x="630" y="42" font-size="12" text-anchor="middle" fill="#A61E4D" font-weight="700">ASBR</text>
+      <line x1="520" y1="42" x2="580" y2="38" stroke="#16232B"/>
+      <text x="630" y="72" font-size="11" text-anchor="middle" fill="#A61E4D">外部（BGP・</text>
+      <text x="630" y="88" font-size="11" text-anchor="middle" fill="#A61E4D">スタティック）</text>
+
+      <text x="20" y="238" font-size="11.5" fill="#16232B"><tspan font-weight="700">ABR</tspan>＝複数エリアに接するルータ（一方は必ず Area 0）　／　<tspan font-weight="700">ASBR</tspan>＝OSPF 外部と接し、外部経路を再配布するルータ</text>
+    </svg>
+    <figcaption><b>ABR・ASBR は「選出」されるものではない。</b>インタフェースがどこに属しているか、外部経路を再配布しているかによって<b>自動的に決まる役割</b>である。ここは選択肢で必ず引っかけてくる。</figcaption>
+  </figure>
+
+  <h3>LSA タイプ <span class="star">頻出</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>LSA の種類と生成者</caption>
+    <thead><tr><th class="c">Type</th><th>名称</th><th>生成するルータ</th><th>内容と流れる範囲</th></tr></thead>
+    <tbody>
+      <tr><th class="c">1</th><td>Router LSA</td><td>すべてのルータ</td><td>自分が持つリンクとコスト。<b>エリア内に留まる</b></td></tr>
+      <tr><th class="c">2</th><td>Network LSA</td><td><b>DR</b></td><td>マルチアクセスセグメントに接続しているルータの一覧。エリア内に留まる</td></tr>
+      <tr><th class="c">3</th><td>Summary LSA<br>（Network Summary）</td><td><b>ABR</b></td><td>他エリアのネットワーク情報を、エリアをまたいで伝える</td></tr>
+      <tr><th class="c">4</th><td>ASBR Summary LSA</td><td><b>ABR</b></td><td>ASBR へ到達するための情報を他エリアへ伝える</td></tr>
+      <tr><th class="c">5</th><td>AS External LSA</td><td><b>ASBR</b></td><td>OSPF 外部から取り込んだ経路。<b>AS全体に配布される</b></td></tr>
+      <tr><th class="c">7</th><td>NSSA External LSA</td><td>NSSA内のASBR</td><td>NSSA 内でのみ流通し、<b>ABR で Type5 に変換</b>されて外へ出る</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>特殊エリア</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>エリア種別と遮断される LSA</caption>
+    <thead><tr><th>エリア種別</th><th>Type3</th><th>Type4/5</th><th>Type7</th><th>特徴</th></tr></thead>
+    <tbody>
+      <tr><th>通常エリア</th><td class="c">通す</td><td class="c">通す</td><td class="c">—</td><td>—</td></tr>
+      <tr><th>スタブエリア</th><td class="c">通す</td><td class="c"><b>遮断</b></td><td class="c">—</td><td>外部経路の代わりに<b>ABRがデフォルトルートを注入</b>する</td></tr>
+      <tr><th>トータリー<br>スタブエリア</th><td class="c"><b>遮断</b></td><td class="c"><b>遮断</b></td><td class="c">—</td><td>デフォルトルートだけを受け取る。<b>LSDB が最も小さくなる</b>。末端拠点向け</td></tr>
+      <tr><th>NSSA</th><td class="c">通す</td><td class="c"><b>遮断</b></td><td class="c"><b>使用</b></td><td>外部経路は受け取らないが、<b>そのエリア内から外部経路を持ち込みたい</b>場合に使う</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    スタブ化の目的は<b>末端拠点ルータのLSDBとルーティングテーブルを小さくし、CPU・メモリ負荷とSPF再計算の頻度を下げること</b>。
+    「拠点ルータの性能が低い」「経路数を抑えたい」という課題文への解答になる。
+  </p>
+
+  <h3>経路集約 ― どこでできるか <span class="star">頻出</span></h3>
+  <div class="card">
+    <ul style="margin-bottom:0">
+      <li><b>ABR</b>：エリア間の集約（Type3 LSA を集約して他エリアへ広告）</li>
+      <li><b>ASBR</b>：外部経路の集約（Type5 LSA を集約）</li>
+      <li><b>エリア内では集約できない</b>。エリア内は全ルータが同一のLSDBを持つ必要があるため、途中で情報を間引けない</li>
+    </ul>
+  </div>
+  <p>
+    集約すると<b>集約範囲に含まれる実在しない宛先のパケットを引き受けてしまう</b>ため、
+    集約を行うルータには<b>集約プレフィックス宛の Null0 スタティックルート</b>を入れ、
+    該当パケットをその場で破棄してループを防ぐ。
+  </p>
+  <p>
+    <span class="kw">仮想リンク</span><span class="star b">差がつく</span>は、
+    <b>Area 0 に直接接していないエリア</b>を、他のエリアを経由して論理的に Area 0 へ接続する救済策。
+    企業合併などでやむを得ず使うが、恒久的な設計としては推奨されない、という文脈で登場する。
+  </p>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>「ABR／ASBR はどのように選出されるか」→ <b>選出ではなく、接続構成と設定によって自動的に決まる</b></li>
+      <li>エリア分割の目的 → <b>LSDBの範囲を限定し、SPF再計算の影響範囲とルータの負荷を抑えるため</b></li>
+      <li>1Gと10Gの経路が同じコストになる → <b>参照帯域幅を変更する</b></li>
+      <li>OSPFの切替が遅い → Dead 40秒が原因。<b>BFDを併用する</b>／Hello・Deadを短縮する</li>
+      <li>Router ID にループバックアドレスを使う理由 → <b>物理インタフェースの障害に影響されず、Router IDが変わらないため</b></li>
+    </ul>
+  </div>
+  <p style="font-size:14px;color:#6C7F88">
+    参考：<b>IS-IS</b> はOSPFと同じリンクステート型でキャリア網に多い。<b>EIGRP</b> は距離ベクトル型を拡張したシスコ由来のプロトコル。いずれも用語として押さえておけばよい。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">3.6</span>BGP <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">BGP</span><span class="en">（Border Gateway Protocol）</span>は、
+    <span class="kw">AS</span><span class="en">（Autonomous System：単一の管理ポリシーで運用されるネットワークの集まり）</span>
+    どうしを結ぶプロトコル。<b>最短経路を選ぶことより、組織のポリシーどおりに経路を制御することが目的</b>である点が
+    OSPF と根本的に違う。
+  </p>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>BGP の基本</caption>
+    <thead><tr><th>項目</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>トランスポート</th><td><b>TCP ポート179</b>。ピアは手動設定（自動発見しない）。TCPの信頼性を利用し、変更分だけを送る差分更新</td></tr>
+      <tr><th>eBGP</th><td><b>異なるAS間</b>のピア。通常は直接接続された隣接ルータどうし</td></tr>
+      <tr><th>iBGP</th><td><b>同一AS内</b>のピア。物理的に隣接している必要はなく、<b>ループバックアドレス間でピアを張る</b>のが一般的（経路が冗長化されるため）</td></tr>
+      <tr><th>AS番号</th><td>16ビット（0〜65535）と4バイトAS番号がある。<b>64512〜65534 はプライベートAS</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>iBGP フルメッシュ問題 <span class="star">頻出</span></h3>
+  <p>
+    BGP には<b>「iBGP ピアから学習した経路を、他の iBGP ピアへは広告しない」</b>というループ防止ルールがある
+    （AS_PATH が同一AS内では伸びないため、これがないとループを検出できない）。
+    その結果、<b>AS内のすべてのBGPルータどうしをフルメッシュでピアリングしなければ経路が行き渡らない</b>。
+    n台なら n(n−1)/2 本のピアが必要で、規模が大きくなると破綻する。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 210" role="img" aria-label="iBGPフルメッシュとルートリフレクタの比較">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#A61E4D">iBGPフルメッシュ：6台で15本</text>
+      <g fill="#FFFFFF" stroke="#16232B" stroke-width="1.2">
+        <circle cx="140" cy="45" r="15"/><circle cx="235" cy="95" r="15"/><circle cx="200" cy="180" r="15"/>
+        <circle cx="80" cy="180" r="15"/><circle cx="45" cy="95" r="15"/><circle cx="140" cy="115" r="15"/>
+      </g>
+      <g stroke="#A61E4D" stroke-width="1.1" opacity="0.85">
+        <line x1="140" y1="45" x2="235" y2="95"/><line x1="140" y1="45" x2="200" y2="180"/><line x1="140" y1="45" x2="80" y2="180"/>
+        <line x1="140" y1="45" x2="45" y2="95"/><line x1="140" y1="45" x2="140" y2="115"/>
+        <line x1="235" y1="95" x2="200" y2="180"/><line x1="235" y1="95" x2="80" y2="180"/><line x1="235" y1="95" x2="45" y2="95"/><line x1="235" y1="95" x2="140" y2="115"/>
+        <line x1="200" y1="180" x2="80" y2="180"/><line x1="200" y1="180" x2="45" y2="95"/><line x1="200" y1="180" x2="140" y2="115"/>
+        <line x1="80" y1="180" x2="45" y2="95"/><line x1="80" y1="180" x2="140" y2="115"/>
+        <line x1="45" y1="95" x2="140" y2="115"/>
+      </g>
+
+      <text x="400" y="16" font-size="12.5" font-weight="700" fill="#0E7C86">ルートリフレクタ：5本</text>
+      <circle cx="545" cy="105" r="26" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/>
+      <text x="545" y="110" font-size="11" text-anchor="middle" fill="#0E7C86" font-weight="700">RR</text>
+      <g fill="#FFFFFF" stroke="#16232B" stroke-width="1.2">
+        <circle cx="545" cy="40" r="15"/><circle cx="640" cy="80" r="15"/><circle cx="620" cy="165" r="15"/>
+        <circle cx="470" cy="165" r="15"/><circle cx="450" cy="80" r="15"/>
+      </g>
+      <g stroke="#0E7C86" stroke-width="1.6">
+        <line x1="545" y1="79" x2="545" y2="55"/><line x1="568" y1="94" x2="626" y2="86"/>
+        <line x1="560" y1="127" x2="612" y2="151"/><line x1="530" y1="127" x2="480" y2="151"/>
+        <line x1="521" y1="94" x2="464" y2="86"/>
+      </g>
+      <text x="0" y="204" font-size="11.5" fill="#6C7F88">RR は「iBGPから学んだ経路を他のiBGPピアへ反射（reflect）してよい」という例外を持つルータ。冗長化のためRRは2台構成にするのが一般的。</text>
+    </svg>
+    <figcaption>もう一つの解法が<b>コンフェデレーション</b>で、AS内をさらに小さなサブASに分割してフルメッシュの範囲を小さくする。RRのほうが導入が容易なため実務・出題ともにRRが中心。</figcaption>
+  </figure>
+
+  <h3>パスアトリビュート（経路属性） <span class="star">頻出</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>主要な属性と制御方向</caption>
+    <thead><tr><th>属性</th><th>内容</th><th>優先されるのは</th><th>制御できる方向</th></tr></thead>
+    <tbody>
+      <tr><th>WEIGHT</th><td>ベンダ独自。<b>そのルータ内だけ</b>で有効で、他ルータには伝わらない</td><td class="c">大きい方</td><td>自ルータの出方向</td></tr>
+      <tr><th>LOCAL_PREF <span class="star">頻出</span></th><td><b>AS内で共有</b>される優先度。iBGPで伝わる</td><td class="c"><b>大きい方</b></td><td><b>アウトバウンド</b>（自AS から出ていく経路の選択）</td></tr>
+      <tr><th>AS_PATH <span class="star">頻出</span></th><td>経由してきたAS番号の並び。<b>自分のAS番号があればループとして破棄</b></td><td class="c">短い方</td><td>プリペンドで<b>インバウンド</b>制御</td></tr>
+      <tr><th>ORIGIN</th><td>経路の出自（IGP &lt; EGP &lt; Incomplete）</td><td class="c">IGP</td><td>—</td></tr>
+      <tr><th>MED <span class="star">頻出</span></th><td><b>隣接ASに対して「こちらから入ってきてほしい」</b>と伝えるヒント</td><td class="c"><b>小さい方</b></td><td><b>インバウンド</b>（自AS へ入ってくる経路の選択）</td></tr>
+      <tr><th>NEXT_HOP</th><td>その経路への次の転送先。<b>eBGPでは自分のアドレスに書き換わるが、iBGPでは書き換わらない</b></td><td class="c">—</td><td>next-hop-self の設定論点</td></tr>
+      <tr><th>コミュニティ <span class="star b">差がつく</span></th><td>経路に付ける任意のタグ。受け取った側がタグを見てまとめてポリシーを適用できる</td><td class="c">—</td><td>ISPとの連携制御</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">方向の覚え方 <span class="star">頻出</span></h4>
+    <ul style="margin-bottom:0">
+      <li><b>LOCAL_PREF ＝ 出口の制御</b>。自AS内のルータ全員に「外へ出るときはこっちの回線を使え」と指示する。<b>自分で決められるので確実に効く</b></li>
+      <li><b>MED ＝ 入口のお願い</b>。相手ASに「入ってくるならこっちから」と伝えるが、<b>相手が従う保証はない</b>（相手はまずLOCAL_PREFで判断するため）</li>
+      <li><b>AS_PATHプリペンド</b>：自分のAS番号を余分に付け足して経路を「長く」見せ、そちらを選ばれにくくする。<b>MEDが効かない相手にも有効なインバウンド制御</b></li>
+    </ul>
+  </div>
+
+  <h3>パス選択アルゴリズム</h3>
+  <p>同じプレフィックスを複数経路から学習したとき、上から順に比較して決着がついた時点で確定する。</p>
+  <div class="tbl-scroll">
+  <table>
+    <caption>選択順序（上位ほど優先）</caption>
+    <thead><tr><th class="c">順</th><th>比較項目</th><th>選ばれる条件</th></tr></thead>
+    <tbody>
+      <tr><th class="c">1</th><td>WEIGHT</td><td>大きい</td></tr>
+      <tr><th class="c">2</th><td><b>LOCAL_PREF</b></td><td>大きい</td></tr>
+      <tr><th class="c">3</th><td>自ルータが発信した経路</td><td>自発信を優先</td></tr>
+      <tr><th class="c">4</th><td><b>AS_PATH</b></td><td>短い</td></tr>
+      <tr><th class="c">5</th><td>ORIGIN</td><td>IGP &lt; EGP &lt; Incomplete</td></tr>
+      <tr><th class="c">6</th><td><b>MED</b></td><td>小さい</td></tr>
+      <tr><th class="c">7</th><td>eBGP か iBGP か</td><td><b>eBGP を優先</b></td></tr>
+      <tr><th class="c">8</th><td>NEXT_HOP までのIGPメトリック</td><td>小さい</td></tr>
+      <tr><th class="c">9</th><td>Router ID など</td><td>小さい</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>マルチホームと運用</h3>
+  <ul>
+    <li><span class="kw">マルチホーム</span>：複数のISPと接続して冗長性と経路品質を確保する構成。<b>自組織のAS番号とプロバイダ非依存アドレスが必要</b></li>
+    <li><b>トランジット</b>＝対価を払って全インターネット経路を通してもらう関係、<b>ピアリング</b>＝互いの顧客宛経路だけを直接交換する対等な関係</li>
+    <li><span class="kw">フラッピング</span>：経路が上下を繰り返し、その都度アップデートが世界中に伝播して負荷になる現象。
+      <span class="kw">ルートダンプニング</span><span class="star b">差がつく</span>は、
+      不安定な経路にペナルティを蓄積し、閾値を超えたら<b>一定時間その経路を抑制</b>する仕組み</li>
+    <li><b>プレフィックスリスト</b>：受信・広告するプレフィックスを制限するフィルタ。
+      <b>自AS の経路だけを広告し、誤って他者の経路を広告しない（経路ハイジャックの防止）</b>ために必須</li>
+  </ul>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>「回線Aを優先し、障害時のみ回線Bを使いたい」→ <b>アウトバウンドは LOCAL_PREF、インバウンドは AS_PATHプリペンドまたは MED</b></li>
+      <li>iBGPをループバック間で張る理由 → <b>物理経路が冗長化されていれば、片方のリンク障害でもピアが切れないため</b></li>
+      <li>ルートリフレクタを導入する理由 → <b>iBGPのフルメッシュ構成が不要になり、ピア数を削減して設定と負荷を軽減できるため</b></li>
+      <li>BGPがTCPを使う利点 → <b>再送・順序制御を任せられ、差分のみの更新で済むため</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 7 ===================== -->
+<section id="s7">
+<div class="wrap">
+  <h2><span class="num">3.7</span>IPv6 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>アドレス表記</h3>
+  <p>128ビットを16ビットずつ8つのブロックに分け、コロン区切りの16進数で書く。省略ルールは2つ。</p>
+  <figure>
+    <svg viewBox="0 0 700 150" role="img" aria-label="IPv6アドレスの短縮ルール">
+      <text x="0" y="20" font-size="11.5" fill="#6C7F88">元のアドレス</text>
+      <text x="0" y="42" font-family="monospace" font-size="13.5" fill="#16232B">2001:0db8:0000:0000:0008:0800:200c:417a</text>
+      <text x="0" y="72" font-size="11.5" fill="#6C7F88">① 各ブロック先頭の 0 を省略</text>
+      <text x="0" y="94" font-family="monospace" font-size="13.5" fill="#16232B">2001:<tspan fill="#A61E4D">db8</tspan>:<tspan fill="#A61E4D">0</tspan>:<tspan fill="#A61E4D">0</tspan>:<tspan fill="#A61E4D">8</tspan>:<tspan fill="#A61E4D">800</tspan>:200c:417a</text>
+      <text x="0" y="124" font-size="11.5" fill="#6C7F88">② 連続する 0 のブロックを :: に置換（1回だけ）</text>
+      <text x="0" y="146" font-family="monospace" font-size="13.5" fill="#0E7C86" font-weight="700">2001:db8<tspan fill="#A61E4D">::</tspan>8:800:200c:417a</text>
+    </svg>
+    <figcaption><code>::</code> は<b>1つのアドレス中で1回しか使えない</b>。2回使うと、どちらが何ブロック分の0か復元できなくなるため。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>アドレス種別</caption>
+    <thead><tr><th>種別</th><th>プレフィックス</th><th>役割</th></tr></thead>
+    <tbody>
+      <tr><th>グローバルユニキャスト<br>（GUA）</th><td class="m">2000::/3</td><td>インターネットで一意。<b>サブネットは /64 が基本</b>（下位64ビットはインタフェースIDに固定）</td></tr>
+      <tr><th>リンクローカル<br>（LLA） <span class="star">頻出</span></th><td class="m">fe80::/10</td><td><b>すべてのIPv6インタフェースが必ず持つ</b>。ルータを越えない。NDPやルーティングプロトコルのネクストホップに使われる</td></tr>
+      <tr><th>ユニークローカル<br>（ULA）</th><td class="m">fc00::/7</td><td>IPv4のプライベートアドレス相当。組織内限定</td></tr>
+      <tr><th>マルチキャスト</th><td class="m">ff00::/8</td><td><b>ff02::1＝全ノード</b>、<b>ff02::2＝全ルータ</b>、<b>要請ノードマルチキャスト ff02::1:ffXX:XXXX</b></td></tr>
+      <tr><th>エニーキャスト</th><td>形式は<br>ユニキャストと同一</td><td>同じアドレスを複数ノードに付与し、<b>最も近い1台へ届ける</b>。DNSルートサーバやCDNで利用</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>IPv6にブロードキャストは存在しない。</b>その役割は<b>マルチキャスト</b>が担う。
+    ARPのブロードキャストに相当する処理も、<b>要請ノードマルチキャスト</b>宛に送られるため、
+    <b>無関係な端末に割り込みが発生しない</b>——これがIPv6の効率化ポイントとして問われる。
+  </div>
+
+  <h3>NDP ― ARPの後継 <span class="star">頻出</span></h3>
+  <p>
+    <span class="kw">NDP</span><span class="en">（Neighbor Discovery Protocol）</span>は
+    <b>ICMPv6 上で動作</b>し、IPv4 における ARP・ICMP Redirect・ルータ発見をまとめて担う。
+  </p>
+  <div class="tbl-scroll">
+  <table>
+    <caption>NDP の4つのメッセージ</caption>
+    <thead><tr><th>略称</th><th>名称</th><th>役割</th></tr></thead>
+    <tbody>
+      <tr><th class="c">NS</th><td>Neighbor Solicitation<br>（近隣要請）</td><td><b>ARPリクエスト相当</b>。相手のMACアドレスを問い合わせる。<b>DAD にも使う</b></td></tr>
+      <tr><th class="c">NA</th><td>Neighbor Advertisement<br>（近隣広告）</td><td><b>ARPリプライ相当</b>。自分のMACアドレスを通知する</td></tr>
+      <tr><th class="c">RS</th><td>Router Solicitation<br>（ルータ要請）</td><td>端末が起動時に「ルータはいますか」と問い合わせる</td></tr>
+      <tr><th class="c">RA</th><td>Router Advertisement<br>（ルータ広告）</td><td>ルータが<b>プレフィックス・デフォルトゲートウェイ・MTU・アドレス設定方法</b>を通知する。<b>IPv6の要</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <span class="kw">DAD</span><span class="en">（Duplicate Address Detection：重複アドレス検出）</span>は、
+    アドレスを使い始める前に<b>そのアドレス宛の NS を自分で送出</b>し、応答（NA）が返ってきたら重複と判断する仕組み。
+    IPv4 の GARP による重複検出が<b>標準機能として組み込まれた</b>ものと理解するとよい。
+  </p>
+
+  <h3>アドレスの自動設定 <span class="star">頻出</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>SLAAC と DHCPv6</caption>
+    <thead><tr><th></th><th>SLAAC（ステートレス）</th><th>DHCPv6（ステートフル）</th></tr></thead>
+    <tbody>
+      <tr><th>アドレスの決め方</th><td><b>RA で受け取ったプレフィックス</b>＋自分で生成したインタフェースID</td><td>DHCPv6サーバが払い出す</td></tr>
+      <tr><th>サーバ</th><td>不要（ルータのRAだけ）</td><td>必要</td></tr>
+      <tr><th>払出し管理</th><td><b>しない</b>（誰が何番を使っているか記録されない）</td><td><b>する</b>（管理台帳が残る）</td></tr>
+      <tr><th>DNSサーバ情報</th><td>RAのオプション（RDNSS）またはDHCPv6併用</td><td>配布できる</td></tr>
+      <tr><th>向いている用途</th><td>一般端末、IoT</td><td>アドレス管理が必要な企業ネットワーク、サーバ</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    どちらを使うかは <b>RA 内のフラグ</b>で示される。<b>Mフラグ=1</b> なら DHCPv6 からアドレスを取得、
+    <b>Oフラグ=1</b> なら アドレスは SLAAC で決め、DNS などの<b>その他の情報だけ</b>DHCPv6 から取得する。
+  </p>
+  <p>
+    <span class="kw">EUI-64</span>は、48ビットのMACアドレスの中央に <code>FFFE</code> を挿入し、
+    先頭から7ビット目（U/Lビット）を反転して64ビットのインタフェースIDを作る方式。
+    <b>MACアドレスが露出しプライバシー上の問題がある</b>ため、現在はランダム生成する
+    「一時アドレス（プライバシー拡張）」が広く使われている。
+  </p>
+
+  <h3>IPv4 との違いと共存 <span class="star">頻出</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>ヘッダ・動作の主な違い</caption>
+    <thead><tr><th>項目</th><th>IPv4</th><th>IPv6</th></tr></thead>
+    <tbody>
+      <tr><th>アドレス長</th><td>32ビット</td><td>128ビット</td></tr>
+      <tr><th>ヘッダ</th><td>可変長（オプションあり）</td><td><b>40バイト固定</b>。オプションは<b>拡張ヘッダ</b>として後ろに連結し、ルータの処理を軽くした</td></tr>
+      <tr><th>チェックサム</th><td>あり</td><td><b>なし</b>（L2とL4に任せ、ルータの負荷を削減）</td></tr>
+      <tr><th>フラグメント</th><td>途中のルータも分割できる</td><td><b>送信元ホストのみ</b>が分割する。ルータは分割せず破棄して通知するため、<b>PMTUD が必須</b></td></tr>
+      <tr><th>ブロードキャスト</th><td>あり</td><td><b>なし</b>（マルチキャストで代替）</td></tr>
+      <tr><th>アドレス解決</th><td>ARP</td><td><b>NDP（ICMPv6）</b></td></tr>
+      <tr><th>ICMPの扱い</th><td>遮断しても概ね動く</td><td><b>遮断すると通信できない</b>（NDPもPMTUDもICMPv6のため）</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>共存・移行技術</caption>
+    <thead><tr><th>方式</th><th>内容</th><th>ポイント</th></tr></thead>
+    <tbody>
+      <tr><th>デュアルスタック <span class="star">頻出</span></th><td>機器がIPv4とIPv6の両方を同時に動かす</td><td>最も素直。<b>DNSにAとAAAAの両方を登録</b>し、端末はAAAAを優先する。運用・監視の対象が2倍になるのが難点</td></tr>
+      <tr><th>トンネル方式</th><td>IPv6パケットをIPv4でカプセル化して運ぶ（またはその逆）</td><td>6to4、IPv6 over IPv4。<b>MTUが減るのでPMTUD／MSS調整が必要</b></td></tr>
+      <tr><th>NAT64 / DNS64 <span class="star b">差がつく</span></th><td>IPv6のみの端末から、IPv4のみのサーバへアクセスさせる変換技術</td><td>DNS64がAレコードから合成AAAAを返し、NAT64がアドレスを変換する</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>ファイアウォールで <b>ICMPv6 を遮断してはいけない理由</b> → <b>NDP（アドレス解決・ルータ発見）と PMTUD が ICMPv6 上で動作しており、遮断すると通信が成立しないため</b></li>
+      <li>IPv6 でブロードキャストが不要な理由 → <b>要請ノードマルチキャストにより、対象ノードだけが受信すればよくなるため</b></li>
+      <li>SLAAC ではなく DHCPv6 を採用する理由 → <b>払い出したアドレスを管理・記録でき、監査やアクセス制御に対応できるため</b></li>
+      <li>デュアルスタック環境で「IPv6経路に問題があるのにIPv4なら通信できる」→ 端末が<b>AAAAを優先する</b>ため、IPv6側の障害が表面化する</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第3章 ネットワーク層（L3） ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">03 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>

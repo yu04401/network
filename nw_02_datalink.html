@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第2章 データリンク層（L2） ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: frame-structure rule */
+  .framebar{margin-top:30px; display:flex; height:26px; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .framebar span{
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:10px; letter-spacing:.06em; color:#fff;
+    white-space:nowrap; overflow:hidden;
+  }
+  .fb1{background:#8A98A0; flex:0 0 11%}
+  .fb2{background:#3B3E86; flex:0 0 14%}
+  .fb3{background:#2C6B8F; flex:0 0 14%}
+  .fb4{background:#0E7C86; flex:0 0 9%}
+  .fb5{background:#E4F0F1; color:var(--ink-soft)!important; flex:1 1 auto}
+  .fb6{background:#A61E4D; flex:0 0 9%}
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .framebar span{font-size:0}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第2章　データリンク層（L2）
+      <span class="en">Data Link Layer</span>
+    </h1>
+    <p class="lede">
+      午後Ⅱの構成図で最も面積を占める層。<b>フレームがどのポートから出ていくか</b>を決めるルールがすべてであり、
+      VLAN・STP・リンクアグリゲーションはいずれも「その決め方を制御する仕組み」と捉えると一本の線でつながる。
+      設問は<b>「そのフレームはどこへ流れるか」「なぜループするのか」「切り替わるまで何秒か」</b>に集約される。
+    </p>
+    <div class="framebar" aria-hidden="true">
+      <span class="fb1">Preamble</span><span class="fb2">宛先MAC</span><span class="fb3">送信元MAC</span><span class="fb4">Type</span><span class="fb5">データ（46〜1500）</span><span class="fb6">FCS</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 MACアドレスとフレーム</a>
+    <a href="#s2">2 スイッチの動作</a>
+    <a href="#s3">3 VLAN</a>
+    <a href="#s4">4 ループとSTP</a>
+    <a href="#s5">5 RSTP・保護機能</a>
+    <a href="#s6">6 LAG・スタック</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">2.1</span>MACアドレスとフレーム</h2>
+  <div class="rule"></div>
+
+  <h3>MACアドレス <span class="star">頻出</span></h3>
+  <p>
+    <span class="kw">MACアドレス</span>は 48ビット（6バイト）の物理アドレス。
+    上位24ビットが <span class="kw">OUI</span><span class="en">（Organizationally Unique Identifier）</span>＝
+    IEEE がベンダに割り当てる識別子、下位24ビットがベンダ内での通し番号。
+    <b>同一セグメント内で相手を特定するためのアドレス</b>であり、ルータを越えると宛先MAC・送信元MACは書き換えられる
+    （IPアドレスは変わらない、との対比で必ず問われる）。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 150" role="img" aria-label="MACアドレスのビット構成図">
+      <text x="0" y="16" font-size="12" fill="#6C7F88" font-family="monospace">00-1B-44-11-3A-B7</text>
+      <rect x="0" y="30" width="330" height="40" fill="#E6E7F2" stroke="#3B3E86"/>
+      <rect x="330" y="30" width="330" height="40" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="165" y="55" font-size="13" text-anchor="middle" fill="#3B3E86">OUI（ベンダ識別子）24bit</text>
+      <text x="495" y="55" font-size="13" text-anchor="middle" fill="#0E7C86">ベンダ内通し番号 24bit</text>
+
+      <!-- first byte zoom -->
+      <line x1="0" y1="70" x2="0" y2="88" stroke="#D3DBDF"/>
+      <line x1="110" y1="70" x2="110" y2="88" stroke="#D3DBDF"/>
+      <path d="M0,88 L60,104" stroke="#D3DBDF" fill="none"/>
+      <path d="M110,88 L460,104" stroke="#D3DBDF" fill="none"/>
+      <rect x="60" y="104" width="400" height="34" fill="#FFFFFF" stroke="#16232B"/>
+      <g font-family="monospace" font-size="12" text-anchor="middle" fill="#16232B">
+        <text x="85" y="126">b7</text><text x="135" y="126">b6</text><text x="185" y="126">b5</text>
+        <text x="235" y="126">b4</text><text x="285" y="126">b3</text><text x="335" y="126">b2</text>
+        <text x="385" y="126" fill="#3B3E86">U/L</text><text x="435" y="126" fill="#A61E4D">I/G</text>
+      </g>
+      <text x="472" y="118" font-size="11" fill="#A61E4D">I/G＝0:ユニキャスト ／ 1:マルチキャスト</text>
+      <text x="472" y="134" font-size="11" fill="#3B3E86">U/L＝0:グローバル ／ 1:ローカル管理</text>
+      <text x="0" y="134" font-size="11" fill="#6C7F88">先頭バイトの下位2ビット</text>
+    </svg>
+    <figcaption>先頭バイトの最下位ビット（I/Gビット）が 1 ならマルチキャスト。ブロードキャスト <code>FF:FF:FF:FF:FF:FF</code> も全ビット1なのでこれを満たす。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>宛先MACアドレスの3種類</caption>
+    <thead><tr><th>種別</th><th>宛先MAC</th><th>届く範囲</th><th>代表例</th></tr></thead>
+    <tbody>
+      <tr><th>ユニキャスト</th><td>個別のMAC</td><td>1台</td><td>通常の通信</td></tr>
+      <tr><th>ブロードキャスト</th><td><code>FF:FF:FF:FF:FF:FF</code></td><td><b>同一ブロードキャストドメイン全体</b></td><td>ARPリクエスト、DHCP DISCOVER</td></tr>
+      <tr><th>マルチキャスト</th><td><code>01:00:5E:xx:xx:xx</code>（IPv4）<br><code>33:33:xx:xx:xx:xx</code>（IPv6）</td><td>参加している端末のみ</td><td>OSPF、VRRP、映像配信、NDP</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>イーサネットフレームの構造</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>フレームフォーマット（Ethernet II）</caption>
+    <thead><tr><th>フィールド</th><th>サイズ</th><th>役割</th></tr></thead>
+    <tbody>
+      <tr><th>プリアンブル</th><td class="c">7バイト</td><td><code>10101010</code>の繰り返し。受信側がクロックを同期させるための助走信号</td></tr>
+      <tr><th>SFD</th><td class="c">1バイト</td><td><code>10101011</code>。末尾が11で「次からが本体」と知らせる開始デリミタ</td></tr>
+      <tr><th>宛先MAC</th><td class="c">6バイト</td><td>スイッチはここだけ見れば転送先を決められる（＝先頭にある理由）</td></tr>
+      <tr><th>送信元MAC</th><td class="c">6バイト</td><td>スイッチはここを見て<b>MACアドレステーブルを学習</b>する</td></tr>
+      <tr><th>タイプ</th><td class="c">2バイト</td><td>上位プロトコル。<code>0x0800</code>=IPv4、<code>0x0806</code>=ARP、<code>0x86DD</code>=IPv6、<code>0x8100</code>=802.1Qタグ</td></tr>
+      <tr><th>データ</th><td class="c">46〜1500<br>バイト</td><td>46未満はパディングで埋める。上限1500が <b>MTU</b></td></tr>
+      <tr><th>FCS</th><td class="c">4バイト</td><td><b>CRC-32</b> による誤り検出。誤りがあれば<b>破棄するだけ（訂正はしない）</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    プリアンブル／SFD を除いたフレームサイズは <b>最小64バイト・最大1518バイト</b>
+    （802.1Qタグ付きなら1522バイト）。さらにフレーム間には <b>IFG</b><span class="en">（Inter Frame Gap）</span>
+    12バイト相当の間隔が入る。<b>回線使用率や実効スループットの計算問題では、このオーバーヘッドを含めるかどうかが問題文で指定される。</b>
+  </p>
+
+  <div class="note">
+    <b>FCS（CRC）は誤り「検出」であって「訂正」ではない。</b>
+    誤りを検出したフレームはスイッチが破棄し、再送は上位層（TCP）に任せる。
+    インタフェースの <b>FCSエラーカウンタの増加</b>は、ケーブル不良・コネクタ不良・デュプレックスミスマッチ・
+    ノイズ源の存在を示す切り分けの手がかりになる。
+  </div>
+
+  <h3>MTU とジャンボフレーム <span class="star">頻出</span></h3>
+  <p>
+    <span class="kw">MTU</span><span class="en">（Maximum Transmission Unit）</span>は1フレームで運べるデータ部の最大長で、
+    イーサネットでは <b>1500バイト</b>。これを超えるIPパケットは<b>フラグメント</b>される（第3章）。
+  </p>
+  <p>
+    <span class="kw">ジャンボフレーム</span>は MTU を <b>9000バイト</b>程度まで拡大する拡張。
+    1フレームあたりのヘッダ比率が下がるため<b>オーバーヘッドが減り、CPU割込み回数も減る</b>。
+    iSCSI・NFS などのストレージ通信、バックアップ、VXLAN などのカプセル化を伴う環境で効果が大きい。
+  </p>
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>ジャンボフレームの<b>導入条件</b>→「<b>通信経路上のすべての機器（NIC・スイッチ・ルータ）で同一のMTUを設定する</b>こと」。
+        1台でも非対応だとそこで破棄され通信できなくなる</li>
+      <li>VXLAN／IPsec のカプセル化でヘッダが増える → <b>MTU超過によるフラグメントや破棄</b>を避けるため、
+        アンダーレイ側のMTUを大きくする（または端末側のMSSを下げる）</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">2.2</span>スイッチの動作原理</h2>
+  <div class="rule"></div>
+
+  <h3>MACアドレステーブルと3つの動作 <span class="star">頻出</span></h3>
+  <p>
+    L2スイッチの動作は、次の3語で説明できる。この流れを自分の言葉で書けることが、この章の最低ラインになる。
+  </p>
+  <ol>
+    <li><b>学習（Learning）</b>：受信フレームの<b>送信元MACアドレス</b>と受信ポート番号の対応を
+      <span class="kw">MACアドレステーブル</span>に記録する</li>
+    <li><b>転送（Forwarding）</b>：<b>宛先MACアドレス</b>をテーブルで検索し、該当ポートだけへ送出する</li>
+    <li><b>フラッディング（Flooding）</b>：テーブルに宛先が<b>ない</b>場合、および宛先が<b>ブロードキャスト／未知のマルチキャスト</b>の場合、
+      <b>受信ポート以外のすべてのポート</b>へ送出する</li>
+  </ol>
+
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="MACアドレステーブルの学習とフラッディングの図">
+      <!-- switch -->
+      <rect x="230" y="90" width="240" height="60" fill="#FFFFFF" stroke="#16232B" stroke-width="1.5"/>
+      <text x="350" y="126" font-size="14" text-anchor="middle" fill="#16232B">L2スイッチ</text>
+      <text x="245" y="84" font-size="11" font-family="monospace" fill="#6C7F88">P1</text>
+      <text x="445" y="84" font-size="11" font-family="monospace" fill="#6C7F88">P2</text>
+      <text x="245" y="168" font-size="11" font-family="monospace" fill="#6C7F88">P3</text>
+      <text x="445" y="168" font-size="11" font-family="monospace" fill="#6C7F88">P4</text>
+
+      <!-- hosts -->
+      <rect x="40" y="30" width="90" height="36" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="85" y="53" font-size="12" text-anchor="middle" fill="#0E7C86">A</text>
+      <rect x="570" y="30" width="90" height="36" fill="#F2F5F6" stroke="#D3DBDF"/>
+      <text x="615" y="53" font-size="12" text-anchor="middle" fill="#6C7F88">B</text>
+      <rect x="40" y="190" width="90" height="36" fill="#F2F5F6" stroke="#D3DBDF"/>
+      <text x="85" y="213" font-size="12" text-anchor="middle" fill="#6C7F88">C</text>
+      <rect x="570" y="190" width="90" height="36" fill="#F2F5F6" stroke="#D3DBDF"/>
+      <text x="615" y="213" font-size="12" text-anchor="middle" fill="#6C7F88">D</text>
+
+      <!-- links -->
+      <line x1="130" y1="48" x2="250" y2="90" stroke="#0E7C86" stroke-width="2.5"/>
+      <line x1="470" y1="90" x2="570" y2="48" stroke="#A61E4D" stroke-width="2" stroke-dasharray="5 4"/>
+      <line x1="130" y1="208" x2="250" y2="150" stroke="#A61E4D" stroke-width="2" stroke-dasharray="5 4"/>
+      <line x1="470" y1="150" x2="570" y2="208" stroke="#A61E4D" stroke-width="2" stroke-dasharray="5 4"/>
+
+      <text x="150" y="80" font-size="11" fill="#0E7C86">① A が送信（送信元MAC=A）</text>
+      <text x="205" y="30" font-size="11.5" fill="#3B3E86">② P1 に A を学習</text>
+      <text x="480" y="120" font-size="11.5" fill="#A61E4D">③ 宛先が未学習 → 受信ポート以外へフラッディング</text>
+
+      <!-- table -->
+      <rect x="230" y="180" width="200" height="52" fill="#E6E7F2" stroke="#3B3E86"/>
+      <text x="240" y="198" font-size="11" font-family="monospace" fill="#3B3E86">MACアドレステーブル</text>
+      <text x="240" y="216" font-size="11" font-family="monospace" fill="#16232B">A → P1（残り300秒）</text>
+    </svg>
+    <figcaption>学習は「送信元MAC」、転送判断は「宛先MAC」。この主語の違いが問われる。宛先が未知でも捨てずにフラッディングする点が、L3のルータ（宛先不明なら破棄）との決定的な差。</figcaption>
+  </figure>
+
+  <p>
+    <span class="kw">エージングタイム</span>は、学習したエントリを保持する時間。既定は <b>300秒（5分）</b>が一般的で、
+    その間に同じ送信元からのフレームを受信するとタイマがリセットされる。
+    端末を別ポートへ移設した直後に通信できない、といった事象の原因になる。
+    <b>STPのトポロジ変更時には、この300秒を待たないよう意図的にテーブルを消去する仕組み（TCN）がある</b>（後述）。
+  </p>
+
+  <h3>コリジョンドメインとブロードキャストドメイン <span class="star">頻出</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>機器と分割されるドメイン</caption>
+    <thead><tr><th>機器</th><th>動作層</th><th>コリジョンドメイン</th><th>ブロードキャストドメイン</th></tr></thead>
+    <tbody>
+      <tr><th>リピータハブ</th><td class="c">L1</td><td class="c">分割しない</td><td class="c">分割しない</td></tr>
+      <tr><th>ブリッジ／L2スイッチ</th><td class="c">L2</td><td class="c"><b>ポートごとに分割</b></td><td class="c">分割しない<br>（VLANで分割可）</td></tr>
+      <tr><th>ルータ／L3スイッチ</th><td class="c">L3</td><td class="c">分割する</td><td class="c"><b>分割する</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <span class="kw">コリジョン</span>は、共有媒体で複数が同時送信して信号が衝突する現象。
+    <span class="kw">CSMA/CD</span><span class="en">（Carrier Sense Multiple Access with Collision Detection）</span>は、
+    「送信前に他が使っていないか聴く（搬送波検知）→ 衝突を検知したらジャム信号を送り、
+    ランダム時間待って再送する（バックオフ）」という半二重時代の制御方式。
+    <b>現在のスイッチはポートごとに全二重で接続するため、コリジョンは発生せず CSMA/CD は使われない。</b>
+  </p>
+  <div class="note">
+    <b>ブロードキャストドメインは L2 スイッチをいくら重ねても分割されない。</b>
+    分割手段は <b>①ルータ／L3スイッチで区切る　②VLANで区切る</b> の2つだけ。
+    「端末が増えてブロードキャストが増大した」という課題文には、この2択のどちらかが答えになる。
+  </div>
+
+  <h3>転送方式</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>ストアアンドフォワードとカットスルー</caption>
+    <thead><tr><th>方式</th><th>転送を始めるタイミング</th><th>遅延</th><th>誤りフレーム</th></tr></thead>
+    <tbody>
+      <tr><th>ストアアンドフォワード</th><td>フレーム全体を受信し、FCSを検査してから</td><td>大</td><td><b>破棄できる</b></td></tr>
+      <tr><th>カットスルー</th><td>宛先MAC（先頭6バイト）を読んだ時点で</td><td>小</td><td>そのまま転送してしまう</td></tr>
+      <tr><th>フラグメントフリー</th><td>先頭64バイトを受信してから</td><td>中</td><td>コリジョン断片のみ排除</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    現在の製品はほぼ<b>ストアアンドフォワード</b>。誤りフレームを下流に流さない利点に加え、
+    <b>1Gと10Gなど速度の異なるポート間で転送する（速度変換する）にはいったん全体をバッファする必要がある</b>ためでもある。
+  </p>
+
+  <h3>L3スイッチ <span class="star">頻出</span></h3>
+  <p>
+    <span class="kw">L3スイッチ</span>は、L2スイッチにルーティング機能を統合した機器。
+    ルータとの違いは<b>実装</b>にある。ルータが汎用CPUでソフトウェア処理し、多様なWANインタフェースと
+    高度な機能（NAT・VPN・詳細なQoS）を持つのに対し、L3スイッチは<b>専用ASICで転送処理を行うため、
+    多数のポートを高速（ワイヤスピード）にさばくことに特化</b>している。
+    構内のVLAN間ルーティングはL3スイッチ、拠点間・インターネット接続はルータ、という役割分担で図が描かれる。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">2.3</span>VLAN <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">VLAN</span><span class="en">（Virtual LAN）</span>は、1台の物理スイッチを<b>論理的に複数のスイッチに分割</b>する技術。
+    分割の実体は<b>ブロードキャストドメインの分割</b>であり、異なるVLAN間はL3を経由しないと通信できない。
+  </p>
+  <div class="card">
+    <h4 style="margin-top:0">VLAN導入の目的（記述の定番）</h4>
+    <ul style="margin-bottom:0">
+      <li><b>ブロードキャストトラフィックの削減</b>：不要な範囲までブロードキャストが広がらない</li>
+      <li><b>セキュリティ</b>：部署・用途ごとに分離し、L3で相互通信を制御（フィルタリング）できる</li>
+      <li><b>物理配置からの独立</b>：フロアが違っても同一セグメントにでき、レイアウト変更に設定変更だけで追随できる</li>
+      <li><b>障害の局所化</b>：ブロードキャストストームなどの影響範囲を限定できる</li>
+    </ul>
+  </div>
+
+  <h3>ポートVLAN と タグVLAN</h3>
+  <ul>
+    <li><span class="kw">ポートVLAN</span>：<b>ポート単位</b>でVLANを割り当てる方式。そのポートに接続した端末は自動的にそのVLANに属す。
+      1ポート＝1VLANなので、VLANを増やすほどスイッチ間を結ぶケーブルが必要になる</li>
+    <li><span class="kw">タグVLAN</span>：フレームに<b>VLAN識別子（タグ）を付けて</b>、1本のリンクで複数VLANを運ぶ方式。
+      標準は <span class="kw">IEEE802.1Q</span></li>
+  </ul>
+
+  <figure>
+    <svg viewBox="0 0 700 210" role="img" aria-label="IEEE802.1Qタグの挿入位置とTCIの構造">
+      <text x="0" y="14" font-size="12" fill="#6C7F88">タグなしフレーム</text>
+      <g font-size="11" text-anchor="middle">
+        <rect x="0" y="24" width="130" height="34" fill="#E6E7F2" stroke="#3B3E86"/><text x="65" y="46" fill="#3B3E86">宛先MAC</text>
+        <rect x="130" y="24" width="130" height="34" fill="#E6E7F2" stroke="#3B3E86"/><text x="195" y="46" fill="#3B3E86">送信元MAC</text>
+        <rect x="260" y="24" width="90" height="34" fill="#E4F0F1" stroke="#0E7C86"/><text x="305" y="46" fill="#0E7C86">タイプ</text>
+        <rect x="350" y="24" width="250" height="34" fill="#F2F5F6" stroke="#D3DBDF"/><text x="475" y="46" fill="#6C7F88">データ</text>
+        <rect x="600" y="24" width="70" height="34" fill="#F7E6EC" stroke="#A61E4D"/><text x="635" y="46" fill="#A61E4D">FCS</text>
+      </g>
+
+      <text x="0" y="86" font-size="12" fill="#6C7F88">802.1Qタグ付きフレーム（送信元MACの直後に4バイト挿入）</text>
+      <g font-size="11" text-anchor="middle">
+        <rect x="0" y="96" width="130" height="34" fill="#E6E7F2" stroke="#3B3E86"/><text x="65" y="118" fill="#3B3E86">宛先MAC</text>
+        <rect x="130" y="96" width="130" height="34" fill="#E6E7F2" stroke="#3B3E86"/><text x="195" y="118" fill="#3B3E86">送信元MAC</text>
+        <rect x="260" y="96" width="110" height="34" fill="#F7E6EC" stroke="#A61E4D" stroke-width="1.5"/><text x="315" y="118" fill="#A61E4D" font-weight="700">VLANタグ 4B</text>
+        <rect x="370" y="96" width="70" height="34" fill="#E4F0F1" stroke="#0E7C86"/><text x="405" y="118" fill="#0E7C86">タイプ</text>
+        <rect x="440" y="96" width="160" height="34" fill="#F2F5F6" stroke="#D3DBDF"/><text x="520" y="118" fill="#6C7F88">データ</text>
+        <rect x="600" y="96" width="70" height="34" fill="#F7E6EC" stroke="#A61E4D"/><text x="635" y="118" fill="#A61E4D">FCS</text>
+      </g>
+
+      <!-- zoom -->
+      <path d="M260,130 L200,152 M370,130 L660,152" stroke="#D3DBDF" fill="none"/>
+      <g font-size="11" text-anchor="middle">
+        <rect x="200" y="152" width="120" height="34" fill="#FFFFFF" stroke="#16232B"/><text x="260" y="167" fill="#16232B">TPID</text><text x="260" y="181" font-family="monospace" font-size="10" fill="#6C7F88">0x8100 / 16bit</text>
+        <rect x="320" y="152" width="80" height="34" fill="#FFFFFF" stroke="#16232B"/><text x="360" y="167" fill="#16232B">PCP</text><text x="360" y="181" font-family="monospace" font-size="10" fill="#6C7F88">3bit</text>
+        <rect x="400" y="152" width="70" height="34" fill="#FFFFFF" stroke="#16232B"/><text x="435" y="167" fill="#16232B">DEI</text><text x="435" y="181" font-family="monospace" font-size="10" fill="#6C7F88">1bit</text>
+        <rect x="470" y="152" width="190" height="34" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.5"/><text x="565" y="167" fill="#0E7C86" font-weight="700">VLAN ID</text><text x="565" y="181" font-family="monospace" font-size="10" fill="#0E7C86">12bit（1〜4094）</text>
+      </g>
+      <text x="200" y="204" font-size="11" fill="#6C7F88">TPID＝タグであることの目印　／　PCP・DEI・VID をまとめて TCI（16bit）と呼ぶ</text>
+    </svg>
+    <figcaption>PCP（Priority Code Point）は IEEE802.1p の優先度＝CoS 値で、QoS の章につながる。VID は12ビットなので理論上4096、実際に使えるのは 1〜4094。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>ポートの種別</caption>
+    <thead><tr><th>種別</th><th>所属VLAN</th><th>タグ</th><th>接続先</th></tr></thead>
+    <tbody>
+      <tr><th>アクセスポート</th><td>1つだけ</td><td><b>付けない</b></td><td>PC、プリンタ、サーバなどの端末</td></tr>
+      <tr><th>トランクポート</th><td>複数</td><td><b>付ける</b><br>（ネイティブVLANを除く）</td><td>スイッチ間、L3スイッチ、仮想スイッチ、AP</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>
+    <span class="kw">ネイティブVLAN</span>は、トランクポートで<b>タグを付けずに送受信するVLAN</b>。
+    受信時にタグのないフレームが来たら、このVLANのものとして扱う。
+    <b>リンク両端でネイティブVLANの設定が食い違うと、本来分離しているはずのVLAN間でフレームが混ざる（VLANリーク）</b>ため、
+    設定不一致はセキュリティ事故の原因になる。
+  </p>
+
+  <h3>VLAN間ルーティング <span class="star">頻出</span></h3>
+  <p>VLANで分けた以上、VLAN間の通信にはL3処理が必要になる。実現方式は2つ。</p>
+  <div class="tbl-scroll">
+  <table>
+    <caption>VLAN間ルーティングの実現方式</caption>
+    <thead><tr><th></th><th>SVI（L3スイッチ）</th><th>ルータオンアスティック</th></tr></thead>
+    <tbody>
+      <tr><th>構成</th><td>スイッチ内部にVLANごとの仮想L3インタフェース<span class="en">（Switched Virtual Interface）</span>を作る</td><td>ルータと1本のトランクリンクで接続し、<b>サブインタフェース</b>をVLANごとに定義する</td></tr>
+      <tr><th>性能</th><td><b>ASICでワイヤスピード転送</b></td><td>1本のリンクを上り下りで共用するため<b>そこがボトルネック</b></td></tr>
+      <tr><th>用途</th><td>構内LANの標準構成</td><td>小規模、L3スイッチがない環境</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    SVI に設定したIPアドレスが、そのVLANに属する端末の<b>デフォルトゲートウェイ</b>になる。
+    冗長化する場合は、2台のL3スイッチのSVIに VRRP を設定して仮想IPをGWにする（第9章）。
+  </p>
+
+  <h3>応用的なVLAN技術</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>VLANの拡張</caption>
+    <thead><tr><th>技術</th><th>内容</th><th>使いどころ</th></tr></thead>
+    <tbody>
+      <tr><th>ダイナミックVLAN <span class="star">頻出</span></th><td>認証結果に応じて<b>接続ポートのVLANを動的に変更</b>する。IEEE802.1X 認証で RADIUS サーバが返す属性に従う</td><td>フリーアドレス席、私物端末の検疫、部署ごとの自動振分け</td></tr>
+      <tr><th>MACベースVLAN</th><td>接続端末の<b>MACアドレス</b>で所属VLANを決める</td><td>認証非対応機器（プリンタ、IP電話）</td></tr>
+      <tr><th>プライベートVLAN <span class="star b">差がつく</span></th><td>同一VLAN（同一サブネット）内で<b>端末どうしの直接通信を禁止</b>し、アップリンク方向のみ許可する</td><td>ゲスト用Wi-Fi、ホスティング、共同利用セグメント</td></tr>
+      <tr><th>QinQ（IEEE802.1ad） <span class="star b">差がつく</span></th><td>利用者のVLANタグの外側に<b>もう1枚タグを付ける</b>（S-TAG／C-TAG）</td><td>広域イーサネットで、事業者が顧客のVLAN設計をそのまま透過的に運ぶ</td></tr>
+      <tr><th>VLANプーリング</th><td>同一SSIDに接続した無線端末を<b>複数のVLANに自動分散</b>させる</td><td>大規模無線LANで1つのブロードキャストドメインが膨らむのを防ぐ</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>構成図でスイッチ間リンクに複数VLANが通る → <b>「トランクポートとして設定し、IEEE802.1Q のタグVLANで多重する」</b></li>
+      <li>「フロアをまたいで同一部署を同一セグメントにしたい」→ VLANの物理配置非依存性</li>
+      <li>ゲスト端末どうしを通信させたくない → <b>プライベートVLAN</b>（VLANを人数分作る、は不正解）</li>
+      <li>認証結果で接続先を分けたい → <b>ダイナミックVLAN（802.1X＋RADIUS）</b>。第12章と必ずセットで出る</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">2.4</span>ループとスパニングツリー（STP） <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>なぜループが致命的なのか</h3>
+  <p>
+    L2フレームには <b>TTL のような生存期間フィールドがない</b>。これがすべての原因である。
+    ルータならTTLが0になって破棄されるが、L2ではループしたフレームは<b>永久に回り続ける</b>。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 240" role="img" aria-label="L2ループで発生する3つの障害の図">
+      <g stroke="#16232B" fill="#FFFFFF">
+        <rect x="290" y="20" width="120" height="44"/>
+        <rect x="150" y="140" width="120" height="44"/>
+        <rect x="430" y="140" width="120" height="44"/>
+      </g>
+      <g font-size="12" text-anchor="middle" fill="#16232B">
+        <text x="350" y="47">SW1</text><text x="210" y="167">SW2</text><text x="490" y="167">SW3</text>
+      </g>
+      <g stroke="#A61E4D" stroke-width="2.5" fill="none">
+        <line x1="290" y1="55" x2="240" y2="140"/>
+        <line x1="410" y1="55" x2="460" y2="140"/>
+        <line x1="270" y1="162" x2="430" y2="162"/>
+      </g>
+      <g fill="#A61E4D" font-size="18">
+        <text x="252" y="106">↻</text><text x="436" y="106">↻</text><text x="345" y="156">↻</text>
+      </g>
+      <rect x="0" y="200" width="700" height="34" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="12" y="222" font-size="12.5" fill="#A61E4D">① ブロードキャストストーム　② MACアドレステーブルのフラッピング　③ 同一フレームの多重受信</text>
+    </svg>
+    <figcaption>ブロードキャストフレームが1つ入ると、各スイッチがフラッディングして分岐・増殖し、指数的に増える。帯域とCPUを食い尽くしネットワーク全体が停止する。</figcaption>
+  </figure>
+  <ol>
+    <li><span class="kw">ブロードキャストストーム</span>：ブロードキャストがループ内で増殖し、帯域とスイッチのCPUを枯渇させる</li>
+    <li><b>MACアドレステーブルのフラッピング</b>：同一の送信元MACが複数のポートから届くため、テーブルが書き換わり続け、正常な転送ができなくなる</li>
+    <li><b>同一フレームの重複到達</b>：受信側が同じフレームを何度も受け取り、上位アプリケーションが誤動作する</li>
+  </ol>
+
+  <h3>STP の考え方</h3>
+  <p>
+    <span class="kw">STP</span><span class="en">（Spanning Tree Protocol / IEEE802.1D）</span>は、
+    <b>物理的にループしている構成を、論理的にループのないツリー構造にする</b>プロトコル。
+    一部のポートを意図的に<b>ブロッキング</b>してフレームを通さず、
+    障害時にはそのポートを開放して経路を切り替える。
+    つまり<b>冗長構成を保ちつつ、平常時はループを作らない</b>ための仕組みである。
+  </p>
+  <p>
+    スイッチ間では <span class="kw">BPDU</span><span class="en">（Bridge Protocol Data Unit）</span>という
+    制御フレームを <b>Hello 2秒間隔</b>で交換し、これをもとに全スイッチが同じツリーを計算する。
+  </p>
+
+  <h4>ステップ1：ルートブリッジを決める</h4>
+  <p>
+    ツリーの頂点になるスイッチを <span class="kw">ルートブリッジ</span>という。
+    <b>ブリッジIDが最も小さいスイッチ</b>が選ばれる。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 90" role="img" aria-label="ブリッジIDの構成">
+      <rect x="0" y="20" width="240" height="44" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.5"/>
+      <rect x="240" y="20" width="460" height="44" fill="#E6E7F2" stroke="#3B3E86"/>
+      <text x="120" y="40" font-size="13" text-anchor="middle" fill="#0E7C86" font-weight="700">ブリッジプライオリティ</text>
+      <text x="120" y="57" font-size="11" text-anchor="middle" font-family="monospace" fill="#0E7C86">16bit ／ 既定 32768 ／ 4096刻み</text>
+      <text x="470" y="40" font-size="13" text-anchor="middle" fill="#3B3E86" font-weight="700">MACアドレス</text>
+      <text x="470" y="57" font-size="11" text-anchor="middle" font-family="monospace" fill="#3B3E86">48bit</text>
+      <text x="0" y="84" font-size="11.5" fill="#6C7F88">まずプライオリティを比較 → 同値ならMACアドレスの小さい方が勝つ（＝古い機器がルートになりやすい）</text>
+    </svg>
+    <figcaption>プライオリティを既定のままにすると MAC アドレスで決まってしまい、末端の古いスイッチがルートになりかねない。<b>コアスイッチのプライオリティを明示的に下げる</b>のが設計の定石。</figcaption>
+  </figure>
+
+  <h4>ステップ2：各スイッチでルートポートを1つ決める</h4>
+  <p>
+    <span class="kw">ルートポート</span>は、ルートブリッジへ最も「近い」ポート。近さは <span class="kw">パスコスト</span>の合計で測る。
+  </p>
+  <div class="tbl-scroll">
+  <table>
+    <caption>パスコスト（IEEE802.1D-1998 / short 方式）</caption>
+    <thead><tr><th>リンク速度</th><th>10Mbps</th><th>100Mbps</th><th>1Gbps</th><th>10Gbps</th></tr></thead>
+    <tbody><tr><th>コスト</th><td class="c">100</td><td class="c">19</td><td class="c">4</td><td class="c">2</td></tr></tbody>
+  </table>
+  </div>
+  <div class="card">
+    <h4 style="margin-top:0">同点だったときの決定順序（タイブレーカ）</h4>
+    <ol style="margin-bottom:0">
+      <li><b>ルートパスコスト</b>が小さい方</li>
+      <li>それが同じなら <b>隣接（送信元）ブリッジIDが小さい</b>方</li>
+      <li>それも同じなら <b>隣接スイッチの送信ポートID</b>が小さい方</li>
+      <li>最後に自分の受信ポートID</li>
+    </ol>
+  </div>
+  <div class="note">
+    <b>ポイントは3番。</b>2本のリンクで同じ隣接スイッチと繋がっている場合、①②が同点になるため
+    <b>「相手側の」ポートIDで決まる</b>。自分のポート番号ではない、というのが典型的な引っかけ。
+    ポートID＝ポートプライオリティ（既定128）＋ポート番号。
+  </div>
+
+  <h4>ステップ3：セグメントごとに指定ポートを1つ決める</h4>
+  <p>
+    <span class="kw">指定ポート</span><span class="en">（Designated Port）</span>は、リンク（セグメント）ごとに
+    「そのセグメントへフレームを送出する役割」を持つ側のポート。ルートブリッジのポートはすべて指定ポートになる。
+    ルートポートでも指定ポートでもない残りが <span class="kw">非指定ポート</span>で、これが
+    <span class="kw">ブロッキング</span>状態になりループを断つ。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 260" role="img" aria-label="STPのポート役割決定例">
+      <g stroke="#16232B" fill="#FFFFFF" stroke-width="1.5">
+        <rect x="280" y="16" width="140" height="46"/>
+        <rect x="90" y="150" width="140" height="46"/>
+        <rect x="470" y="150" width="140" height="46"/>
+      </g>
+      <text x="350" y="38" font-size="13" text-anchor="middle" fill="#16232B" font-weight="700">SW1</text>
+      <text x="350" y="54" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#0E7C86">Priority 4096 → ルートブリッジ</text>
+      <text x="160" y="172" font-size="13" text-anchor="middle" fill="#16232B" font-weight="700">SW2</text>
+      <text x="160" y="188" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#6C7F88">Priority 32768</text>
+      <text x="540" y="172" font-size="13" text-anchor="middle" fill="#16232B" font-weight="700">SW3</text>
+      <text x="540" y="188" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#6C7F88">Priority 32768 / MAC大</text>
+
+      <line x1="290" y1="62" x2="185" y2="150" stroke="#0E7C86" stroke-width="2.5"/>
+      <line x1="410" y1="62" x2="515" y2="150" stroke="#0E7C86" stroke-width="2.5"/>
+      <line x1="230" y1="175" x2="470" y2="175" stroke="#A61E4D" stroke-width="2.5" stroke-dasharray="7 5"/>
+
+      <g font-size="11" font-family="monospace">
+        <text x="252" y="88" fill="#0E7C86">DP</text>
+        <text x="424" y="88" fill="#0E7C86">DP</text>
+        <text x="196" y="140" fill="#3B3E86">RP</text>
+        <text x="486" y="140" fill="#3B3E86">RP</text>
+        <text x="240" y="168" fill="#0E7C86">DP</text>
+        <text x="440" y="168" fill="#A61E4D">非指定（ブロッキング）</text>
+      </g>
+      <text x="350" y="200" font-size="11" text-anchor="middle" fill="#A61E4D">↑ この区間の通信は遮断され、ループが解消される</text>
+      <rect x="0" y="216" width="700" height="40" fill="#E7EDEE"/>
+      <text x="12" y="234" font-size="11.5" fill="#16232B">SW2–SW3 間はどちらかが指定ポートになる。両者のルートパスコストが同じなら<tspan font-weight="700">ブリッジIDが小さい SW2 が指定ポート</tspan>、</text>
+      <text x="12" y="250" font-size="11.5" fill="#16232B">負けた SW3 側が非指定ポート＝ブロッキングになる。</text>
+    </svg>
+    <figcaption>RP＝ルートポート、DP＝指定ポート。ブロッキングポートも BPDU は受信し続けており、届かなくなったことを検知して切り替えを開始する。</figcaption>
+  </figure>
+
+  <h3>ポート状態と収束時間 <span class="star">頻出</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>STP のポート状態遷移</caption>
+    <thead><tr><th>状態</th><th>データ転送</th><th>MAC学習</th><th>BPDU</th><th>滞在時間</th></tr></thead>
+    <tbody>
+      <tr><th>ブロッキング</th><td class="c">×</td><td class="c">×</td><td class="c">受信のみ</td><td>Max Age <b>20秒</b>（BPDU途絶を検知するまで）</td></tr>
+      <tr><th>リスニング</th><td class="c">×</td><td class="c">×</td><td class="c">送受信</td><td>Forward Delay <b>15秒</b></td></tr>
+      <tr><th>ラーニング</th><td class="c">×</td><td class="c"><b>○</b></td><td class="c">送受信</td><td>Forward Delay <b>15秒</b></td></tr>
+      <tr><th>フォワーディング</th><td class="c">○</td><td class="c">○</td><td class="c">送受信</td><td>—</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="card">
+    <h4 style="margin-top:0">収束時間の計算 <span class="star">計算</span></h4>
+    <ul style="margin-bottom:0">
+      <li><b>直接リンク障害</b>（自分のポートがダウン）：リスニング15 + ラーニング15 ＝ <b>約30秒</b></li>
+      <li><b>間接リンク障害</b>（BPDUが届かなくなったことで検知）：Max Age 20 + 15 + 15 ＝ <b>約50秒</b></li>
+    </ul>
+  </div>
+  <p>
+    リスニングとラーニングという待ち時間を設ける理由は、<b>ツリーの再計算が全スイッチに行き渡る前に転送を始めると、
+    一時的にループが生じてしまう</b>ため。安全のための待機であり、この30〜50秒が STP の最大の弱点である。
+  </p>
+
+  <h3>TCN（トポロジ変更通知）</h3>
+  <p>
+    経路が切り替わると、各スイッチが持つMACアドレステーブルは<b>古い経路の情報のまま</b>になる。
+    エージングタイム300秒を待っていては通信が復旧しないため、
+    <span class="kw">TCN BPDU</span>を下流からルートブリッジへ向けて送り、
+    ルートブリッジが TC フラグを立てた BPDU を全体に配布する。
+    これを受けたスイッチは<b>エージングタイムを一時的に Forward Delay（15秒）へ短縮</b>し、
+    古いエントリを速やかに消して学習し直す。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">2.5</span>RSTP と STP の保護機能</h2>
+  <div class="rule"></div>
+
+  <h3>RSTP <span class="star">頻出</span></h3>
+  <p>
+    <span class="kw">RSTP</span><span class="en">（Rapid STP / IEEE802.1w）</span>は、STP の30〜50秒という収束時間を
+    <b>1秒程度</b>まで短縮した改良版。高速化を実現している要素は次の3つ。
+  </p>
+  <ol>
+    <li><b>代替ポートの事前計算</b>：<span class="kw">代替ポート</span><span class="en">（Alternate Port）</span>を
+      「ルートポートの予備」としてあらかじめ決めておき、障害時は<b>待ち時間なしで即フォワーディングに昇格</b>させる。
+      指定ポートの予備は<b>バックアップポート</b>と呼ぶ</li>
+    <li><b>プロポーザル／アグリーメント</b>：隣接スイッチ間で「このポートを転送状態にしてよいか（Proposal）」
+      「よい（Agreement）」という<b>同期ハンドシェイク</b>を行い、合意が取れた区間から順に転送を開始する。
+      タイマ待ちではなく<b>明示的な合意</b>で安全を確保するのが本質</li>
+    <li><b>BPDUの扱いの変更</b>：各スイッチが自分で Hello ごとに BPDU を送出し、
+      <b>3回連続で受信できなければ即座に障害と判定</b>する（Max Age 20秒を待たない）</li>
+  </ol>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>STP と RSTP の対応</caption>
+    <thead><tr><th></th><th>STP（802.1D）</th><th>RSTP（802.1w）</th></tr></thead>
+    <tbody>
+      <tr><th rowspan="1">ポート役割</th><td>ルート／指定／非指定</td><td>ルート／指定／<b>代替</b>／<b>バックアップ</b></td></tr>
+      <tr><th>ポート状態</th><td>ブロッキング／リスニング／ラーニング／フォワーディング</td><td><b>ディスカーディング</b>／ラーニング／フォワーディング（3状態に集約）</td></tr>
+      <tr><th>収束時間</th><td>30〜50秒</td><td><b>1秒程度</b></td></tr>
+      <tr><th>端末接続ポート</th><td>ポートファスト（ベンダ独自）</td><td><b>エッジポート</b>として標準化</td></tr>
+      <tr><th>前提</th><td>—</td><td>高速化には<b>全二重（ポイントツーポイントリンク）</b>であることが前提</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>ディスカーディング</b>は、STP のブロッキング・リスニング・（ダウン状態）をひとつにまとめた状態。
+    「転送も学習もしない」という点でまとめられる。状態が4つから3つに減ったこと自体が、
+    <b>無駄な待機状態を廃した</b>ことの表れである。
+  </div>
+
+  <h3>MSTP と PVST+</h3>
+  <ul>
+    <li><span class="kw">PVST+</span>：<b>VLANごとに独立したSTPインスタンス</b>を動かす。VLANごとにルートブリッジを変えることで
+      冗長リンクを負荷分散できるが、VLAN数が増えるとCPU負荷とBPDU量が膨れ上がる</li>
+    <li><span class="kw">MSTP</span><span class="en">（IEEE802.1s）</span><span class="star b">差がつく</span>：
+      <b>複数のVLANをひとつのインスタンスにまとめて</b>STPを計算する。
+      「VLAN1〜50はインスタンス1、51〜100はインスタンス2」のようにグループ化することで、
+      <b>負荷分散を実現しつつインスタンス数を抑える</b>。同一のリージョン名・リビジョン・VLAN対応表を持つ機器どうしが同一リージョンとして動作する</li>
+  </ul>
+
+  <h3>保護機能 <span class="star">頻出</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>STP関連の保護機能</caption>
+    <thead><tr><th>機能</th><th>動作</th><th>目的・設置場所</th></tr></thead>
+    <tbody>
+      <tr><th>ポートファスト<br>／エッジポート</th><td>リスニング・ラーニングを飛ばして<b>即フォワーディング</b>にする</td><td><b>端末接続ポート</b>。PC起動時にDHCPが取れない問題を防ぐ</td></tr>
+      <tr><th>BPDUガード</th><td>ポートファスト設定ポートで<b>BPDUを受信したらポートを閉塞</b>（errdisable）</td><td>端末ポートに<b>無断でスイッチが接続された</b>ことを検知し、意図しないトポロジ変更を防ぐ</td></tr>
+      <tr><th>ルートガード</th><td>そのポートで<b>現在のルートより優位なBPDU</b>を受信したらブロックする</td><td>ルートブリッジの位置を設計どおりに固定する。<b>下位スイッチ側や他組織との接続ポート</b>に設定</td></tr>
+      <tr><th>ループガード</th><td><b>BPDUが受信できなくなっても</b>、そのポートを転送状態に昇格させずブロックを維持する</td><td><b>単方向リンク障害</b>（片方向だけ光が届かない）でブロッキングポートが誤って開き、ループになるのを防ぐ</td></tr>
+      <tr><th>ストームコントロール</th><td>ブロードキャスト／マルチキャスト／未知ユニキャストが<b>閾値を超えたら破棄</b>する</td><td>ストーム発生時に帯域を守る。<b>ループそのものは止められない</b>点に注意</td></tr>
+      <tr><th>ループ検知フレーム</th><td>スイッチが独自の検査フレームを送出し、<b>自分に戻ってきたらループと判断</b>してポートを閉塞</td><td>STPを動かしていない末端（島ハブの誤接続など）でのループ対策</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>「BPDUガードとループガードの違い」→ <b>BPDUガードは"来てはいけないBPDUが来た"、ループガードは"来るべきBPDUが来なくなった"</b>ときに働く。真逆のトリガと覚える</li>
+      <li>ポートファストを<b>スイッチ間リンクに設定してはいけない</b>理由 → ループが発生するため。だから BPDUガードとセットで使う</li>
+      <li>STPからRSTPへ変更する理由 → <b>「障害発生時の切替時間を約50秒から1秒程度に短縮でき、業務通信の断時間を許容範囲に収められるため」</b></li>
+      <li>ストームコントロールの限界 → <b>閾値内のトラフィックは通るため、ループの根本解決にはならない</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">2.6</span>リンクアグリゲーションとスタック <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>リンクアグリゲーション（LAG）</h3>
+  <p>
+    <span class="kw">リンクアグリゲーション</span>は、複数の物理リンクを束ねて<b>1本の論理リンクとして扱う</b>技術
+    （IEEE802.3ad → 現在は IEEE802.1AX）。束ねたものを <span class="kw">LAG</span> と呼ぶ。
+    得られる効果は2つ。
+  </p>
+  <ul>
+    <li><b>帯域の拡張</b>：1Gbps × 4本 ＝ 論理4Gbps</li>
+    <li><b>冗長化</b>：1本が切れても残りで通信継続。<b>論理的には1リンクのままなので STP の再計算が起きず、瞬断で済む</b></li>
+  </ul>
+
+  <p>
+    <span class="kw">LACP</span><span class="en">（Link Aggregation Control Protocol）</span>は、
+    LACPDU を交換して<b>動的に</b>束ねるプロトコル。設定不一致や片方向障害を検知して、
+    問題のあるリンクを自動的に束から外せるため、固定設定（スタティック）より安全とされる。
+    片側を Active、対向を Passive にすることもできる（両方 Passive では成立しない）。
+  </p>
+
+  <h4>ハッシュ分散 ― 最重要の落とし穴</h4>
+  <p>
+    束ねた複数リンクへの振り分けは、<b>送信元／宛先のMACアドレス、IPアドレス、ポート番号などのハッシュ値</b>で決まる。
+    <b>同じフローのフレームは必ず同じ物理リンクを通る</b>ようにするためで、
+    これによりフレームの到着順序の入れ替わりを防いでいる。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 190" role="img" aria-label="リンクアグリゲーションのハッシュ分散の図">
+      <rect x="20" y="70" width="120" height="50" fill="#FFFFFF" stroke="#16232B" stroke-width="1.5"/>
+      <text x="80" y="100" font-size="13" text-anchor="middle" fill="#16232B">SW1</text>
+      <rect x="560" y="70" width="120" height="50" fill="#FFFFFF" stroke="#16232B" stroke-width="1.5"/>
+      <text x="620" y="100" font-size="13" text-anchor="middle" fill="#16232B">SW2</text>
+      <g stroke-width="2.5" fill="none">
+        <line x1="140" y1="80" x2="560" y2="80" stroke="#0E7C86"/>
+        <line x1="140" y1="95" x2="560" y2="95" stroke="#3B3E86"/>
+        <line x1="140" y1="110" x2="560" y2="110" stroke="#D3DBDF"/>
+        <line x1="140" y1="125" x2="560" y2="125" stroke="#D3DBDF"/>
+      </g>
+      <text x="200" y="72" font-size="11" fill="#0E7C86">フローA（1Gbps上限）</text>
+      <text x="200" y="145" font-size="11" fill="#3B3E86">フローB</text>
+      <rect x="0" y="10" width="700" height="42" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="12" y="28" font-size="12" fill="#A61E4D" font-weight="700">1Gbps × 4本 = 論理4Gbps。ただし——</text>
+      <text x="12" y="45" font-size="12" fill="#A61E4D">単一のフロー（同一の送信元・宛先の組）は 1 本しか使えないため、<tspan font-weight="700">1セッションの最大速度は1Gbpsのまま</tspan>。</text>
+      <text x="12" y="180" font-size="11" fill="#6C7F88">→ 大容量バックアップなど「1本の太いセッション」の高速化には効果がない。分散キーの選択（MAC／IP／ポート番号）も設計要素になる。</text>
+    </svg>
+    <figcaption>サーバとスイッチの間など通信相手が固定されている区間では、MACアドレスベースのハッシュだと1本に偏る。ポート番号まで含めたハッシュに変更する、という設計判断が問われることがある。</figcaption>
+  </figure>
+
+  <h3>スタック <span class="star">頻出</span></h3>
+  <p>
+    <span class="kw">スタック</span>は、複数の物理スイッチを専用ケーブルで接続し、
+    <b>1台の論理スイッチとして動作させる</b>技術（<span class="kw">シャーシ仮想化</span>とも呼ぶ）。
+    管理IPアドレスも設定も1つになり、運用が大幅に簡略化される。
+  </p>
+  <div class="card">
+    <h4 style="margin-top:0">スタック構成の効果</h4>
+    <ul style="margin-bottom:0">
+      <li><b>管理の一元化</b>：構成情報が1つ。設定変更・ファームウェア更新の対象が減る</li>
+      <li><b>複数筐体をまたぐLAG</b>が組める：下位スイッチから見ると相手は1台なので、
+        <b>2台のスイッチに分けて接続しても1本の論理リンクになる</b></li>
+      <li><b>STPが不要になる</b>：物理的には冗長構成でも、論理的に1台×1リンクとなりループが存在しない</li>
+      <li><b>切替が高速</b>：STPの再計算を伴わないため、片系障害でも<b>数秒以内（LAGのメンバ減少として処理）</b></li>
+    </ul>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="STP構成とスタック＋LAG構成の比較">
+      <!-- left: STP -->
+      <text x="0" y="16" font-size="13" font-weight="700" fill="#16232B">STP構成</text>
+      <g stroke="#16232B" fill="#FFFFFF" stroke-width="1.5">
+        <rect x="10" y="34" width="100" height="38"/><rect x="180" y="34" width="100" height="38"/>
+        <rect x="95" y="160" width="100" height="38"/>
+      </g>
+      <text x="60" y="58" font-size="12" text-anchor="middle">SW-A</text>
+      <text x="230" y="58" font-size="12" text-anchor="middle">SW-B</text>
+      <text x="145" y="184" font-size="12" text-anchor="middle">アクセスSW</text>
+      <line x1="110" y1="53" x2="180" y2="53" stroke="#16232B" stroke-width="2"/>
+      <line x1="90" y1="72" x2="130" y2="160" stroke="#0E7C86" stroke-width="2.5"/>
+      <line x1="210" y1="72" x2="165" y2="160" stroke="#A61E4D" stroke-width="2.5" stroke-dasharray="6 4"/>
+      <text x="196" y="128" font-size="10.5" fill="#A61E4D">ブロック</text>
+      <text x="0" y="222" font-size="11.5" fill="#6C7F88">・片側は常に遊休（帯域の半分が無駄）</text>
+      <text x="0" y="240" font-size="11.5" fill="#6C7F88">・切替に数十秒（STP）／数秒（RSTP）</text>
+
+      <!-- right: stack -->
+      <text x="380" y="16" font-size="13" font-weight="700" fill="#16232B">スタック＋LAG構成</text>
+      <rect x="380" y="30" width="290" height="48" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <g stroke="#16232B" fill="#FFFFFF" stroke-width="1.5">
+        <rect x="392" y="38" width="126" height="32"/><rect x="532" y="38" width="126" height="32"/>
+        <rect x="475" y="160" width="100" height="38"/>
+      </g>
+      <text x="455" y="59" font-size="12" text-anchor="middle">SW-A</text>
+      <text x="595" y="59" font-size="12" text-anchor="middle">SW-B</text>
+      <text x="525" y="184" font-size="12" text-anchor="middle">アクセスSW</text>
+      <line x1="518" y1="54" x2="532" y2="54" stroke="#0E7C86" stroke-width="4"/>
+      <text x="525" y="26" font-size="10.5" text-anchor="middle" fill="#0E7C86">論理1台</text>
+      <line x1="440" y1="70" x2="505" y2="160" stroke="#0E7C86" stroke-width="2.5"/>
+      <line x1="610" y1="70" x2="545" y2="160" stroke="#0E7C86" stroke-width="2.5"/>
+      <text x="525" y="130" font-size="10.5" text-anchor="middle" fill="#0E7C86">1本のLAG</text>
+      <text x="380" y="222" font-size="11.5" fill="#0E7C86">・両リンクを同時に使える（帯域2倍）</text>
+      <text x="380" y="240" font-size="11.5" fill="#0E7C86">・ループが存在しないのでSTP不要、切替も高速</text>
+    </svg>
+    <figcaption>「スタック＋LAG で STP を不要にする」は現代の構内LAN設計の定番であり、午後Ⅱでその理由を説明させる設問が繰り返し出ている。</figcaption>
+  </figure>
+
+  <p>
+    <span class="kw">MLAG</span><span class="star b">差がつく</span>は、2台のスイッチが
+    <b>制御は独立させたまま</b>、下位機器からは1台に見せて筐体をまたぐLAGを組む方式。
+    スタックと違い<b>片方のソフトウェア更新や障害がもう一方に波及しにくい</b>という利点がある一方、
+    設定と運用は複雑になる。
+  </p>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li><b>「LAGにしたのに速度が上がらない」</b>→ ハッシュ分散により<b>単一フローは1リンクしか使えない</b>ため</li>
+      <li>スタック採用の理由 → <b>「複数筐体にまたがるリンクアグリゲーションが構成でき、STPを使わずに冗長化と帯域の有効活用を両立できるため」</b></li>
+      <li>スタックのリスク → <b>論理的に1台なので、ソフトウェア更新時は全体が再起動対象になる／設定ミスが両系に及ぶ</b>（＝ここが MLAG との比較軸）</li>
+      <li>LACP を使う理由 → <b>設定不一致や片方向障害を検出し、異常なリンクを自動的に束から除外できるため</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第2章 データリンク層（L2） ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">02 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>

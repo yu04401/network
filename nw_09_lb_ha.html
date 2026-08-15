@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第9章 負荷分散・可用性 ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: availability scale */
+  .avail{margin-top:30px; display:flex; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .avail div{
+    flex:1 1 0; padding:9px 12px; color:#fff;
+    font-family:var(--mono); font-size:11px; line-height:1.5;
+  }
+  .avail div b{display:block; font-size:13.5px; letter-spacing:.04em}
+  .av1{background:#7C8F97}
+  .av2{background:#3B3E86}
+  .av3{background:#0E7C86}
+  .av4{background:#A61E4D}
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  .calc{
+    background:#F2F5F6; border:1px dashed var(--muted); border-radius:4px;
+    padding:14px 18px; margin:0 0 20px; font-family:var(--mono); font-size:13px;
+    line-height:2; overflow-x:auto;
+  }
+  .calc > :last-child{margin-bottom:0}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .avail{flex-wrap:wrap}
+    .avail div{flex:1 1 45%}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第9章　負荷分散・可用性
+      <span class="en">Load Balancing &amp; Availability</span>
+    </h1>
+    <p class="lede">
+      「止まらないシステム」をどう作るか。負荷分散装置と VRRP はいずれも
+      <b>「複数の実体を、利用者からは1つに見せる」</b>という同じ発想でできている。
+      設問は<b>①どこで振り分けるか　②戻りのパケットはどう帰るか　③切り替わったことをどう周囲に知らせるか</b>——
+      この3点に集中する。<b>戻りの経路を追えるかどうかが最大の分岐点</b>になる。
+    </p>
+    <div class="avail" aria-hidden="true">
+      <div class="av1">99 %<b>約3.65日／年</b></div>
+      <div class="av2">99.9 %<b>約8.76時間／年</b></div>
+      <div class="av3">99.99 %<b>約52.6分／年</b></div>
+      <div class="av4">99.999 %<b>約5.26分／年</b></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 負荷分散装置の基本</a>
+    <a href="#s2">2 振分けとヘルスチェック</a>
+    <a href="#s3">3 セッション維持</a>
+    <a href="#s4">4 戻りの経路設計</a>
+    <a href="#s5">5 VRRP</a>
+    <a href="#s6">6 クラスタと冗長構成</a>
+    <a href="#s7">7 可用性の計算</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">9.1</span>負荷分散装置の基本 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">負荷分散装置</span><span class="en">（LB：Load Balancer）</span>は、
+    複数のサーバを<b>1つの仮想的なサーバに見せて</b>、届いた通信を実サーバへ振り分ける装置。
+    目的は<b>①処理能力の向上（スケールアウト）　②可用性の向上（障害サーバの自動切離し）　
+    ③保守性の向上（サーバを1台ずつ止めて作業できる）</b>の3つ。
+  </p>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>基本用語</caption>
+    <thead><tr><th>用語</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>仮想サーバ／<br>仮想IP（VIP）</th><td><b>クライアントから見える宛先</b>。DNSにはこのアドレスを登録する。実体は負荷分散装置</td></tr>
+      <tr><th>リアルサーバ</th><td>実際に処理を行うサーバ群。クライアントはその存在も台数も意識しない</td></tr>
+      <tr><th>サーバプール</th><td>振分け対象としてまとめたリアルサーバの集合</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>L4負荷分散と L7負荷分散 <span class="star">頻出</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 300" role="img" aria-label="L4負荷分散とL7負荷分散の違い">
+      <!-- L4 -->
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#3B3E86">L4負荷分散 ― IPアドレスとポート番号だけを見る</text>
+      <rect x="0" y="26" width="700" height="106" fill="#E6E7F2" stroke="#3B3E86"/>
+      <rect x="20" y="60" width="90" height="40" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="65" y="85" font-size="11.5" text-anchor="middle" fill="#16232B">クライアント</text>
+      <rect x="230" y="56" width="130" height="48" fill="#FFFFFF" stroke="#3B3E86" stroke-width="2"/>
+      <text x="295" y="76" font-size="12" text-anchor="middle" font-weight="700" fill="#3B3E86">LB（L4）</text>
+      <text x="295" y="94" font-size="10" text-anchor="middle" fill="#3B3E86">VIP: 203.0.113.10:443</text>
+      <g fill="#FFFFFF" stroke="#16232B" stroke-width="1.2">
+        <rect x="500" y="38" width="160" height="26"/><rect x="500" y="68" width="160" height="26"/><rect x="500" y="98" width="160" height="26"/>
+      </g>
+      <g font-size="10.5" text-anchor="middle" fill="#16232B">
+        <text x="580" y="56">Webサーバ1</text><text x="580" y="86">Webサーバ2</text><text x="580" y="116">Webサーバ3</text>
+      </g>
+      <line x1="110" y1="80" x2="226" y2="80" stroke="#3B3E86" stroke-width="2"/>
+      <g stroke="#3B3E86" stroke-width="1.6">
+        <line x1="360" y1="76" x2="496" y2="51"/><line x1="360" y1="80" x2="496" y2="81"/><line x1="360" y1="86" x2="496" y2="111"/>
+      </g>
+      <text x="428" y="128" font-size="10.5" text-anchor="middle" fill="#3B3E86">中身は見ずに機械的に分配 → <tspan font-weight="700">高速・低負荷</tspan></text>
+
+      <!-- L7 -->
+      <text x="0" y="164" font-size="12.5" font-weight="700" fill="#0E7C86">L7負荷分散 ― URL・HTTPヘッダ・Cookieまで見る</text>
+      <rect x="0" y="174" width="700" height="120" fill="#E4F0F1" stroke="#0E7C86"/>
+      <rect x="20" y="212" width="90" height="40" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="65" y="237" font-size="11.5" text-anchor="middle" fill="#16232B">クライアント</text>
+      <rect x="230" y="208" width="130" height="48" fill="#FFFFFF" stroke="#0E7C86" stroke-width="2"/>
+      <text x="295" y="228" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">LB（L7）</text>
+      <text x="295" y="246" font-size="10" text-anchor="middle" fill="#0E7C86">コネクションを終端</text>
+      <g fill="#FFFFFF" stroke="#16232B" stroke-width="1.2">
+        <rect x="500" y="188" width="180" height="26"/><rect x="500" y="220" width="180" height="26"/><rect x="500" y="252" width="180" height="26"/>
+      </g>
+      <g font-size="10.5" text-anchor="middle" fill="#16232B">
+        <text x="590" y="206">/img/ → 画像サーバ</text><text x="590" y="238">/api/ → APIサーバ</text><text x="590" y="270">その他 → Webサーバ</text>
+      </g>
+      <line x1="110" y1="232" x2="226" y2="232" stroke="#0E7C86" stroke-width="2"/>
+      <g stroke="#0E7C86" stroke-width="1.6">
+        <line x1="360" y1="226" x2="496" y2="201"/><line x1="360" y1="232" x2="496" y2="233"/><line x1="360" y1="240" x2="496" y2="265"/>
+      </g>
+      <text x="428" y="290" font-size="10.5" text-anchor="middle" fill="#0E7C86">内容に応じた振分けが可能 → <tspan font-weight="700">柔軟だが処理は重い</tspan></text>
+    </svg>
+    <figcaption>L7で振り分けるには、<b>LBがいったんクライアントとの3wayハンドシェイクを完結させ、最初のリクエストを読んでから</b>サーバを決める必要がある。これが第4章の<b>ディレイドバインディング</b>である。</figcaption>
+  </figure>
+
+  <div class="note">
+    <b>HTTPS通信をL7で振り分けるには復号が必要。</b>
+    暗号化されたままではURLもCookieも読めないため、<b>SSLオフロード（第8章）とL7負荷分散はセットで登場する</b>。
+    「Cookieによるセッション維持を行うために、負荷分散装置でSSLを終端する」という因果関係を書けるようにしておく。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">9.2</span>振分けアルゴリズムとヘルスチェック <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>振分けアルゴリズム</caption>
+    <thead><tr><th>方式</th><th>動作</th><th>向いている状況</th></tr></thead>
+    <tbody>
+      <tr><th>ラウンドロビン</th><td>順番に均等配分する</td><td>各リクエストの処理時間が<b>均一</b>な場合</td></tr>
+      <tr><th>最少コネクション</th><td>現在の接続数が最も少ないサーバへ渡す</td><td>処理時間に<b>ばらつきがある</b>場合。長時間かかる処理が特定サーバに溜まるのを避けられる</td></tr>
+      <tr><th>重み付け</th><td>サーバごとに比率を設定する</td><td><b>性能の異なるサーバが混在</b>する場合。新旧サーバの併用時など</td></tr>
+      <tr><th>送信元IPハッシュ</th><td>送信元IPから計算した値でサーバを決める</td><td>同じ利用者を同じサーバへ固定したい場合（＝パーシステンスの一種）</td></tr>
+      <tr><th>応答時間</th><td>応答が最も速いサーバへ渡す</td><td>サーバの実負荷を反映させたい場合</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>ヘルスチェック <span class="star">頻出</span></h3>
+  <p>
+    負荷分散装置が<b>各リアルサーバの稼働状態を定期的に確認し、応答がないサーバを振分け対象から自動的に外す</b>機能。
+    <b>これがあることがDNSラウンドロビン（第5章）との決定的な違い</b>である。
+    どの層で確認するかによって、検知できる障害の深さが変わる。
+  </p>
+  <div class="tbl-scroll">
+  <table>
+    <caption>ヘルスチェックの層と検知できる範囲</caption>
+    <thead><tr><th>層</th><th>方法</th><th>検知できること</th><th>検知できないこと</th></tr></thead>
+    <tbody>
+      <tr><th>L3</th><td>ping（ICMP）</td><td>サーバ本体・OSの稼働、経路の疎通</td><td><b>Webサービスが止まっていても正常と判断してしまう</b></td></tr>
+      <tr><th>L4</th><td>TCPポートへの接続試行<br>（3wayハンドシェイク）</td><td>プロセスが起動し、ポートで待ち受けていること</td><td><b>アプリケーションが内部エラーを返している状態は分からない</b></td></tr>
+      <tr><th>L7</th><td>HTTP GET を送り、<b>ステータスコードや応答本文の特定文字列</b>を確認</td><td><b>アプリケーションが正しく動作し、DBまで含めて応答できること</b></td><td>—（最も深く確認できる）</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="card">
+    <h4 style="margin-top:0">L7ヘルスチェックが必要になる典型例 <span class="star">頻出</span></h4>
+    <p style="margin-bottom:0">
+      「Webサーバのプロセスは動いているが、<b>バックエンドのDBに接続できず、
+      利用者にはエラー画面が返っている</b>」——この状態は L3・L4 のチェックでは正常と見なされ、
+      障害サーバへ振り分け続けてしまう。<b>DBへの問い合わせ結果を含む動的ページを取得し、
+      期待する文字列が含まれるかを確認する</b>ことで初めて切り離せる。
+    </p>
+  </div>
+  <div class="note">
+    <b>閾値の設計も論点。</b>1回失敗しただけで切り離すと、一時的な負荷変動で不要な切離しが起きる。
+    逆に回数を多くすると障害検知が遅れる。<b>「連続◯回失敗で切離し、連続◯回成功で復帰」</b>という
+    設定値のトレードオフとして問われる。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">9.3</span>セッション維持（パーシステンス） <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <b>なぜ必要か</b>：ショッピングカートやログイン状態のように、<b>サーバ側にセッション情報を保持する</b>アプリケーションでは、
+    同じ利用者のリクエストが途中で別のサーバへ振り分けられると、<b>その情報が引き継がれず、
+    ログアウトさせられたりカートの中身が消えたりする</b>。
+    そこで<b>同じ利用者を、一定期間は同じサーバへ振り分け続ける</b>必要がある。
+  </p>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>パーシステンスの方式</caption>
+    <thead><tr><th>方式</th><th>仕組み</th><th>長所</th><th>短所</th></tr></thead>
+    <tbody>
+      <tr><th>送信元IP維持</th><td>送信元IPアドレスとサーバの対応を記憶する</td><td>L4で動作するため<b>軽量。暗号化されていても使える</b></td><td><b>NAPT配下の多数の利用者が同一IPに見えるため、特定サーバに偏る</b>。モバイル回線などでIPが変わると維持できない</td></tr>
+      <tr><th>Cookie<br>パーシステンス</th><td>LBが<b>振分け先を示すCookieを挿入</b>し、以降はそのCookieを見て同じサーバへ渡す</td><td><b>IPアドレスに依存しないため正確</b>。NAPT配下でも偏らない</td><td><b>L7処理が必要＝HTTPSならSSLオフロードが前提</b>。Cookieを拒否する環境では機能しない</td></tr>
+      <tr><th>SSLセッションID</th><td>TLSのセッションIDで対応づける</td><td>復号せずに識別できる</td><td>セッションIDが更新されると維持できない</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">そもそもパーシステンスを不要にする設計 <span class="star b">差がつく</span></h4>
+    <p style="margin-bottom:0">
+      セッション情報を<b>各サーバのメモリではなく、外部の共有ストア（DBやKVS）に保存する</b>ようにすれば、
+      どのサーバへ振り分けられても処理を継続できる。
+      こうすると<b>パーシステンスが不要になり、負荷が均等に分散され、サーバ障害時も利用者の作業が失われない</b>。
+      「パーシステンスの制約をなくすにはどうすべきか」という問いへの上位の解答として押さえておく。
+    </p>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>送信元IP維持で負荷が偏る理由 → <b>「利用者側がNAPTを使用しており、多数の利用者が同一の送信元IPアドレスに見えるため」</b></li>
+      <li>Cookieパーシステンスを使うためにLBで必要な処理 → <b>SSL（TLS）を終端して復号すること</b></li>
+      <li>パーシステンスがないと起きること → <b>「セッション情報を保持していないサーバへ振り分けられ、
+        ログイン状態が失われる」</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">9.4</span>戻りの経路設計 ― SNAT と DSR <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    負荷分散で最も間違えやすいのが<b>「サーバからの戻りパケットがどう帰るか」</b>である。
+    LBは往路で宛先を書き換えているため、<b>復路も必ずLBを通らないと、クライアントは
+    見知らぬ送信元アドレスからの応答を受け取ることになり、通信が成立しない</b>。
+    その解決方法が3通りある。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 330" role="img" aria-label="送信元NAT方式とDSR方式の経路の違い">
+      <!-- SNAT -->
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#0E7C86">① 送信元NAT（SNAT）方式 ― 戻りを強制的にLBへ返させる</text>
+      <rect x="0" y="26" width="700" height="130" fill="#E4F0F1" stroke="#0E7C86"/>
+      <rect x="20" y="70" width="90" height="42" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="65" y="96" font-size="11.5" text-anchor="middle" fill="#16232B">クライアント</text>
+      <rect x="270" y="66" width="120" height="50" fill="#FFFFFF" stroke="#0E7C86" stroke-width="2"/>
+      <text x="330" y="96" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">LB</text>
+      <rect x="550" y="70" width="120" height="42" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="610" y="96" font-size="11.5" text-anchor="middle" fill="#16232B">リアルサーバ</text>
+      <line x1="110" y1="82" x2="266" y2="82" stroke="#0E7C86" stroke-width="2.2" marker-end="url(#g1)"/>
+      <line x1="390" y1="82" x2="546" y2="82" stroke="#0E7C86" stroke-width="2.2" marker-end="url(#g1)"/>
+      <line x1="546" y1="104" x2="394" y2="104" stroke="#0E7C86" stroke-width="2.2" marker-end="url(#g1)"/>
+      <line x1="266" y1="104" x2="114" y2="104" stroke="#0E7C86" stroke-width="2.2" marker-end="url(#g1)"/>
+      <text x="468" y="76" font-size="10" text-anchor="middle" fill="#0E7C86">送信元をLBのIPに書換え</text>
+      <text x="16" y="136" font-size="11.5" fill="#16232B">サーバから見た送信元がLBになるため、<tspan font-weight="700">戻りは必ずLBへ返る</tspan>。サーバ側のGW設定を変えずに導入できる。</text>
+      <text x="16" y="152" font-size="11.5" fill="#A61E4D">課題：<tspan font-weight="700">サーバのアクセスログにクライアントのIPアドレスが残らない</tspan>。</text>
+
+      <!-- XFF -->
+      <rect x="0" y="166" width="700" height="42" fill="#E7EDEE"/>
+      <text x="16" y="186" font-size="12" fill="#16232B"><tspan font-weight="700">→ 解決：X-Forwarded-For</tspan>　LBがHTTPヘッダに<tspan font-family="monospace">X-Forwarded-For: 元のクライアントIP</tspan> を追加する。</text>
+      <text x="16" y="202" font-size="12" fill="#16232B">　サーバ側はこのヘッダを記録するようログ設定を変更する。<tspan font-weight="700">HTTPヘッダを操作するのでL7処理＝復号が必要</tspan>。</text>
+
+      <!-- DSR -->
+      <text x="0" y="238" font-size="12.5" font-weight="700" fill="#A61E4D">② DSR方式 ― 戻りはLBを通さずクライアントへ直接返す</text>
+      <rect x="0" y="248" width="700" height="82" fill="#F7E6EC" stroke="#A61E4D"/>
+      <rect x="20" y="272" width="90" height="42" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="65" y="298" font-size="11.5" text-anchor="middle" fill="#16232B">クライアント</text>
+      <rect x="270" y="268" width="120" height="34" fill="#FFFFFF" stroke="#A61E4D" stroke-width="2"/>
+      <text x="330" y="290" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">LB</text>
+      <rect x="550" y="272" width="120" height="42" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="610" y="298" font-size="11.5" text-anchor="middle" fill="#16232B">リアルサーバ</text>
+      <line x1="110" y1="280" x2="266" y2="280" stroke="#A61E4D" stroke-width="2.2" marker-end="url(#g2)"/>
+      <line x1="390" y1="280" x2="546" y2="280" stroke="#A61E4D" stroke-width="2.2" marker-end="url(#g2)"/>
+      <path d="M550,308 L114,308" stroke="#A61E4D" stroke-width="2.6" marker-end="url(#g2)"/>
+      <text x="330" y="322" font-size="10.5" text-anchor="middle" fill="#A61E4D" font-weight="700">戻りはLBを迂回（下り帯域がLBを通らない）</text>
+      <defs>
+        <marker id="g1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+        <marker id="g2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker>
+      </defs>
+    </svg>
+    <figcaption>3つ目の方式が<b>インライン構成</b>で、<b>リアルサーバのデフォルトゲートウェイをLBに設定する</b>ことで戻りを通す。送信元IPが保持されるためログ問題は起きないが、LBがサーバの経路上に必ず存在する構成になる。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>DSR（Direct Server Return）の特性 <span class="star b">差がつく</span></caption>
+    <thead><tr><th>観点</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>利点</th><td><b>下り（サーバ→クライアント）のトラフィックがLBを通らない</b>ため、LBの処理負荷と帯域の消費を大幅に削減できる。
+        <b>動画配信やファイルダウンロードのように、下りが上りより桁違いに大きい用途で効果が大きい</b></td></tr>
+      <tr><th>制約①</th><td><b>L7の処理ができない</b>。LBは戻りのパケットを見ないため、Cookie挿入やコンテンツ書換えは行えない</td></tr>
+      <tr><th>制約②</th><td>リアルサーバの<b>ループバックインタフェースにVIPと同じアドレスを設定</b>し、
+        かつ<b>そのアドレスに対するARP応答を抑止する</b>設定が必要（応答するとVIPが重複してしまうため）</td></tr>
+      <tr><th>制約③</th><td>ポート番号の変換ができない（宛先ポートはそのまま）</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>送信元NATを行う理由 → <b>「リアルサーバからの応答パケットを必ず負荷分散装置へ戻すため」</b></li>
+      <li>送信元NATの副作用と対策 → <b>「サーバ側でクライアントのIPアドレスが分からなくなるため、
+        X-Forwarded-For ヘッダに元の送信元IPアドレスを記録し、サーバ側でそれをログに出力する」</b></li>
+      <li>DSRを採用する理由 → <b>「応答トラフィックが負荷分散装置を経由しないため、装置の負荷と帯域のボトルネックを解消できる」</b></li>
+      <li>リアルサーバのループバックにVIPを設定する理由 → <b>宛先がVIPのままのパケットを自分宛として受け取るため</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">9.5</span>VRRP ― デフォルトゲートウェイの冗長化 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    端末には<b>デフォルトゲートウェイを1つしか設定できない</b>。
+    そのルータが故障すると、端末は外部と通信できなくなる。
+    <span class="kw">VRRP</span><span class="en">（Virtual Router Redundancy Protocol）</span>は、
+    <b>2台以上のルータで1つの仮想ルータを構成し、端末にはその仮想IPアドレスをGWとして設定させる</b>ことで、
+    <b>端末側の設定を一切変えずに切替を実現する</b>。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 300" role="img" aria-label="VRRPの構成と切替動作">
+      <rect x="130" y="18" width="440" height="72" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.6" stroke-dasharray="6 4"/>
+      <text x="350" y="40" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">仮想ルータ（VRID = 1）</text>
+      <text x="350" y="60" font-size="11" text-anchor="middle" font-family="monospace" fill="#0E7C86">仮想IP 192.168.10.1</text>
+      <text x="350" y="78" font-size="11" text-anchor="middle" font-family="monospace" fill="#0E7C86">仮想MAC 00-00-5E-00-01-01</text>
+
+      <rect x="150" y="110" width="150" height="60" fill="#FFFFFF" stroke="#0E7C86" stroke-width="2.2"/>
+      <text x="225" y="132" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">ルータA：マスタ</text>
+      <text x="225" y="150" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#0E7C86">プライオリティ 120</text>
+      <text x="225" y="164" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#6C7F88">実IP .2</text>
+
+      <rect x="400" y="110" width="150" height="60" fill="#FFFFFF" stroke="#6C7F88" stroke-width="1.4"/>
+      <text x="475" y="132" font-size="12.5" text-anchor="middle" font-weight="700" fill="#6C7F88">ルータB：バックアップ</text>
+      <text x="475" y="150" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#6C7F88">プライオリティ 100</text>
+      <text x="475" y="164" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#6C7F88">実IP .3</text>
+
+      <line x1="300" y1="140" x2="400" y2="140" stroke="#0E7C86" stroke-width="2" marker-end="url(#v1)"/>
+      <text x="350" y="192" font-size="10.5" text-anchor="middle" fill="#0E7C86">VRRPアドバタイズメント（既定1秒間隔）</text>
+      <text x="350" y="206" font-size="10" text-anchor="middle" font-family="monospace" fill="#6C7F88">宛先 224.0.0.18 ／ プロトコル番号 112</text>
+
+      <rect x="290" y="228" width="120" height="42" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="350" y="248" font-size="11.5" text-anchor="middle" fill="#16232B">PC</text>
+      <text x="350" y="264" font-size="10" text-anchor="middle" font-family="monospace" fill="#6C7F88">GW = 192.168.10.1</text>
+      <line x1="225" y1="170" x2="320" y2="228" stroke="#0E7C86" stroke-width="2.2"/>
+      <line x1="475" y1="170" x2="380" y2="228" stroke="#6C7F88" stroke-width="1.6" stroke-dasharray="5 4"/>
+
+      <rect x="0" y="278" width="700" height="22" fill="#F7E6EC"/>
+      <text x="12" y="294" font-size="11.5" fill="#A61E4D">切替時、新マスタは <tspan font-weight="700">GARP（Gratuitous ARP）を送出</tspan>して、スイッチのMACアドレステーブルを新しい経路に更新させる。</text>
+      <defs><marker id="v1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker></defs>
+    </svg>
+    <figcaption><b>端末のARPテーブルは変わらない</b>。仮想MACアドレスごと引き継ぐため、端末から見れば何も起きていない。変わるのは<b>スイッチのMACアドレステーブル（その仮想MACがどのポートの先にあるか）</b>だけであり、それをGARPで更新させる——この流れが第2章・第3章とつながる最重要ポイント。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>VRRP の用語とパラメータ</caption>
+    <thead><tr><th>用語</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>VRID<br>（仮想ルータID）</th><td>仮想ルータの識別子。<b>仮想MACアドレスの末尾がこの値になる</b>（<code>00-00-5E-00-01-XX</code>）。同一セグメント内で重複させない</td></tr>
+      <tr><th>プライオリティ</th><td>1〜254（既定100）。<b>大きい方がマスタ</b>。255は仮想IPと実IPが一致する「IPアドレス所有者」に予約</td></tr>
+      <tr><th>アドバタイズメント</th><td>マスタが<b>既定1秒間隔</b>で送出。バックアップはこれを受信している間は待機する。
+        <b>3回分（Master Down Interval）途絶えると昇格</b>する</td></tr>
+      <tr><th>プリエンプト</th><td>より高いプライオリティの機器が復帰したとき、<b>マスタの座を奪い返すか</b>。
+        有効だと<b>復旧時にもう一度切替（瞬断）が発生する</b>ため、あえて無効にする設計もある</td></tr>
+      <tr><th>インタフェース<br>トラッキング <span class="star">頻出</span></th><td><b>上流側のインタフェースやリンクの状態を監視し、
+        障害時に自分のプライオリティを下げてバックアップへ切り替えさせる</b>機能</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">インタフェーストラッキングがないと何が起きるか <span class="star">頻出</span></h4>
+    <p style="margin-bottom:0">
+      マスタルータの<b>上流（WAN側）のリンクだけが切れた</b>場合を考える。
+      LAN側のインタフェースは正常なのでVRRPアドバタイズメントは流れ続け、
+      <b>マスタはマスタのまま</b>である。しかし端末からのパケットはマスタへ送られ、
+      上流がないため<b>そこで捨てられる（ブラックホール）</b>。
+      トラッキングを設定しておけば、上流障害を検知してプライオリティを下げ、
+      正常なルータBへ切り替えられる。<b>「VRRPは自分のLAN側しか見ていない」</b>という限界の理解が問われる。
+    </p>
+  </div>
+
+  <div class="note">
+    <b>負荷分散したい場合。</b>VRRPは基本的にアクティブ／スタンバイであり、バックアップ側は遊休になる。
+    <b>VLANごとに VRID を分け、VLAN-Aはルータをマスタ、VLAN-Bはルータをマスタ</b>とすることで、
+    両系を使いつつ相互にバックアップさせる構成にできる。
+  </div>
+  <p style="font-size:14px;color:#6C7F88">
+    参考：<b>HSRP</b> はシスコ独自の同等機能。用語（アクティブ／スタンバイと呼ぶ、標準の仮想MACが異なる）が違うだけで考え方は同じ。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">9.6</span>クラスタと冗長構成 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>冗長構成の2つの型</caption>
+    <thead><tr><th></th><th>アクティブ／スタンバイ</th><th>アクティブ／アクティブ</th></tr></thead>
+    <tbody>
+      <tr><th>平常時</th><td>片方のみが処理。もう片方は待機</td><td><b>両方が処理する</b></td></tr>
+      <tr><th>資源効率</th><td>低い（半分が遊休）</td><td>高い</td></tr>
+      <tr><th>障害時</th><td>切替時間が発生するが、<b>残った1台で全処理を引き受けられる</b></td><td><b>残った1台に全負荷が集中する</b>ため、
+        <b>平常時は各機を50%以下の負荷で運用する</b>必要がある</td></tr>
+      <tr><th>設計の複雑さ</th><td>比較的単純</td><td>状態同期・振分けの設計が必要で複雑</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>アクティブ／アクティブの落とし穴。</b>「両系を使えるので効率がよい」と単純に書くと減点される。
+    <b>片系障害時に残り1台で処理しきれる容量を確保しておく必要があり、
+    結局のところ平常時は能力の半分しか使えない</b>——この点まで触れられると評価が高い。
+  </div>
+
+  <h3>ハートビートとスプリットブレイン</h3>
+  <p>
+    <span class="kw">ハートビート</span>は、冗長構成の機器どうしが<b>互いの生存を確認するために交換する信号</b>。
+    これが途絶えると「相手が死んだ」と判断してフェールオーバする。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 220" role="img" aria-label="スプリットブレインの発生">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#16232B">正常時</text>
+      <rect x="60" y="26" width="130" height="44" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.8"/>
+      <text x="125" y="53" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">アクティブ</text>
+      <rect x="290" y="26" width="130" height="44" fill="#FFFFFF" stroke="#6C7F88" stroke-width="1.3"/>
+      <text x="355" y="53" font-size="12" text-anchor="middle" fill="#6C7F88">スタンバイ</text>
+      <line x1="190" y1="48" x2="290" y2="48" stroke="#0E7C86" stroke-width="2.4"/>
+      <text x="240" y="40" font-size="10" text-anchor="middle" fill="#0E7C86">ハートビート</text>
+      <text x="440" y="52" font-size="11.5" fill="#16232B">相手の生存を確認できている</text>
+
+      <text x="0" y="106" font-size="12.5" font-weight="700" fill="#A61E4D">ハートビート経路だけが切れた場合 ― スプリットブレイン</text>
+      <rect x="60" y="116" width="130" height="44" fill="#F7E6EC" stroke="#A61E4D" stroke-width="1.8"/>
+      <text x="125" y="143" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">アクティブ</text>
+      <rect x="290" y="116" width="130" height="44" fill="#F7E6EC" stroke="#A61E4D" stroke-width="1.8"/>
+      <text x="355" y="143" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">アクティブ（昇格）</text>
+      <line x1="190" y1="138" x2="290" y2="138" stroke="#A61E4D" stroke-width="2.4" stroke-dasharray="6 5"/>
+      <text x="240" y="130" font-size="14" text-anchor="middle" fill="#A61E4D">✕</text>
+      <text x="440" y="134" font-size="11.5" fill="#A61E4D">互いに「相手が停止した」と誤認し、</text>
+      <text x="440" y="152" font-size="11.5" fill="#A61E4D"><tspan font-weight="700">両方がアクティブになってしまう</tspan></text>
+
+      <rect x="0" y="176" width="700" height="44" fill="#E7EDEE"/>
+      <text x="12" y="196" font-size="12" fill="#16232B">結果：<tspan font-weight="700">同じ仮想IP／仮想MACが2つ存在し、通信が不安定になる。共有データがある場合は破損する。</tspan></text>
+      <text x="12" y="214" font-size="12" fill="#0E7C86">対策：<tspan font-weight="700">ハートビート経路を物理的に冗長化する（複数経路・別ケーブル）</tspan>／第三の判定要素（共有ディスクや外部への疎通確認）を用いる。</text>
+    </svg>
+    <figcaption>VRRPでも同じことが起きる。<b>VRRPアドバタイズメントが届かなくなると両方がマスタになり</b>、同じ仮想MACが2ポートから見えてMACアドレステーブルがフラッピングする。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>その他の冗長化手法</caption>
+    <thead><tr><th>用語</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>フェールオーバ</th><td>障害時に待機系へ処理を引き継ぐこと。<b>ステートフルフェールオーバ</b>では
+        セッション情報も同期しているため、<b>切替後も通信が切れずに継続できる</b>（FWや LB で重要）</td></tr>
+      <tr><th>フェールバック</th><td>復旧した本番系へ戻すこと。<b>戻す際にも瞬断が発生する</b>ため、
+        計画的に実施するか、あえて戻さない運用にする</td></tr>
+      <tr><th>NICチーミング</th><td>サーバ側で<b>複数のNICを1つに束ねる</b>（ボンディング）。
+        アクティブ／スタンバイ構成なら<b>NIC・ケーブル・接続先スイッチの障害</b>に対応できる。
+        <b>2台のスイッチに分けて接続する</b>ことでスイッチ障害にも耐えられる</td></tr>
+      <tr><th>SPOF</th><td><b>単一障害点</b>。そこが壊れると全体が止まる箇所。
+        <b>冗長化設計とは、構成図からSPOFを1つずつ潰していく作業</b>である</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 7 ===================== -->
+<section id="s7">
+<div class="wrap">
+  <h2><span class="num">9.7</span>可用性の計算と指標 <span class="star">計算</span></h2>
+  <div class="rule"></div>
+
+  <h3>稼働率・MTBF・MTTR</h3>
+  <div class="calc">
+    <p><b>MTBF</b>（Mean Time Between Failures）＝平均故障間隔＝<b>正常に動いている平均時間</b></p>
+    <p><b>MTTR</b>（Mean Time To Repair）＝平均修復時間＝<b>復旧にかかる平均時間</b></p>
+    <p style="margin-bottom:0"><b>稼働率 ＝ MTBF ÷（MTBF ＋ MTTR）</b></p>
+  </div>
+  <p>
+    稼働率を上げる方法は2つ。<b>MTBFを伸ばす（壊れにくくする）</b>か、
+    <b>MTTRを縮める（早く直す）</b>か。
+    保守契約のグレードアップ、予備機の確保、監視の強化はいずれも<b>MTTRを縮める</b>施策である。
+  </p>
+
+  <h3>直列と並列 <span class="star">頻出</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 230" role="img" aria-label="直列構成と並列構成の稼働率計算">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#A61E4D">直列（どちらか一方でも止まると全体が止まる）</text>
+      <line x1="20" y1="60" x2="120" y2="60" stroke="#16232B" stroke-width="1.6"/>
+      <rect x="120" y="42" width="110" height="36" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="175" y="65" font-size="12" text-anchor="middle" fill="#16232B">A: 0.99</text>
+      <line x1="230" y1="60" x2="330" y2="60" stroke="#16232B" stroke-width="1.6"/>
+      <rect x="330" y="42" width="110" height="36" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="385" y="65" font-size="12" text-anchor="middle" fill="#16232B">B: 0.99</text>
+      <line x1="440" y1="60" x2="540" y2="60" stroke="#16232B" stroke-width="1.6"/>
+      <text x="560" y="56" font-size="12.5" font-family="monospace" font-weight="700" fill="#A61E4D">A × B</text>
+      <text x="560" y="74" font-size="12.5" font-family="monospace" fill="#A61E4D">= 0.9801</text>
+      <text x="20" y="96" font-size="11.5" fill="#6C7F88">→ 機器を直列に増やすほど<tspan font-weight="700">稼働率は下がる</tspan></text>
+
+      <text x="0" y="136" font-size="12.5" font-weight="700" fill="#0E7C86">並列（どちらか一方が動いていれば全体が動く）</text>
+      <line x1="20" y1="180" x2="90" y2="180" stroke="#16232B" stroke-width="1.6"/>
+      <path d="M90,180 L90,158 L120,158 M90,180 L90,202 L120,202" fill="none" stroke="#16232B" stroke-width="1.6"/>
+      <rect x="120" y="142" width="110" height="32" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="175" y="163" font-size="12" text-anchor="middle" fill="#16232B">A: 0.99</text>
+      <rect x="120" y="186" width="110" height="32" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="175" y="207" font-size="12" text-anchor="middle" fill="#16232B">B: 0.99</text>
+      <path d="M230,158 L260,158 L260,180 M230,202 L260,202 L260,180" fill="none" stroke="#16232B" stroke-width="1.6"/>
+      <line x1="260" y1="180" x2="340" y2="180" stroke="#16232B" stroke-width="1.6"/>
+      <text x="370" y="168" font-size="12.5" font-family="monospace" font-weight="700" fill="#0E7C86">1 −（1−A）×（1−B）</text>
+      <text x="370" y="190" font-size="12.5" font-family="monospace" fill="#0E7C86">= 1 − 0.01 × 0.01 = 0.9999</text>
+      <text x="370" y="212" font-size="11.5" fill="#0E7C86">→ <tspan font-weight="700">両方が同時に停止する確率</tspan>を1から引く</text>
+    </svg>
+    <figcaption>並列の式は「<b>全部が止まる確率を求めて、1から引く</b>」と覚えると忘れない。実際の構成図では直列と並列が混在するので、<b>並列部分をまず1つの値にまとめてから、直列として掛け合わせる</b>。</figcaption>
+  </figure>
+
+  <div class="card">
+    <h4 style="margin-top:0">計算例</h4>
+    <div class="calc" style="margin-bottom:0">
+      <p>構成：［ルータ 0.99］─［冗長化されたLB 0.98 × 2台］─［サーバ 0.95 × 2台］</p>
+      <p>LB部分　＝ 1 −（1 − 0.98）² ＝ 1 − 0.0004 ＝ 0.9996</p>
+      <p>サーバ部分＝ 1 −（1 − 0.95）² ＝ 1 − 0.0025 ＝ 0.9975</p>
+      <p style="margin-bottom:0">全体　　　＝ 0.99 × 0.9996 × 0.9975 ≒ <b>0.9871</b></p>
+    </div>
+  </div>
+
+  <h3>RTO と RPO <span class="star">頻出</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 170" role="img" aria-label="RTOとRPOの関係">
+      <line x1="30" y1="90" x2="670" y2="90" stroke="#16232B" stroke-width="1.6"/>
+      <text x="660" y="112" font-size="11" text-anchor="end" fill="#6C7F88">時間 →</text>
+      <line x1="350" y1="50" x2="350" y2="130" stroke="#A61E4D" stroke-width="2.4"/>
+      <text x="350" y="42" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">障害発生</text>
+      <line x1="200" y1="66" x2="200" y2="114" stroke="#3B3E86" stroke-width="1.8" stroke-dasharray="4 3"/>
+      <text x="200" y="58" font-size="11" text-anchor="middle" fill="#3B3E86">最後のバックアップ</text>
+      <line x1="540" y1="66" x2="540" y2="114" stroke="#0E7C86" stroke-width="1.8" stroke-dasharray="4 3"/>
+      <text x="540" y="58" font-size="11" text-anchor="middle" fill="#0E7C86">業務再開</text>
+
+      <path d="M200,128 L350,128" stroke="#3B3E86" stroke-width="2" marker-start="url(#r1)" marker-end="url(#r1)"/>
+      <text x="275" y="148" font-size="12" text-anchor="middle" font-weight="700" fill="#3B3E86">RPO（目標復旧時点）</text>
+      <text x="275" y="164" font-size="10.5" text-anchor="middle" fill="#3B3E86">＝どこまでのデータ損失を許容するか</text>
+
+      <path d="M350,128 L540,128" stroke="#0E7C86" stroke-width="2" marker-start="url(#r2)" marker-end="url(#r2)"/>
+      <text x="445" y="148" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">RTO（目標復旧時間）</text>
+      <text x="445" y="164" font-size="10.5" text-anchor="middle" fill="#0E7C86">＝どれだけ早く再開するか</text>
+      <defs>
+        <marker id="r1" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#3B3E86"/></marker>
+        <marker id="r2" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#0E7C86"/></marker>
+      </defs>
+    </svg>
+    <figcaption><b>RPOは過去方向、RTOは未来方向</b>。RPOを短くするにはバックアップ頻度を上げる（またはレプリケーションする）、RTOを短くするには待機系を用意する——というように、<b>指標ごとに打つ手が違う</b>。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>DR（災害対策）サイトの型</caption>
+    <thead><tr><th>方式</th><th>準備状態</th><th>RTO</th><th>コスト</th></tr></thead>
+    <tbody>
+      <tr><th>ホットスタンバイ</th><td>常時稼働し、データも同期済み</td><td class="c">短い（分〜即時）</td><td class="c">高い</td></tr>
+      <tr><th>ウォームスタンバイ</th><td>機器は用意され、定期的にデータを同期</td><td class="c">中（時間単位）</td><td class="c">中</td></tr>
+      <tr><th>コールドスタンバイ</th><td>場所と最低限の機器のみ。発生後に構築</td><td class="c">長い（日単位）</td><td class="c">低い</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    DRサイトへの切替は、<b>DNSのレコード変更またはGSLB</b>（第5章）で行うのが一般的。
+    <b>事前にTTLを短縮しておく</b>という運用手順とセットで問われる。
+  </p>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>構成図から<b>SPOFを指摘させ、その対策を答えさせる</b>（LBが1台、FWが1台、上流回線が1本、など）</li>
+      <li>稼働率の計算（並列部分をまとめてから直列で掛ける）</li>
+      <li>MTTRを短縮する施策 → <b>予備機の確保、保守契約の見直し、監視による早期検知、切分け手順の整備</b></li>
+      <li>アクティブ／アクティブ構成の注意点 → <b>片系障害時に残る1台で全負荷を処理できる容量が必要</b></li>
+      <li>RPOを短くする手段 → <b>バックアップ間隔の短縮、または遠隔地へのデータレプリケーション</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第9章 負荷分散・可用性 ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">09 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第5章 アドレス割当・名前解決 ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: FQDN hierarchy rule */
+  .fqdn{margin-top:30px}
+  .fqdn .bar{display:flex; height:28px; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .fqdn .bar span{
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:11.5px; letter-spacing:.04em; color:#fff; white-space:nowrap;
+  }
+  .fq1{background:#0E7C86; flex:1 1 auto}
+  .fq2{background:#2C6B8F; flex:0 0 24%}
+  .fq3{background:#3B3E86; flex:0 0 14%}
+  .fq4{background:#A61E4D; flex:0 0 12%}
+  .fqdn .ticks{
+    display:flex; justify-content:space-between;
+    font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:7px;
+  }
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .fqdn .bar span{font-size:9.5px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第5章　アドレス割当・名前解決
+      <span class="en">DHCP &amp; DNS</span>
+    </h1>
+    <p class="lede">
+      端末が通信を始めるまでに必ず通る2つの関門。<b>DHCP でアドレスをもらい、DNS で相手の名前を引く</b>——
+      この2つが動かなければ、ルーティングがどれだけ正しくても業務は止まる。
+      とくに <b>DNS は近年の午後Ⅱの大半に登場する最重要領域</b>であり、
+      サーバの役割分担・問い合わせの向き・キャッシュの効き方を図で説明できることが必須になる。
+    </p>
+    <div class="fqdn" aria-hidden="true">
+      <div class="bar">
+        <span class="fq1">www</span><span class="fq2">example</span><span class="fq3">co</span><span class="fq4">jp</span>
+      </div>
+      <div class="ticks"><span>ホスト名</span><span>← 階層は右から左へたどる</span><span>TLD ／ ルート「.」</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 DHCPの基本動作</a>
+    <a href="#s2">2 DHCPリレー・オプション</a>
+    <a href="#s3">3 DNSの構造と役割分担</a>
+    <a href="#s4">4 名前解決フロー</a>
+    <a href="#s5">5 レコードとゾーン管理</a>
+    <a href="#s6">6 可用性と設計</a>
+    <a href="#s7">7 DNSセキュリティ</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">5.1</span>DHCP の基本動作 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">DHCP</span><span class="en">（Dynamic Host Configuration Protocol）</span>は、
+    IPアドレスだけでなく<b>サブネットマスク・デフォルトゲートウェイ・DNSサーバなど、
+    通信に必要な設定一式を自動配布する</b>プロトコル。
+    サーバが <b>UDP 67番</b>、クライアントが <b>UDP 68番</b>を使う。
+  </p>
+
+  <h3>DORA ― 4つのメッセージ</h3>
+  <figure>
+    <svg viewBox="0 0 700 330" role="img" aria-label="DHCPのDORAシーケンス">
+      <line x1="130" y1="34" x2="130" y2="300" stroke="#D3DBDF" stroke-width="1.5"/>
+      <line x1="560" y1="34" x2="560" y2="300" stroke="#D3DBDF" stroke-width="1.5"/>
+      <text x="130" y="22" font-size="13" text-anchor="middle" font-weight="700" fill="#16232B">クライアント</text>
+      <text x="560" y="22" font-size="13" text-anchor="middle" font-weight="700" fill="#16232B">DHCPサーバ</text>
+
+      <line x1="130" y1="66" x2="556" y2="66" stroke="#A61E4D" stroke-width="2.2" marker-end="url(#ar)"/>
+      <text x="343" y="58" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">① DISCOVER</text>
+      <text x="343" y="84" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#A61E4D">送信元 0.0.0.0 → 宛先 255.255.255.255（ブロードキャスト）</text>
+      <text x="343" y="99" font-size="10.5" text-anchor="middle" fill="#6C7F88">「DHCPサーバはいますか」</text>
+
+      <line x1="560" y1="128" x2="134" y2="128" stroke="#0E7C86" stroke-width="2.2" marker-end="url(#ag)"/>
+      <text x="343" y="120" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">② OFFER</text>
+      <text x="343" y="146" font-size="10.5" text-anchor="middle" fill="#6C7F88">「このアドレスと設定はどうですか」（この時点では仮提示）</text>
+
+      <line x1="130" y1="178" x2="556" y2="178" stroke="#A61E4D" stroke-width="2.2" marker-end="url(#ar)"/>
+      <text x="343" y="170" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">③ REQUEST</text>
+      <text x="343" y="196" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#A61E4D">これもブロードキャスト</text>
+      <text x="343" y="211" font-size="10.5" text-anchor="middle" fill="#6C7F88">「それをください」＋<tspan font-weight="700">他のサーバへの辞退通知を兼ねる</tspan></text>
+
+      <line x1="560" y1="240" x2="134" y2="240" stroke="#0E7C86" stroke-width="2.2" marker-end="url(#ag)"/>
+      <text x="343" y="232" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">④ ACK</text>
+      <text x="343" y="258" font-size="10.5" text-anchor="middle" fill="#6C7F88">「確定です。リース期間は○○秒」</text>
+
+      <rect x="130" y="274" width="430" height="30" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="345" y="294" font-size="11.5" text-anchor="middle" fill="#0E7C86">使用開始（多くの実装はここで GARP により重複確認を行う）</text>
+      <defs>
+        <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker>
+        <marker id="ag" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+      </defs>
+    </svg>
+    <figcaption><b>REQUEST もブロードキャストで送る</b>のが要点。DHCPサーバが複数ある環境で、選ばれなかったサーバに「あなたのOFFERは使いません」と伝え、仮確保していたアドレスを解放させるため。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>DHCP メッセージ</caption>
+    <thead><tr><th>メッセージ</th><th>向き</th><th>意味</th></tr></thead>
+    <tbody>
+      <tr><th>DISCOVER</th><td class="c">C → S</td><td>サーバの探索</td></tr>
+      <tr><th>OFFER</th><td class="c">S → C</td><td>アドレスと設定の提示</td></tr>
+      <tr><th>REQUEST</th><td class="c">C → S</td><td>正式な要求。<b>リース更新時にもこれを使う</b></td></tr>
+      <tr><th>ACK</th><td class="c">S → C</td><td>割当ての確定</td></tr>
+      <tr><th>NAK</th><td class="c">S → C</td><td>要求されたアドレスが使えない（別セグメントへ移動した場合など）</td></tr>
+      <tr><th>RELEASE</th><td class="c">C → S</td><td>リースの明示的な返却</td></tr>
+      <tr><th>INFORM</th><td class="c">C → S</td><td><b>アドレスは静的に持っているが、DNSなど他の設定情報だけ欲しい</b>ときに使う</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>リース期間と更新 <span class="star">頻出</span></h3>
+  <p>
+    払い出したアドレスには<b>リース期間</b>が設定される。クライアントは満了を待たず、途中で更新を試みる。
+  </p>
+  <div class="card">
+    <ul style="margin-bottom:0">
+      <li><b>T1（リース期間の50%）</b>：<b>元のサーバへユニキャスト</b>で REQUEST を送り、更新を求める。成功すれば ACK が返り、期間がリセットされる（<b>DORA全体はやり直さない</b>）</li>
+      <li><b>T2（リース期間の87.5%）</b>：T1で応答がない場合、<b>ブロードキャストで REQUEST</b> を送り、どのサーバでもよいので更新を求める</li>
+      <li><b>満了</b>：それでも応答がなければアドレスを手放し、DISCOVER からやり直す</li>
+    </ul>
+  </div>
+  <p>
+    リース期間の設計は<b>「短くすると再利用効率が上がるがトラフィックと負荷が増える」「長くすると
+    アドレスが解放されず枯渇しやすい」</b>というトレードオフになる。
+    来客用の無線LANのように<b>入れ替わりが激しい環境では短く</b>設定する、というのが定番の解答。
+  </p>
+
+  <h3>スコープ・除外・予約</h3>
+  <ul>
+    <li><span class="kw">スコープ</span>：払い出すアドレスの範囲。通常はサブネットごとに定義する</li>
+    <li><span class="kw">除外アドレス</span>：スコープ内でも配らないアドレス。ルータ、サーバ、プリンタなど<b>静的に設定した機器と重複させない</b>ために設ける</li>
+    <li><span class="kw">予約（固定割当）</span>：<b>MACアドレスと結びつけて、常に同じIPアドレスを払い出す</b>。
+      静的設定と違い、<b>設定情報の管理をDHCPサーバに一元化したまま</b>アドレスを固定できるのが利点</li>
+  </ul>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">5.2</span>DHCPリレーエージェントとオプション <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>なぜリレーエージェントが必要か</h3>
+  <p>
+    DISCOVER は<b>ブロードキャスト</b>であり、ルータを越えない。
+    そのため、セグメントごとにDHCPサーバを置かない限り、そのままでは届かない。
+    <span class="kw">DHCPリレーエージェント</span>は、ルータ／L3スイッチが
+    <b>受け取ったブロードキャストをユニキャストに変換してDHCPサーバへ転送する</b>機能である。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="DHCPリレーエージェントとgiaddrの役割">
+      <rect x="10" y="90" width="110" height="46" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="65" y="118" font-size="12" text-anchor="middle" fill="#16232B">PC</text>
+      <rect x="250" y="80" width="140" height="66" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.6"/>
+      <text x="320" y="104" font-size="12.5" text-anchor="middle" font-weight="700" fill="#3B3E86">L3スイッチ</text>
+      <text x="320" y="124" font-size="11" text-anchor="middle" fill="#3B3E86">（リレーエージェント）</text>
+      <text x="320" y="140" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#3B3E86">SVI: 192.168.20.1</text>
+      <rect x="560" y="90" width="130" height="46" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.4"/>
+      <text x="625" y="118" font-size="12" text-anchor="middle" fill="#0E7C86">DHCPサーバ</text>
+
+      <line x1="120" y1="113" x2="250" y2="113" stroke="#A61E4D" stroke-width="2.2"/>
+      <text x="185" y="76" font-size="11" text-anchor="middle" font-weight="700" fill="#A61E4D">DISCOVER</text>
+      <text x="185" y="62" font-size="10" text-anchor="middle" font-family="monospace" fill="#A61E4D">ブロードキャスト</text>
+
+      <line x1="390" y1="113" x2="560" y2="113" stroke="#0E7C86" stroke-width="2.2"/>
+      <text x="475" y="76" font-size="11" text-anchor="middle" font-weight="700" fill="#0E7C86">ユニキャストで転送</text>
+      <text x="475" y="62" font-size="10" text-anchor="middle" font-family="monospace" fill="#0E7C86">宛先＝DHCPサーバのIP</text>
+
+      <rect x="220" y="164" width="470" height="76" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="234" y="186" font-size="12.5" font-weight="700" fill="#A61E4D">giaddr（gateway IP address）フィールド</text>
+      <text x="234" y="206" font-size="12" fill="#16232B">リレーエージェントが<tspan font-weight="700">受信したインタフェースのIPアドレス（192.168.20.1）</tspan>を書き込む。</text>
+      <text x="234" y="226" font-size="12" fill="#16232B">DHCPサーバはこの値を見て<tspan font-weight="700">どのスコープから払い出すべきかを判断する</tspan>。</text>
+    </svg>
+    <figcaption>giaddr がなければ、サーバは「どのセグメントからの要求か」を知る手段がない。<b>1台のDHCPサーバで多数のセグメントを集中管理できる</b>のは、この仕組みのおかげである。</figcaption>
+  </figure>
+
+  <div class="note">
+    <b>記述の型。</b>「DHCPサーバを各拠点に置かず集約する場合に必要な設定は何か」→
+    <b>「各セグメントのルータ（L3スイッチ）に DHCPリレーエージェントを設定し、DHCPサーバのIPアドレスを指定する」</b>。
+    さらに理由を問われたら「DHCPのDISCOVERはブロードキャストでありルータを越えられないため」と書く。
+  </div>
+
+  <h3>DHCPオプション</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>主なオプション</caption>
+    <thead><tr><th class="c">番号</th><th>内容</th><th>備考</th></tr></thead>
+    <tbody>
+      <tr><th class="c">1</th><td>サブネットマスク</td><td>—</td></tr>
+      <tr><th class="c">3</th><td><b>デフォルトゲートウェイ</b></td><td>—</td></tr>
+      <tr><th class="c">6</th><td><b>DNSサーバ</b></td><td>複数指定可</td></tr>
+      <tr><th class="c">15</th><td>ドメイン名</td><td>—</td></tr>
+      <tr><th class="c">43</th><td>ベンダ固有情報</td><td><b>APに無線LANコントローラのアドレスを通知する</b>用途で頻出（第11章）</td></tr>
+      <tr><th class="c">51</th><td>リース期間</td><td>—</td></tr>
+      <tr><th class="c">66</th><td>TFTPサーバ名</td><td>IP電話・シンクライアントの起動設定取得</td></tr>
+      <tr><th class="c">82</th><td>リレーエージェント情報 <span class="star b">差がつく</span></td><td>リレーエージェントが<b>どのスイッチのどのポートから来た要求か</b>（Circuit ID / Remote ID）を付加する。ポート単位のアドレス割当てやログ追跡に使う</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>不正DHCPサーバ対策 <span class="star">頻出</span></h3>
+  <p>
+    利用者が持ち込んだ無線ルータなどが<b>意図せずDHCPサーバとして応答してしまう</b>と、
+    誤ったデフォルトゲートウェイやDNSサーバが配られ、<b>通信不能や中間者攻撃</b>につながる。
+    DHCPは「先に応答したものが採用される」ため、正規サーバより速く応答されると防げない。
+  </p>
+  <p>
+    対策が <span class="kw">DHCPスヌーピング</span>。スイッチのポートを<b>信頼ポート／非信頼ポート</b>に分け、
+    <b>非信頼ポートから届いた OFFER・ACK（サーバからのメッセージ）を破棄する</b>。
+    正規のDHCPサーバが接続されている側のポートだけを信頼ポートに設定する。
+  </p>
+  <div class="card">
+    <h4 style="margin-top:0">DHCPスヌーピングの副産物 ― バインディングテーブル</h4>
+    <p style="margin-bottom:0">
+      スヌーピングの過程でスイッチは「<b>MACアドレス・IPアドレス・接続ポート・VLAN</b>」の対応表を作る。
+      この表を使って、<b>Dynamic ARP Inspection（不正なARP応答の遮断＝ARPスプーフィング対策）</b>や
+      <b>IPソースガード（送信元IP詐称の遮断）</b>を実現できる。
+      DHCPスヌーピングが<b>他のセキュリティ機能の土台になる</b>という点が問われる。
+    </p>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>端末に <code>169.254.x.x</code> が付いている → <b>DHCPサーバに到達できていない</b>。
+        リレーエージェントの設定漏れ、VLAN誤設定、スコープ枯渇を疑う</li>
+      <li>DHCPサーバを冗長化する方法 →<b>スコープを分割して2台に分ける（例：前半・後半で分担）</b>、
+        またはサーバ間でリース情報を同期させる構成。<b>同じ範囲を2台に設定すると重複払出しが起きる</b></li>
+      <li>フリーアドレス化で「席を移動しても同じ設定が使えるようにする」→ DHCPによる集中管理の利点</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">5.3</span>DNS の構造とサーバの役割分担 <span class="star">最重要</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">DNS</span> は、<b>ドメイン名（FQDN）と IPアドレスなどの情報を対応づける、
+    世界規模の分散データベース</b>。単一の巨大な表を持つのではなく、
+    <b>階層ごとに管理を委任する</b>ことで規模と自律性を両立している。
+  </p>
+
+  <h3>階層構造と委任</h3>
+  <figure>
+    <svg viewBox="0 0 700 260" role="img" aria-label="DNSの階層構造と委任">
+      <rect x="290" y="16" width="120" height="36" fill="#A61E4D" stroke="#A61E4D"/>
+      <text x="350" y="40" font-size="13" text-anchor="middle" fill="#FFFFFF" font-weight="700">ルート「.」</text>
+      <text x="424" y="38" font-size="10.5" fill="#6C7F88">13系統・エニーキャストで世界中に分散</text>
+
+      <line x1="330" y1="52" x2="180" y2="86" stroke="#16232B"/>
+      <line x1="370" y1="52" x2="520" y2="86" stroke="#16232B"/>
+      <rect x="120" y="86" width="120" height="34" fill="#E6E7F2" stroke="#3B3E86"/>
+      <text x="180" y="108" font-size="12.5" text-anchor="middle" fill="#3B3E86" font-weight="700">jp</text>
+      <rect x="460" y="86" width="120" height="34" fill="#E6E7F2" stroke="#3B3E86"/>
+      <text x="520" y="108" font-size="12.5" text-anchor="middle" fill="#3B3E86" font-weight="700">com</text>
+      <text x="596" y="108" font-size="10.5" fill="#6C7F88">TLD（トップレベルドメイン）</text>
+
+      <line x1="180" y1="120" x2="180" y2="152" stroke="#16232B"/>
+      <rect x="120" y="152" width="120" height="34" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="180" y="174" font-size="12.5" text-anchor="middle" fill="#0E7C86" font-weight="700">co.jp</text>
+
+      <line x1="180" y1="186" x2="180" y2="216" stroke="#16232B"/>
+      <rect x="100" y="216" width="160" height="34" fill="#FFFFFF" stroke="#16232B" stroke-width="1.5"/>
+      <text x="180" y="238" font-size="12.5" text-anchor="middle" fill="#16232B" font-weight="700">example.co.jp</text>
+      <text x="276" y="230" font-size="11" fill="#16232B">← ここが企業が管理する</text>
+      <text x="276" y="246" font-size="11" fill="#16232B">　 <tspan font-weight="700">ゾーン</tspan>。権威サーバを自前または委託で運用</text>
+
+      <rect x="420" y="150" width="270" height="86" fill="#E7EDEE"/>
+      <text x="434" y="172" font-size="12.5" font-weight="700" fill="#16232B">委任（delegation）</text>
+      <text x="434" y="192" font-size="11.5" fill="#16232B">上位ゾーンは、下位ゾーンの情報を持たず、</text>
+      <text x="434" y="210" font-size="11.5" fill="#16232B"><tspan font-weight="700">「その情報はこの権威サーバに聞け」</tspan>という</text>
+      <text x="434" y="228" font-size="11.5" fill="#16232B"><tspan font-weight="700">NSレコード</tspan>だけを持つ。</text>
+    </svg>
+    <figcaption><b>ゾーン</b>＝1つの権威サーバ群が責任を持って管理する範囲。ドメインと似ているが、委任によって切り出された部分は別ゾーンになるため、<b>ドメイン ≠ ゾーン</b>である点に注意。</figcaption>
+  </figure>
+
+  <h3>3種類のサーバ（役割）<span class="star">最重要</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>DNS を構成する要素と、その仕事</caption>
+    <thead><tr><th>名称</th><th>別名</th><th>仕事</th><th>データの持ち方</th></tr></thead>
+    <tbody>
+      <tr><th>権威サーバ</th><td>コンテンツサーバ<br>ゾーンサーバ</td><td><b>自分が管理するゾーンの情報だけ</b>を回答する。他人のドメインは答えない</td><td>ゾーンファイル（正解を持っている）</td></tr>
+      <tr><th>フルサービス<br>リゾルバ</th><td><b>キャッシュDNSサーバ</b><br>再帰問い合わせサーバ</td><td>端末に代わって<b>ルートから順にたどって答えを探し出し</b>、結果を返す。得た答えを一定時間キャッシュする</td><td>キャッシュ（借り物の情報）</td></tr>
+      <tr><th>スタブリゾルバ</th><td>—</td><td>端末（OS）に組み込まれた最小限の機能。<b>自分では探さず、フルサービスリゾルバに丸投げする</b></td><td>簡易キャッシュのみ</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>同義語の対応づけは必須。</b>午後の記述は<b>問題文中の表記をそのまま使う</b>のが原則なので、
+    「フルサービスリゾルバ」＝「キャッシュDNSサーバ」、「権威サーバ」＝「コンテンツサーバ」＝「ゾーンサーバ」を
+    相互に読み替えられるようにしておく。問題文が「コンテンツサーバ」と書いていれば、答案も「コンテンツサーバ」と書く。
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">権威サーバとキャッシュサーバを分離する理由 <span class="star">頻出</span></h4>
+    <ul style="margin-bottom:0">
+      <li><b>役割が真逆</b>：権威サーバは<b>外部の不特定多数から問い合わせを受ける</b>。
+        キャッシュサーバは<b>内部の利用者のためだけに再帰問い合わせを行う</b></li>
+      <li>1台に同居させると、<b>外部から再帰問い合わせを受け付けてしまう（オープンリゾルバ）</b>危険がある</li>
+      <li>キャッシュポイズニングの成功時に、<b>権威サーバの正しい情報まで巻き添えになる</b>のを防げる</li>
+      <li>キャッシュサーバの過負荷が、<b>自社ドメインの名前解決（＝外部からの到達性）に影響しない</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">5.4</span>名前解決フロー <span class="star">最重要</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    この節が書ければ DNS の設問はほぼ取れる。<b>問い合わせには2種類あり、誰が誰に投げるかで決まっている。</b>
+  </p>
+  <ul>
+    <li><span class="kw">再帰問い合わせ</span>：<b>「最終的な答えが出るまで面倒を見てくれ」</b>という依頼。
+      <b>スタブリゾルバ → フルサービスリゾルバ</b>の1回だけ</li>
+    <li><span class="kw">反復問い合わせ</span>：<b>「あなたが知っていることだけ答えてくれ」</b>という問い合わせ。
+      <b>フルサービスリゾルバ → 各階層の権威サーバ</b>。答えを知らないサーバは「次はここに聞け」という
+      <b>委任情報（NSレコード）</b>を返す</li>
+  </ul>
+
+  <figure>
+    <svg viewBox="0 0 700 400" role="img" aria-label="www.example.co.jp の名前解決フロー">
+      <rect x="10" y="170" width="110" height="50" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="65" y="192" font-size="12" text-anchor="middle" fill="#16232B">PC</text>
+      <text x="65" y="209" font-size="10" text-anchor="middle" fill="#6C7F88">スタブリゾルバ</text>
+
+      <rect x="200" y="165" width="150" height="60" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.8"/>
+      <text x="275" y="189" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">フルサービス</text>
+      <text x="275" y="207" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">リゾルバ</text>
+
+      <g fill="#FFFFFF" stroke="#3B3E86" stroke-width="1.4">
+        <rect x="500" y="20" width="180" height="40"/>
+        <rect x="500" y="100" width="180" height="40"/>
+        <rect x="500" y="180" width="180" height="40"/>
+        <rect x="500" y="260" width="180" height="40"/>
+      </g>
+      <g font-size="12" text-anchor="middle" fill="#3B3E86">
+        <text x="590" y="45">ルートサーバ</text>
+        <text x="590" y="125">jp の権威サーバ</text>
+        <text x="590" y="205">co.jp の権威サーバ</text>
+        <text x="590" y="285">example.co.jp の権威サーバ</text>
+      </g>
+
+      <!-- recursive -->
+      <line x1="120" y1="184" x2="196" y2="184" stroke="#A61E4D" stroke-width="2.4" marker-end="url(#m1)"/>
+      <text x="158" y="150" font-size="11" text-anchor="middle" font-weight="700" fill="#A61E4D">①</text>
+      <text x="158" y="164" font-size="10" text-anchor="middle" fill="#A61E4D">再帰問い合わせ</text>
+      <line x1="200" y1="210" x2="124" y2="210" stroke="#A61E4D" stroke-width="2.4" marker-end="url(#m1)"/>
+      <text x="158" y="234" font-size="11" text-anchor="middle" font-weight="700" fill="#A61E4D">⑩ 最終回答</text>
+
+      <!-- iterative -->
+      <g stroke="#0E7C86" stroke-width="1.8" fill="none">
+        <path d="M350,180 L500,40" marker-end="url(#m2)"/>
+        <path d="M500,56 L350,190" marker-end="url(#m2)" stroke-dasharray="5 4"/>
+        <path d="M352,186 L500,118" marker-end="url(#m2)"/>
+        <path d="M500,134 L352,196" marker-end="url(#m2)" stroke-dasharray="5 4"/>
+        <path d="M354,192 L500,198" marker-end="url(#m2)"/>
+        <path d="M500,212 L354,202" marker-end="url(#m2)" stroke-dasharray="5 4"/>
+        <path d="M356,206 L500,272" marker-end="url(#m2)"/>
+        <path d="M500,288 L356,214" marker-end="url(#m2)" stroke-dasharray="5 4"/>
+      </g>
+      <g font-size="10.5" fill="#0E7C86">
+        <text x="404" y="94">② jp のサーバはあそこ</text>
+        <text x="404" y="152">④ co.jp のサーバはあそこ</text>
+        <text x="404" y="238">⑥ example.co.jp のサーバはあそこ</text>
+        <text x="404" y="300">⑧ IPアドレスは 203.0.113.10</text>
+      </g>
+      <text x="404" y="330" font-size="11" fill="#0E7C86">実線＝反復問い合わせ　破線＝委任情報または最終回答</text>
+
+      <rect x="10" y="344" width="680" height="52" fill="#E7EDEE"/>
+      <text x="24" y="364" font-size="12" fill="#16232B"><tspan font-weight="700">⑨ フルサービスリゾルバは得た答えを TTL の間キャッシュする。</tspan></text>
+      <text x="24" y="384" font-size="12" fill="#16232B">2回目以降は②〜⑧を省略して即答できるため、上位サーバの負荷と応答時間が大幅に減る。</text>
+
+      <defs>
+        <marker id="m1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker>
+        <marker id="m2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#0E7C86"/></marker>
+      </defs>
+    </svg>
+    <figcaption><b>「たらい回しにされるのはフルサービスリゾルバであって、PCではない」</b>。PCは①で聞いて⑩で答えをもらうだけ。この非対称性を figure で説明できるかが午後Ⅱの分岐点になる。</figcaption>
+  </figure>
+
+  <div class="card">
+    <h4 style="margin-top:0">キャッシュの効き方 ― 途中階層も効く</h4>
+    <p style="margin-bottom:0">
+      キャッシュされるのは最終回答だけではない。<b>「jp の権威サーバはここ」「co.jp の権威サーバはここ」という
+      委任情報もキャッシュされる</b>。そのため <code>www2.example.co.jp</code> を次に引くときは、
+      ルートや jp へは問い合わせず、<b>example.co.jp の権威サーバへ直接</b>聞きに行ける。
+    </p>
+  </div>
+
+  <p>
+    <span class="kw">DNSフォワーダ</span>は、フルサービスリゾルバが<b>自分で反復問い合わせをせず、
+    上位の別のキャッシュサーバへ転送して答えをもらう</b>設定。
+    支店のDNSサーバを本社のDNSサーバに向ける、社内サーバをISPのサーバに向ける、といった構成で使う。
+    <b>キャッシュを集約でき、外部へ直接問い合わせる機器を限定できる（＝ファイアウォールの穴を減らせる）</b>のが利点。
+  </p>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>「PCが行う問い合わせ」と「DNSサーバが行う問い合わせ」の<b>名称をそれぞれ答えよ</b> → 再帰／反復</li>
+      <li>キャッシュサーバを設置する目的 → <b>「同じ問い合わせに対して外部への問い合わせを省略でき、
+        応答時間の短縮と外部回線・上位サーバの負荷軽減が図れるため」</b></li>
+      <li>ファイアウォールの通過設定 → <b>キャッシュサーバからの外向き UDP/TCP 53 を許可</b>し、
+        <b>それ以外の端末からの直接の外部DNS問い合わせは遮断</b>する（マルウェアの通信抑止にもなる）</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">5.5</span>リソースレコードとゾーン管理 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>リソースレコード</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>主要なリソースレコード（RR）</caption>
+    <thead><tr><th>種別</th><th>内容</th><th>出題ポイント</th></tr></thead>
+    <tbody>
+      <tr><th>A</th><td>ホスト名 → <b>IPv4アドレス</b></td><td>最も基本。複数書けば<b>ラウンドロビン</b>になる</td></tr>
+      <tr><th>AAAA</th><td>ホスト名 → <b>IPv6アドレス</b></td><td>デュアルスタック環境では<b>端末がAAAAを優先</b>するため、IPv6側の不具合が先に表面化する</td></tr>
+      <tr><th>CNAME</th><td>別名 → <b>正式名（別のホスト名）</b></td><td><b>同じ名前に他のレコードを共存させられない</b>。そのためゾーン頂点（example.co.jp そのもの）には使えない。CDNや負荷分散サービスへの向け先変更で多用</td></tr>
+      <tr><th>MX</th><td>ドメイン → <b>メールサーバ名</b></td><td><b>優先度は小さい値が優先</b>。同値なら分散。値の指すのはIPではなく<b>ホスト名</b>（第14章）</td></tr>
+      <tr><th>NS</th><td>ゾーン → <b>権威サーバ名</b></td><td>委任を表す。<b>親ゾーンと子ゾーンの両方に置かれる</b></td></tr>
+      <tr><th>SOA</th><td>ゾーンの管理情報</td><td>ゾーンに<b>必ず1つ</b>。下表参照</td></tr>
+      <tr><th>PTR</th><td>IPアドレス → <b>ホスト名</b>（逆引き）</td><td><code>in-addr.arpa</code>（IPv6は<code>ip6.arpa</code>）ドメインで管理。<b>メールサーバの正当性確認やログの可読性</b>に使う</td></tr>
+      <tr><th>TXT</th><td>任意の文字列</td><td><b>SPF・DKIM・DMARC</b>（第14章）、ドメイン所有権の証明</td></tr>
+      <tr><th>SRV</th><td>サービス名 → <b>ホスト名＋ポート番号</b></td><td>SIP、Active Directory のサービス探索。<b>ポート番号まで返せる</b>のが特徴</td></tr>
+      <tr><th>CAA</th><td>そのドメインの証明書を発行してよい認証局</td><td>誤発行の防止</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <b>TTL は「レコードごとに設定する、キャッシュしてよい秒数」。</b>
+    キャッシュサーバはこの秒数だけ答えを保持する。
+    <b>サーバ移転やDR切替の前には、あらかじめTTLを短く（例：数分に）しておく</b>のが定石で、
+    「切替作業の何日前に何をするか」という運用手順の設問で頻出する。
+  </div>
+
+  <h3>SOAレコードとゾーン転送 <span class="star">頻出</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>SOA レコードの構成要素</caption>
+    <thead><tr><th>要素</th><th>意味</th></tr></thead>
+    <tbody>
+      <tr><th>MNAME</th><td><b>プライマリ（マスタ）権威サーバ</b>の名前</td></tr>
+      <tr><th>RNAME</th><td>管理者のメールアドレス（@ を . で表記）</td></tr>
+      <tr><th>シリアル番号</th><td><b>ゾーンデータの版数</b>。更新のたびに増やす。スレーブはこの値を比較して転送要否を判断する</td></tr>
+      <tr><th>リフレッシュ</th><td>スレーブがシリアル番号を確認しに行く間隔</td></tr>
+      <tr><th>リトライ</th><td>確認に失敗したときの再試行間隔</td></tr>
+      <tr><th>エクスパイア</th><td>マスタと連絡が取れない状態がこの時間を超えたら、<b>スレーブは応答を停止する</b>（古い情報を answer し続けないため）</td></tr>
+      <tr><th>ネガティブ<br>キャッシュTTL</th><td><b>「そんな名前は存在しない」という応答をキャッシュする時間</b>。新規レコード追加が反映されない原因になりうる</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 700 230" role="img" aria-label="ゾーン転送の流れ">
+      <rect x="30" y="70" width="180" height="70" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.6"/>
+      <text x="120" y="98" font-size="13" text-anchor="middle" font-weight="700" fill="#0E7C86">マスタ</text>
+      <text x="120" y="118" font-size="11" text-anchor="middle" fill="#0E7C86">（プライマリ）</text>
+      <text x="120" y="134" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#0E7C86">ゾーンファイルを保持</text>
+
+      <rect x="470" y="30" width="180" height="60" fill="#FFFFFF" stroke="#3B3E86" stroke-width="1.4"/>
+      <text x="560" y="55" font-size="13" text-anchor="middle" font-weight="700" fill="#3B3E86">スレーブ①</text>
+      <text x="560" y="74" font-size="11" text-anchor="middle" fill="#3B3E86">（セカンダリ）</text>
+      <rect x="470" y="120" width="180" height="60" fill="#FFFFFF" stroke="#3B3E86" stroke-width="1.4"/>
+      <text x="560" y="145" font-size="13" text-anchor="middle" font-weight="700" fill="#3B3E86">スレーブ②</text>
+      <text x="560" y="164" font-size="11" text-anchor="middle" fill="#3B3E86">（セカンダリ）</text>
+
+      <line x1="210" y1="90" x2="466" y2="60" stroke="#0E7C86" stroke-width="2" marker-end="url(#z1)"/>
+      <line x1="210" y1="120" x2="466" y2="150" stroke="#0E7C86" stroke-width="2" marker-end="url(#z1)"/>
+      <text x="340" y="66" font-size="11.5" text-anchor="middle" font-weight="700" fill="#0E7C86">ゾーン転送（TCP 53）</text>
+      <text x="340" y="176" font-size="11" text-anchor="middle" fill="#6C7F88">NOTIFY で更新を即時通知することもできる</text>
+
+      <rect x="30" y="186" width="620" height="40" fill="#E7EDEE"/>
+      <text x="44" y="206" font-size="12" fill="#16232B"><tspan font-weight="700">AXFR</tspan>＝ゾーン全体を転送　／　<tspan font-weight="700">IXFR</tspan>＝前回からの差分のみ転送（大規模ゾーンで有効）</text>
+      <text x="44" y="222" font-size="12" fill="#A61E4D">スレーブは <tspan font-weight="700">SOAのシリアル番号がマスタより小さければ</tspan> 転送を要求する。</text>
+      <defs><marker id="z1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker></defs>
+    </svg>
+    <figcaption>権威サーバを複数台に分けるのは可用性のため。<b>異なるネットワーク・異なる拠点に配置する</b>ことで、片方が停止しても外部からドメインが引けなくなる事態を避ける。</figcaption>
+  </figure>
+
+  <div class="card">
+    <h4 style="margin-top:0">ゾーン転送は制限する <span class="star">頻出</span></h4>
+    <p style="margin-bottom:0">
+      ゾーン転送を誰にでも許可していると、<b>ゾーン内の全ホスト名とIPアドレスを一括で取得されてしまう</b>。
+      これは攻撃者にとって<b>内部ネットワーク構成の完全な地図</b>になる。
+      対策は<b>「ゾーン転送を許可する接続元を、セカンダリサーバのIPアドレスに限定する」</b>。
+      記述問題の定番解答。
+    </p>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">5.6</span>可用性と設計手法 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>DNSラウンドロビン</h3>
+  <p>
+    同じ名前に対して<b>複数のAレコードを登録し、問い合わせのたびに順序を入れ替えて返す</b>ことで、
+    アクセスを複数のサーバへ分散させる簡易な負荷分散。装置を追加せずに実現できるのが利点。
+  </p>
+  <div class="tbl-scroll">
+  <table>
+    <caption>ラウンドロビンの限界 ― 負荷分散装置との比較</caption>
+    <thead><tr><th>観点</th><th>DNSラウンドロビン</th><th>負荷分散装置（LB）</th></tr></thead>
+    <tbody>
+      <tr><th>サーバ障害</th><td><b>検知できない</b>。停止中のサーバのIPも返し続ける</td><td><b>ヘルスチェックで自動的に切り離す</b></td></tr>
+      <tr><th>負荷の偏り</th><td>キャッシュにより偏る。実際の負荷は見ていない</td><td>接続数・応答時間に応じて振り分けられる</td></tr>
+      <tr><th>セッション維持</th><td>できない</td><td>可能（第9章）</td></tr>
+      <tr><th>コスト</th><td>ほぼゼロ</td><td>装置費用・設計工数が必要</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>記述の定番。</b>「DNSラウンドロビンの問題点を述べよ」→
+    <b>「サーバの稼働状態を監視していないため、障害が発生したサーバのIPアドレスも応答として返してしまい、
+    一部の利用者が接続できなくなる」</b>。さらに「キャッシュのTTLが切れるまで振分けが変わらない」も加点要素。
+  </div>
+
+  <h3>GSLB（広域負荷分散）</h3>
+  <p>
+    <span class="kw">GSLB</span><span class="en">（Global Server Load Balancing）</span>は、
+    <b>DNSの応答を動的に変えることで、地理的に離れた複数サイトへ振り分ける</b>仕組み。
+    ラウンドロビンと違い、<b>各サイトの死活・負荷・クライアントからの距離</b>を考慮して返すIPを決める。
+  </p>
+  <ul>
+    <li><b>災害対策（DR）</b>：平常時はメインサイトのIPを返し、障害時は自動的にバックアップサイトのIPを返す</li>
+    <li><b>拠点最適化</b>：利用者に最も近いデータセンタへ誘導し、遅延を減らす</li>
+    <li><b>弱点</b>：<b>キャッシュのTTLが残っている間は古いIPが使われ続ける</b>ため、切替が即時にならない。
+      そのためGSLB用のレコードはTTLを極端に短く設定する</li>
+  </ul>
+
+  <h3>DNSスプリット（内部／外部分離） <span class="star">最重要</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="内部DNSと外部DNSの分離">
+      <rect x="0" y="30" width="330" height="200" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.4"/>
+      <text x="165" y="52" font-size="13" text-anchor="middle" font-weight="700" fill="#0E7C86">内部（社内）</text>
+      <rect x="40" y="66" width="250" height="46" fill="#FFFFFF" stroke="#0E7C86"/>
+      <text x="165" y="86" font-size="12" text-anchor="middle" fill="#16232B">内部DNS（権威＋キャッシュ）</text>
+      <text x="165" y="103" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#0E7C86">www.example.co.jp → 192.168.10.20</text>
+      <text x="40" y="140" font-size="11.5" fill="#16232B">・社内サーバの<tspan font-weight="700">プライベートIP</tspan>を回答</text>
+      <text x="40" y="160" font-size="11.5" fill="#16232B">・社内限定のホスト名も登録できる</text>
+      <text x="40" y="180" font-size="11.5" fill="#16232B">・社員は内部経路で直接アクセスでき、</text>
+      <text x="40" y="198" font-size="11.5" fill="#16232B">　<tspan font-weight="700">外部へ出て戻る（ヘアピン）必要がない</tspan></text>
+
+      <rect x="370" y="30" width="330" height="200" fill="#F7E6EC" stroke="#A61E4D" stroke-width="1.4"/>
+      <text x="535" y="52" font-size="13" text-anchor="middle" font-weight="700" fill="#A61E4D">外部（インターネット）</text>
+      <rect x="410" y="66" width="250" height="46" fill="#FFFFFF" stroke="#A61E4D"/>
+      <text x="535" y="86" font-size="12" text-anchor="middle" fill="#16232B">外部DNS（権威のみ）</text>
+      <text x="535" y="103" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#A61E4D">www.example.co.jp → 203.0.113.10</text>
+      <text x="410" y="140" font-size="11.5" fill="#16232B">・<tspan font-weight="700">公開サーバのグローバルIPだけ</tspan>を回答</text>
+      <text x="410" y="160" font-size="11.5" fill="#16232B">・内部のホスト名・構成は一切登録しない</text>
+      <text x="410" y="180" font-size="11.5" fill="#16232B">・<tspan font-weight="700">再帰問い合わせは受け付けない</tspan></text>
+      <text x="410" y="198" font-size="11.5" fill="#16232B">　（オープンリゾルバ化の防止）</text>
+      <text x="350" y="245" font-size="11.5" text-anchor="middle" fill="#6C7F88">同じFQDNに対し、問い合わせ元によって異なる答えを返す</text>
+    </svg>
+    <figcaption>目的は2つ。<b>①内部のネットワーク構成情報を外部に漏らさない　②社内からのアクセスを内部経路に閉じ、無駄な外部往復を避ける</b>。両方を書けると強い。</figcaption>
+  </figure>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>内部DNSと外部DNSを分ける理由 → <b>「外部DNSには公開サーバの情報だけを登録し、
+        内部のホスト名やプライベートIPアドレスといった内部構成情報が外部から取得されないようにするため」</b></li>
+      <li>DR切替の手順 → <b>「事前に該当レコードのTTLを短縮しておき、切替時にAレコードを
+        バックアップサイトのIPアドレスへ変更する」</b>（GSLBならその自動化）</li>
+      <li>切り替えたのに一部の利用者が旧サーバへ行く → <b>キャッシュサーバに旧レコードがTTLの間残っているため</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 7 ===================== -->
+<section id="s7">
+<div class="wrap">
+  <h2><span class="num">5.7</span>DNS セキュリティ <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>DNSキャッシュポイズニング</h3>
+  <p>
+    <b>正規の権威サーバより先に、偽の応答をキャッシュサーバへ送り込み、
+    誤ったIPアドレスをキャッシュさせる</b>攻撃。成功すると、利用者は正規のURLを入力しているのに
+    偽サイトへ誘導される（フィッシング、マルウェア配布）。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 230" role="img" aria-label="DNSキャッシュポイズニングの成立条件">
+      <rect x="30" y="80" width="160" height="56" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.6"/>
+      <text x="110" y="105" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">キャッシュ</text>
+      <text x="110" y="123" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">DNSサーバ</text>
+      <rect x="500" y="30" width="170" height="46" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="585" y="58" font-size="12" text-anchor="middle" fill="#16232B">正規の権威サーバ</text>
+      <rect x="500" y="150" width="170" height="46" fill="#F7E6EC" stroke="#A61E4D" stroke-width="1.6"/>
+      <text x="585" y="178" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">攻撃者</text>
+
+      <line x1="190" y1="96" x2="496" y2="60" stroke="#16232B" stroke-width="1.6" marker-end="url(#p1)"/>
+      <text x="340" y="82" font-size="11" text-anchor="middle" fill="#6C7F88">問い合わせ</text>
+      <line x1="500" y1="72" x2="194" y2="104" stroke="#16232B" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#p1)"/>
+      <text x="340" y="122" font-size="11" text-anchor="middle" fill="#6C7F88">正規の応答（遅い）</text>
+      <line x1="500" y1="164" x2="194" y2="126" stroke="#A61E4D" stroke-width="2.4" marker-end="url(#p2)"/>
+      <text x="340" y="160" font-size="11.5" text-anchor="middle" font-weight="700" fill="#A61E4D">偽の応答（先に到着すれば勝ち）</text>
+
+      <rect x="0" y="206" width="700" height="24" fill="#E7EDEE"/>
+      <text x="12" y="223" font-size="11.5" fill="#16232B">成立条件：<tspan font-weight="700">①正規応答より先に届く　②送信元ポート番号が一致　③トランザクションID（識別子）が一致</tspan></text>
+      <defs>
+        <marker id="p1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#16232B"/></marker>
+        <marker id="p2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker>
+      </defs>
+    </svg>
+    <figcaption>攻撃者は②③を推測して総当たりする。トランザクションIDは16ビット（65536通り）しかないため、ポート番号が固定されていると現実的な時間で当てられてしまう。</figcaption>
+  </figure>
+
+  <div class="card">
+    <h4 style="margin-top:0">カミンスキー攻撃 <span class="star">頻出</span></h4>
+    <p>
+      通常のキャッシュポイズニングは、<b>正規の答えがキャッシュされてしまうとTTLが切れるまで再挑戦できない</b>。
+      カミンスキー攻撃はこの制約を破る手法で、<b><code>random1.example.co.jp</code>、
+      <code>random2.example.co.jp</code> …と存在しない名前を次々問い合わせさせる</b>。
+      存在しない名前はキャッシュにないため、<b>キャッシュサーバは毎回外部へ問い合わせざるを得ず、
+      攻撃者は何度でも偽装を試行できる</b>。
+    </p>
+    <p style="margin-bottom:0">
+      さらに偽装する対象を<b>「そのホストのAレコード」ではなく「ゾーン全体の委任情報（NSレコードとグルーレコード）」</b>
+      にすることで、成功すれば<b>ドメイン配下すべての名前解決を乗っ取れる</b>。
+    </p>
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>対策</caption>
+    <thead><tr><th>対策</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>ソースポート<br>ランダマイゼーション</th><td>問い合わせごとに<b>送信元ポート番号をランダムに変える</b>。トランザクションID（16ビット）と合わせて推測すべき空間を桁違いに広げる。<b>最も基本的かつ効果的な対策</b></td></tr>
+      <tr><th>トランザクションIDの<br>ランダム化</th><td>連番にせず予測不能にする</td></tr>
+      <tr><th>再帰問い合わせの制限</th><td><b>キャッシュサーバは内部の利用者からの問い合わせだけを受け付ける</b>。外部からの再帰問い合わせを拒否する</td></tr>
+      <tr><th>権威／キャッシュの分離</th><td>5.3節の通り。役割ごとにサーバを分ける</td></tr>
+      <tr><th>DNSSEC</th><td>次項</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>DNSSEC <span class="star">頻出</span></h3>
+  <p>
+    <span class="kw">DNSSEC</span>は、<b>DNS応答にディジタル署名を付け、
+    「正しい権威サーバが出した、改ざんされていない情報である」ことを検証できるようにする</b>拡張。
+  </p>
+  <div class="note">
+    <b>最重要の注意点：DNSSEC は暗号化しない。</b>
+    保証するのは<b>完全性（改ざんされていないこと）と出自の認証</b>であって、
+    <b>通信内容の秘匿（盗聴防止）ではない</b>。問い合わせ内容は平文のまま流れる。
+    盗聴を防ぎたい場合は DNS over TLS / HTTPS を使う。ここは選択肢問題で必ず狙われる。
+  </div>
+  <div class="tbl-scroll">
+  <table>
+    <caption>DNSSEC の構成要素</caption>
+    <thead><tr><th>要素</th><th>役割</th></tr></thead>
+    <tbody>
+      <tr><th>RRSIG</th><td>リソースレコードに対する<b>ディジタル署名</b></td></tr>
+      <tr><th>DNSKEY</th><td>署名の検証に使う<b>公開鍵</b></td></tr>
+      <tr><th>DS</th><td><b>親ゾーンに置かれる、子ゾーンの鍵のハッシュ値</b>。これにより信頼が親から子へつながる</td></tr>
+      <tr><th>KSK / ZSK</th><td><b>KSK（鍵署名鍵）</b>＝DNSKEY自体に署名する長期の鍵。<b>ZSK（ゾーン署名鍵）</b>＝各レコードに署名する短期の鍵。役割を分けることで、頻繁な鍵更新と親ゾーンへの申請頻度を両立している</td></tr>
+      <tr><th>NSEC / NSEC3</th><td><b>「その名前は存在しない」ことの証明</b>。不在応答も署名の対象にするための仕組み</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    ルートゾーンを起点に <b>ルート → TLD → 各ゾーン</b>と DS レコードで鍵をたどれることを
+    <b>信頼の連鎖（chain of trust）</b>と呼ぶ。どこか1つでもDNSSEC未対応だと連鎖が切れて検証できない。
+  </p>
+  <p>
+    署名の付いた応答はサイズが大きくなり <b>UDPの512バイト制限</b>を超えるため、
+    <span class="kw">EDNS0</span><span class="star b">差がつく</span>（UDPで大きな応答を扱えるようにする拡張）が前提となる。
+  </p>
+
+  <h3>オープンリゾルバと DNSアンプ攻撃 <span class="star">頻出</span></h3>
+  <p>
+    <span class="kw">オープンリゾルバ</span>とは、<b>誰からの再帰問い合わせにも応答してしまうDNSサーバ</b>。
+    設定ミスや、権威サーバとキャッシュサーバを同居させたことが原因で生まれる。
+  </p>
+  <p>
+    これを踏み台にするのが <span class="kw">DNSアンプ攻撃</span>（DNSリフレクション／増幅攻撃）。
+    <b>送信元IPアドレスを標的に詐称した小さな問い合わせを大量に送り、
+    大きな応答を標的へ集中させる</b>。問い合わせに対して応答が数十倍の大きさになるため、
+    攻撃者は少ない帯域で大量のトラフィックを標的に浴びせられる。
+  </p>
+  <div class="card">
+    <h4 style="margin-top:0">対策の書き方</h4>
+    <ul style="margin-bottom:0">
+      <li><b>自サーバを踏み台にしない</b>：<b>再帰問い合わせを受け付ける範囲を、自組織の内部アドレスに限定する</b></li>
+      <li><b>権威サーバでは再帰問い合わせを無効にする</b></li>
+      <li><b>送信元詐称そのものを防ぐ</b>：ISP・組織の出口で <b>Ingressフィルタリング（BCP38）／uRPF</b> を実施する（第13章）</li>
+      <li>応答レート制限（RRL）で同一宛先への大量応答を抑制する</li>
+    </ul>
+  </div>
+
+  <h3>その他の関連技術</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>近年よく出る周辺キーワード</caption>
+    <thead><tr><th>用語</th><th>内容</th><th>論点</th></tr></thead>
+    <tbody>
+      <tr><th>DNS over TLS / HTTPS<br>（DoT / DoH） <span class="star b">差がつく</span></th><td>DNSの問い合わせ自体を<b>暗号化</b>する（DoTは853番、DoHはHTTPS 443番）</td><td>利用者のプライバシーは向上するが、<b>企業側からは名前解決の内容が見えなくなり、URLフィルタリングやマルウェア通信の検知が効かなくなる</b>という管理上の課題が生じる</td></tr>
+      <tr><th>EDNS-Client-Subnet <span class="star b">差がつく</span></th><td>キャッシュサーバが<b>クライアントのサブネット情報を権威サーバへ伝える</b></td><td>CDNやGSLBが、キャッシュサーバの位置ではなく<b>実際の利用者の位置</b>に基づいて最適なサーバを返せる</td></tr>
+      <tr><th>Fast Flux <span class="star b">差がつく</span></th><td><b>極端に短いTTL</b>で、1つの名前に対応するIPアドレスを次々に変える</td><td>C&amp;Cサーバの所在を隠し、IPアドレスによる遮断を回避する手口</td></tr>
+      <tr><th>Domain Flux <span class="star b">差がつく</span></th><td>マルウェアがアルゴリズム（DGA）で<b>接続先ドメイン名を次々に生成</b>する</td><td>ドメイン名による遮断を回避する手口。<b>NXDOMAIN応答が異常に多い端末</b>は感染を疑う手がかりになる</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方（総まとめ）</span>
+    <ul>
+      <li>DNSSECで防げるもの・防げないもの → <b>改ざん・なりすましは防げる／盗聴は防げない</b></li>
+      <li>オープンリゾルバの何が問題か → <b>DNSアンプ攻撃の踏み台にされ、自組織が加害者になる</b></li>
+      <li>キャッシュポイズニングの対策を2つ挙げよ → <b>ソースポートランダマイゼーション</b>＋
+        <b>外部からの再帰問い合わせの禁止（または権威／キャッシュの分離、DNSSEC）</b></li>
+      <li>ゾーン転送を制限する理由 → <b>ゾーン内の全ホスト情報が外部に取得され、内部構成が把握されるため</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第5章 アドレス割当・名前解決 ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">05 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>

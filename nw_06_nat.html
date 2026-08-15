@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第6章 NAT・アドレス変換 ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: translation rule */
+  .xlat{margin-top:30px; display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+  .xlat .box{
+    font-family:var(--mono); font-size:12px; padding:7px 14px; border-radius:2px;
+    color:#fff; white-space:nowrap;
+  }
+  .xlat .in{background:#3B3E86}
+  .xlat .out{background:#A61E4D}
+  .xlat .arrow{font-family:var(--mono); font-size:12px; color:var(--muted); letter-spacing:.1em}
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .xlat .box{font-size:11px; padding:6px 10px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第6章　NAT・アドレス変換
+      <span class="en">NAT / NAPT</span>
+    </h1>
+    <p class="lede">
+      IPアドレスの枯渇をしのぐために生まれた技術だが、試験で問われるのは
+      <b>「変換したことによって何が壊れるか」</b>のほうが圧倒的に多い。
+      IPsecが通らない、内部から自社サイトが見えない、長時間の接続が切れる——
+      どれも<b>NATテーブルという「一時的な対応表」に依存している</b>ことが原因である。
+      この一点を軸に整理していく。
+    </p>
+    <div class="xlat" aria-hidden="true">
+      <span class="box in">192.168.10.5 : 51234</span>
+      <span class="arrow">──── NAPT ────▶</span>
+      <span class="box out">203.0.113.7 : 40001</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 NATが必要な理由</a>
+    <a href="#s2">2 NATとNAPT</a>
+    <a href="#s3">3 変換の方向と種類</a>
+    <a href="#s4">4 NATテーブルとタイムアウト</a>
+    <a href="#s5">5 NATの副作用</a>
+    <a href="#s6">6 NATトラバーサル</a>
+    <a href="#s7">7 CGNとIPv6</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">6.1</span>NAT が必要な理由</h2>
+  <div class="rule"></div>
+
+  <p>
+    IPv4アドレスは32ビット＝約43億個しかなく、<span class="kw">IPアドレス枯渇</span>は早くから予見されていた。
+    実際、IANA が保有する未割当ブロックは2011年に枯渇している。
+    そこで採られた対策が、<b>組織内では自由に使える「プライベートアドレス」を割り当て、
+    インターネットへ出るときだけ限られた「グローバルアドレス」に変換する</b>という方式である。
+  </p>
+  <p>
+    <span class="kw">NAT</span><span class="en">（Network Address Translation）</span>は、
+    この<b>IPアドレスの書き換え</b>を行う機能。ルータやファイアウォールが担う。
+  </p>
+
+  <div class="card">
+    <h4 style="margin-top:0">NATがもたらしたもの（両面を押さえる）</h4>
+    <ul style="margin-bottom:0">
+      <li><b>利点</b>：グローバルアドレスの消費を大幅に削減できる／内部のアドレス体系を自由に設計でき、
+        ISP変更時も内部の再設計が不要／<b>外部から内部への通信を開始できないため、結果として攻撃面が減る</b></li>
+      <li><b>代償</b>：<b>エンドツーエンドの透過性が失われる</b>。
+        送信元アドレスが途中で書き換わるため、アドレスに依存する仕組みが軒並み壊れる（6.5節）</li>
+    </ul>
+  </div>
+  <div class="note">
+    <b>「NATがあるからファイアウォールは不要」は誤り。</b>
+    NATは外部からの接続開始を防ぐが、<b>内部から開始した通信の戻りはすべて通す</b>ため、
+    マルウェアの外向き通信やC&amp;Cとの交信は素通りする。
+    アクセス制御はファイアウォールの責務であり、NATの副次効果に頼らない、という整理で問われる。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">6.2</span>NAT と NAPT <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    両者の違いは<b>「ポート番号まで変換するかどうか」</b>の一点。ここから同時接続可能数の差が生まれる。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 330" role="img" aria-label="NATとNAPTの変換テーブルの違い">
+      <!-- NAT -->
+      <text x="0" y="16" font-size="13" font-weight="700" fill="#3B3E86">NAT ― IPアドレスのみ変換（1対1）</text>
+      <g font-family="monospace" font-size="11.5">
+        <rect x="0" y="26" width="330" height="26" fill="#E6E7F2" stroke="#3B3E86"/>
+        <text x="10" y="44" fill="#3B3E86">内部アドレス          外部アドレス</text>
+        <rect x="0" y="52" width="330" height="24" fill="#FFFFFF" stroke="#D3DBDF"/>
+        <text x="10" y="69" fill="#16232B">192.168.10.5    ↔    203.0.113.7</text>
+        <rect x="0" y="76" width="330" height="24" fill="#FFFFFF" stroke="#D3DBDF"/>
+        <text x="10" y="93" fill="#16232B">192.168.10.6    ↔    203.0.113.8</text>
+        <rect x="0" y="100" width="330" height="24" fill="#FFFFFF" stroke="#D3DBDF"/>
+        <text x="10" y="117" fill="#16232B">192.168.10.7    ↔    203.0.113.9</text>
+      </g>
+      <text x="0" y="146" font-size="11.5" fill="#A61E4D">→ <tspan font-weight="700">同時に通信できる台数 ＝ 用意したグローバルアドレスの数</tspan></text>
+
+      <!-- NAPT -->
+      <text x="370" y="16" font-size="13" font-weight="700" fill="#0E7C86">NAPT ― IPアドレス＋ポート番号を変換（多対1）</text>
+      <g font-family="monospace" font-size="11">
+        <rect x="370" y="26" width="330" height="26" fill="#E4F0F1" stroke="#0E7C86"/>
+        <text x="380" y="44" fill="#0E7C86">内部 IP:ポート        外部 IP:ポート</text>
+        <rect x="370" y="52" width="330" height="24" fill="#FFFFFF" stroke="#D3DBDF"/>
+        <text x="380" y="69" fill="#16232B">192.168.10.5:51234 ↔ 203.0.113.7:40001</text>
+        <rect x="370" y="76" width="330" height="24" fill="#FFFFFF" stroke="#D3DBDF"/>
+        <text x="380" y="93" fill="#16232B">192.168.10.6:49876 ↔ 203.0.113.7:40002</text>
+        <rect x="370" y="100" width="330" height="24" fill="#FFFFFF" stroke="#D3DBDF"/>
+        <text x="380" y="117" fill="#16232B">192.168.10.5:52001 ↔ 203.0.113.7:40003</text>
+      </g>
+      <text x="370" y="146" font-size="11.5" fill="#0E7C86">→ <tspan font-weight="700">1つのグローバルアドレスで多数の端末が同時通信できる</tspan></text>
+      <text x="370" y="164" font-size="11" fill="#6C7F88">（同じ端末の複数セッションもポート番号で区別される）</text>
+
+      <rect x="0" y="186" width="700" height="140" fill="#E7EDEE"/>
+      <text x="16" y="208" font-size="13" font-weight="700" fill="#16232B">戻りパケットの処理 ― ここが本質</text>
+      <text x="16" y="232" font-size="12" fill="#16232B">インターネットから <tspan font-family="monospace" font-weight="700">203.0.113.7:40002</tspan> 宛にパケットが返ってくると、</text>
+      <text x="16" y="252" font-size="12" fill="#16232B">ルータは<tspan font-weight="700">変換テーブルを逆引きして</tspan> <tspan font-family="monospace" font-weight="700">192.168.10.6:49876</tspan> へ書き戻し、内部へ転送する。</text>
+      <text x="16" y="278" font-size="12" fill="#A61E4D"><tspan font-weight="700">つまり、テーブルにエントリが存在しない通信は内部へ入れない。</tspan></text>
+      <text x="16" y="298" font-size="12" fill="#A61E4D">→ 外部から自発的に開始する通信は届かない（＝静的NATやポートフォワーディングが必要になる理由）</text>
+      <text x="16" y="318" font-size="12" fill="#A61E4D">→ エントリが消えると通信が切れる（＝NATタイムアウトの問題）</text>
+    </svg>
+    <figcaption>NAPT は <b>IPマスカレード</b>（Linux系の呼称）、<b>PAT</b>（Port Address Translation）とも呼ばれる。問題文がどの語を使っているかを確認し、答案ではその語に合わせる。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>NAT と NAPT</caption>
+    <thead><tr><th></th><th>NAT</th><th>NAPT（IPマスカレード／PAT）</th></tr></thead>
+    <tbody>
+      <tr><th>変換対象</th><td>IPアドレスのみ</td><td>IPアドレス＋<b>ポート番号</b></td></tr>
+      <tr><th>対応関係</th><td>1対1</td><td>多対1</td></tr>
+      <tr><th>同時通信数</th><td>グローバルアドレスの数まで</td><td>ポート番号の数まで（理論上約6万5千セッション）</td></tr>
+      <tr><th>用途</th><td>公開サーバの固定対応</td><td>クライアントのインターネット接続（一般的な形態）</td></tr>
+      <tr><th>制約</th><td>アドレスを多く必要とする</td><td><b>ポート番号を持たないプロトコル（ICMP・ESP・AH）を素直に扱えない</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>ICMP はどう扱われるのか。</b>ICMP にはポート番号がないため、NAPT ルータは
+    <b>ICMPヘッダの「識別子（Identifier）」フィールドをポート番号の代わりに使って</b>対応づける。
+    ping が NAPT 越しでも動くのはこの仕組みによる。一方、<b>ESP/AH には代用できるフィールドがない</b>ため
+    NAT-T が必要になる（6.6節）。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">6.3</span>変換の方向と種類 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>割当て方式による分類</caption>
+    <thead><tr><th>方式</th><th>内容</th><th>使いどころ</th></tr></thead>
+    <tbody>
+      <tr><th>静的NAT</th><td>内部アドレスと外部アドレスを<b>固定的に1対1で対応づける</b></td><td><b>公開サーバ</b>。対応が固定なので、外部からその外部アドレス宛に来た通信を内部サーバへ届けられる</td></tr>
+      <tr><th>動的NAT</th><td>用意したアドレスプールから<b>空いているものを都度割り当てる</b></td><td>同時利用数がアドレス数より少ない環境。プールが枯渇すると新規通信ができない</td></tr>
+      <tr><th>NAPT</th><td>ポート番号まで使って多対1に多重化する</td><td>クライアントのインターネット接続。最も一般的</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>変換する側による分類 ― 用語の対応</caption>
+    <thead><tr><th>用語</th><th>書き換える対象</th><th>典型的な場面</th></tr></thead>
+    <tbody>
+      <tr><th>送信元NAT<br>（SNAT） <span class="star">頻出</span></th><td><b>送信元</b>アドレス</td><td>内部 → 外部の通常のインターネット接続。<br><b>負荷分散装置でも使う</b>：サーバから見た送信元をLBのアドレスに書き換え、<b>戻りパケットを必ずLBへ返させる</b>（第9章）</td></tr>
+      <tr><th>宛先NAT<br>（DNAT）</th><td><b>宛先</b>アドレス</td><td>外部 → 内部の公開サーバへの通信。LBの仮想IP（VIP）からリアルサーバへの振分けも本質的にこれ</td></tr>
+      <tr><th>ポート<br>フォワーディング</th><td>宛先アドレス＋<b>宛先ポート番号</b></td><td>1つのグローバルIPで複数のサーバを公開する。<code>203.0.113.7:80 → 192.168.10.20:80</code>、<code>:443 → 192.168.10.21:443</code> のように振り分ける</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <b>SNAT という略語には注意。</b>「Source NAT（送信元NAT）」の意味で使われることが多いが、
+    文脈によっては「Static NAT（静的NAT）」を指す資料もある。
+    <b>午後の答案では略語を使わず「送信元アドレスを〜に変換する」と書く</b>ほうが安全。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">6.4</span>NATテーブルとタイムアウト <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">NATテーブル</span>は、変換の対応関係を保持する表。
+    <b>NAT／NAPT を行う機器はステートフル（状態を持つ）</b>であり、この表が通信の生命線になる。
+  </p>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>エントリが削除される契機</caption>
+    <thead><tr><th>プロトコル</th><th>削除の契機</th><th>タイムアウトの目安</th></tr></thead>
+    <tbody>
+      <tr><th>TCP</th><td><b>FIN／RST による切断</b>を検知したとき、または無通信タイムアウト</td><td>数十分〜数時間（機器依存）</td></tr>
+      <tr><th>UDP</th><td><b>無通信タイムアウトのみ</b>（切断という概念がないため）</td><td><b>30秒〜数分と短い</b></td></tr>
+      <tr><th>ICMP</th><td>無通信タイムアウト</td><td>数十秒</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">典型的な障害シナリオ <span class="star">頻出</span></h4>
+    <p>
+      「業務アプリで、しばらく操作せずに放置してから操作を再開すると、必ずエラーになる」——
+      これは<b>無通信状態が続いたことでNATテーブルのエントリが削除され、
+      再開時のパケットが変換できずに破棄された</b>ことが原因。
+    </p>
+    <p style="margin-bottom:0">
+      <b>対策の書き方</b>：「アプリケーションまたはOSの<b>キープアライブ送信間隔を、
+      NAT機器のタイムアウト時間より短く設定する</b>」／
+      「NAT機器の<b>タイムアウト時間を業務の想定無通信時間より長く設定する</b>」。
+      どちらの方向からも書けるようにしておく。
+    </p>
+  </div>
+
+  <div class="note">
+    <b>NAPTのセッション数上限も設計論点。</b>1台のNAT機器が保持できるエントリ数には限りがあり、
+    <b>大量の同時接続（多数の利用者、Webページあたりの多数のセッション）でテーブルが溢れると
+    新規通信ができなくなる</b>。グローバルアドレスを複数用意して分散させる、
+    機器のセッション上限値を確認する、といった検討が求められる。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">6.5</span>NAT の副作用 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>ヘアピンNAT</h3>
+  <p>
+    内部の端末が、<b>自社の公開サーバに「グローバルIPアドレス（またはそのFQDN）」でアクセスしようとすると
+    通信できない</b>——という現象が起きる。パケットがルータまで行き、
+    <b>同じインタフェースから折り返す</b>形になるためで、多くの機器は既定でこれを許可していない。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 240" role="img" aria-label="ヘアピンNATの問題と解決策">
+      <rect x="20" y="60" width="110" height="46" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="75" y="80" font-size="12" text-anchor="middle" fill="#16232B">社内PC</text>
+      <text x="75" y="97" font-size="10" text-anchor="middle" font-family="monospace" fill="#6C7F88">192.168.10.50</text>
+
+      <rect x="290" y="50" width="130" height="66" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.6"/>
+      <text x="355" y="76" font-size="12.5" text-anchor="middle" font-weight="700" fill="#3B3E86">FW / ルータ</text>
+      <text x="355" y="96" font-size="10" text-anchor="middle" font-family="monospace" fill="#3B3E86">203.0.113.7</text>
+
+      <rect x="290" y="160" width="130" height="50" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.4"/>
+      <text x="355" y="180" font-size="12" text-anchor="middle" fill="#0E7C86">公開Webサーバ</text>
+      <text x="355" y="198" font-size="10" text-anchor="middle" font-family="monospace" fill="#0E7C86">192.168.10.20（DMZ）</text>
+
+      <line x1="130" y1="83" x2="286" y2="83" stroke="#A61E4D" stroke-width="2"/>
+      <text x="205" y="70" font-size="11" text-anchor="middle" fill="#A61E4D">宛先 203.0.113.7</text>
+      <path d="M355,116 L355,156" stroke="#A61E4D" stroke-width="2" stroke-dasharray="5 4"/>
+      <text x="440" y="140" font-size="11.5" fill="#A61E4D">同じ側から入って同じ側へ戻る</text>
+      <text x="440" y="156" font-size="11.5" fill="#A61E4D">＝ヘアピン（U字）形の折返し</text>
+
+      <rect x="0" y="0" width="700" height="34" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="12" y="22" font-size="12" fill="#A61E4D"><tspan font-weight="700">症状：</tspan>外部からは見えるのに、社内からだけ自社サイトにアクセスできない</text>
+
+      <rect x="0" y="218" width="700" height="22" fill="#E4F0F1"/>
+      <text x="12" y="234" font-size="11.5" fill="#0E7C86"><tspan font-weight="700">解決策①</tspan> ルータでヘアピンNAT（NATループバック）を許可する　<tspan font-weight="700">解決策②</tspan> スプリットDNSで内部にはプライベートIPを返す（推奨）</text>
+    </svg>
+    <figcaption>第5章のスプリットDNSと直結する論点。<b>内部DNSがプライベートIPを返せば、そもそもルータまで行かずに直接サーバへ到達でき、無駄な折返しも発生しない</b>——この理由まで書けると得点になる。</figcaption>
+  </figure>
+
+  <h3>アドレスがペイロードに含まれるプロトコル</h3>
+  <p>
+    NATが書き換えるのは<b>IPヘッダとTCP/UDPヘッダ</b>だけである。
+    ところが一部のプロトコルは、<b>データ部（ペイロード）の中にIPアドレスやポート番号を書き込む</b>。
+    この部分は書き換えられないため、相手はプライベートアドレスを教えられて接続に失敗する。
+  </p>
+  <div class="tbl-scroll">
+  <table>
+    <caption>NATと相性の悪いプロトコル</caption>
+    <thead><tr><th>プロトコル</th><th>何が問題か</th></tr></thead>
+    <tbody>
+      <tr><th>FTP<br>（アクティブモード）</th><td>クライアントが <b>PORTコマンドで自分のIPアドレスとポート番号を通知</b>し、サーバ側から接続してもらう方式。通知される値がプライベートアドレスのため接続できない。<b>パッシブモードならクライアント側から接続するので通る</b></td></tr>
+      <tr><th>SIP / H.323</th><td>SDP（第15章）の中に、音声を受けるIPアドレスとポート番号を記述する。書き換えないと<b>呼制御は成立するのに音声が流れない（無音になる）</b></td></tr>
+      <tr><th>IPsec（ESP/AH）</th><td>ポート番号がないうえ、改ざん検知のため<b>書き換えると認証が失敗する</b>（6.6節）</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    これらに対応するため、NAT機器は <span class="kw">ALG</span><span class="en">（Application Level Gateway）</span>
+    を備えることがある。<b>ペイロードの中身まで解釈してアドレスを書き換える</b>機能で、
+    FTP ALG、SIP ALG などと呼ばれる。ただし<b>暗号化された通信では中身が見えないため機能しない</b>。
+  </p>
+
+  <h3>ログの追跡性</h3>
+  <p>
+    NAPT により多数の利用者が同一のグローバルアドレスを共有するため、
+    <b>外部のサーバのログには全員が同じIPアドレスとして記録される</b>。
+    不正アクセスの発信元を特定するには、<b>NAT機器側で「いつ・どの内部アドレスが・どの外部ポート番号を使ったか」
+    という変換ログを保存しておく必要がある</b>。
+    <b>時刻の一致が不可欠なので、NTPによる時刻同期がセットで問われる</b>（第18章）。
+  </p>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>社内から自社サイトが見えない → <b>ヘアピンNAT／スプリットDNS</b></li>
+      <li>放置後に再開すると切れる → <b>NATテーブルのタイムアウト／キープアライブ</b></li>
+      <li>FTPが通らない → <b>パッシブモードに変更する</b></li>
+      <li>IP電話で発着信はできるが音声が届かない → <b>SDP内のアドレスが変換されていない</b></li>
+      <li>不正アクセスの発信元を特定できるようにするには → <b>NAT変換ログの取得と、NTPによる時刻同期</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">6.6</span>NATトラバーサル <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">NATトラバーサル</span>とは、<b>NATを越えられない通信を、なんとか越えさせるための技術の総称</b>。
+    代表が IPsec の <b>NAT-T</b> と、P2P通信の <b>STUN／TURN／ICE</b> である。
+  </p>
+
+  <h3>IPsec の NAT-T <span class="star">頻出</span></h3>
+  <div class="card">
+    <h4 style="margin-top:0">なぜ IPsec は NAPT を通れないのか</h4>
+    <ul style="margin-bottom:0">
+      <li><b>ESP にはポート番号がない</b>（プロトコル番号50）。NAPTは多重化にポート番号を使うため、複数拠点・複数端末を区別できない</li>
+      <li><b>AH はIPヘッダまで含めて完全性を保証する</b>ため、NATがアドレスを書き換えた時点で<b>認証検証に失敗する</b>。
+        AHはNATと原理的に併用できない</li>
+    </ul>
+  </div>
+  <figure>
+    <svg viewBox="0 0 700 200" role="img" aria-label="NAT-TによるUDPカプセル化">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#A61E4D">通常の ESP（NAPTを通れない）</text>
+      <g font-size="11.5" text-anchor="middle">
+        <rect x="0" y="26" width="120" height="32" fill="#E6E7F2" stroke="#3B3E86"/><text x="60" y="47" fill="#3B3E86">新IPヘッダ</text>
+        <rect x="120" y="26" width="110" height="32" fill="#F7E6EC" stroke="#A61E4D"/><text x="175" y="47" fill="#A61E4D">ESPヘッダ</text>
+        <rect x="230" y="26" width="330" height="32" fill="#F2F5F6" stroke="#D3DBDF"/><text x="395" y="47" fill="#6C7F88">暗号化された元のIPパケット</text>
+      </g>
+      <text x="0" y="76" font-size="11.5" fill="#A61E4D">↑ プロトコル番号50。ポート番号がないためNAPTの変換テーブルに載せられない</text>
+
+      <text x="0" y="112" font-size="12.5" font-weight="700" fill="#0E7C86">NAT-T（UDPカプセル化）</text>
+      <g font-size="11.5" text-anchor="middle">
+        <rect x="0" y="122" width="110" height="32" fill="#E6E7F2" stroke="#3B3E86"/><text x="55" y="143" fill="#3B3E86">新IPヘッダ</text>
+        <rect x="110" y="122" width="130" height="32" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/><text x="175" y="143" fill="#0E7C86" font-weight="700">UDPヘッダ 4500</text>
+        <rect x="240" y="122" width="100" height="32" fill="#F7E6EC" stroke="#A61E4D"/><text x="290" y="143" fill="#A61E4D">ESPヘッダ</text>
+        <rect x="340" y="122" width="320" height="32" fill="#F2F5F6" stroke="#D3DBDF"/><text x="500" y="143" fill="#6C7F88">暗号化された元のIPパケット</text>
+      </g>
+      <text x="0" y="172" font-size="11.5" fill="#0E7C86">↑ <tspan font-weight="700">UDPヘッダを追加することでポート番号が生まれ、NAPTが正常に変換できるようになる</tspan></text>
+      <text x="0" y="192" font-size="11" fill="#6C7F88">IKEフェーズ1で経路上のNATの有無を検出し、検出されたら通信を UDP 500 から <tspan font-family="monospace" font-weight="700">UDP 4500</tspan> へ切り替える。</text>
+    </svg>
+    <figcaption>UDPヘッダ8バイト分のオーバーヘッドが増えるため、<b>実効MTUがさらに小さくなる</b>。第4章のMSSクランプが必要になる典型例。</figcaption>
+  </figure>
+
+  <h3>STUN / TURN / ICE <span class="star b">差がつく</span></h3>
+  <p>
+    IP電話やビデオ会議、WebRTC のように<b>端末どうしが直接通信したい</b>場合、
+    双方がNAPTの内側にいると互いのグローバル側アドレスが分からない。これを解決する枠組み。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="STUNとTURNの動作">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#0E7C86">STUN ― 自分の「外から見えるアドレス」を教えてもらう</text>
+      <rect x="10" y="30" width="100" height="42" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="60" y="56" font-size="12" text-anchor="middle" fill="#16232B">端末A</text>
+      <rect x="160" y="30" width="90" height="42" fill="#E6E7F2" stroke="#3B3E86"/>
+      <text x="205" y="56" font-size="11.5" text-anchor="middle" fill="#3B3E86">NAPT</text>
+      <rect x="420" y="30" width="130" height="42" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.5"/>
+      <text x="485" y="56" font-size="12" text-anchor="middle" fill="#0E7C86">STUNサーバ</text>
+      <line x1="250" y1="51" x2="416" y2="51" stroke="#0E7C86" stroke-width="2"/>
+      <line x1="110" y1="51" x2="156" y2="51" stroke="#0E7C86" stroke-width="2"/>
+      <text x="333" y="42" font-size="10.5" text-anchor="middle" fill="#0E7C86">問い合わせ</text>
+      <text x="566" y="46" font-size="11" fill="#0E7C86">「あなたは 203.0.113.7:40001</text>
+      <text x="566" y="62" font-size="11" fill="#0E7C86">　として見えています」</text>
+      <text x="10" y="92" font-size="11.5" fill="#16232B">→ 得たアドレスを相手に伝えることで、<tspan font-weight="700">端末どうしの直接通信（P2P）が成立する</tspan></text>
+      <text x="10" y="110" font-size="11" fill="#A61E4D">ただしNAPTの実装によっては、別の相手からのパケットを受け付けない（Symmetric NAT）ため失敗する</text>
+
+      <text x="0" y="146" font-size="12.5" font-weight="700" fill="#3B3E86">TURN ― どうしても直接つながらないときは中継してもらう</text>
+      <rect x="10" y="160" width="100" height="42" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="60" y="186" font-size="12" text-anchor="middle" fill="#16232B">端末A</text>
+      <rect x="290" y="160" width="130" height="42" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.5"/>
+      <text x="355" y="186" font-size="12" text-anchor="middle" fill="#3B3E86">TURNサーバ</text>
+      <rect x="590" y="160" width="100" height="42" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="640" y="186" font-size="12" text-anchor="middle" fill="#16232B">端末B</text>
+      <line x1="110" y1="181" x2="286" y2="181" stroke="#3B3E86" stroke-width="2"/>
+      <line x1="420" y1="181" x2="586" y2="181" stroke="#3B3E86" stroke-width="2"/>
+      <text x="10" y="222" font-size="11.5" fill="#16232B">→ 確実に通信できるが、<tspan font-weight="700">音声・映像がすべてサーバを経由するため帯域と遅延の負担が大きい</tspan></text>
+      <text x="10" y="242" font-size="11.5" fill="#0E7C86"><tspan font-weight="700">ICE</tspan>＝直接接続・STUN・TURN の候補をすべて集めて疎通を試し、<tspan font-weight="700">成功したもののうち最適な経路を選ぶ枠組み</tspan></text>
+    </svg>
+    <figcaption>設計上の含意：TURNは最後の手段であり、利用率が高いとサーバの帯域がボトルネックになる。「STUNで直接つながる割合をいかに上げるか」がP2P型サービスの品質を左右する。</figcaption>
+  </figure>
+</div>
+</section>
+
+<!-- ===================== 7 ===================== -->
+<section id="s7">
+<div class="wrap">
+  <h2><span class="num">6.7</span>CGN と IPv6 との関係</h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">CGN</span><span class="en">（Carrier Grade NAT／LSN：Large Scale NAT）</span>
+    <span class="star b">差がつく</span>は、<b>通信事業者側でNAPTを行い、複数の加入者が1つのグローバルアドレスを共有する</b>方式。
+    加入者にはグローバルアドレスではなく、共有アドレス空間
+    （<code>100.64.0.0/10</code>）またはプライベートアドレスが割り当てられる。
+  </p>
+  <div class="tbl-scroll">
+  <table>
+    <caption>CGN がもたらす問題</caption>
+    <thead><tr><th>問題</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>二重NAT</th><td>家庭内ルータと事業者のCGNで<b>2回NATされる</b>。ポート開放ができず、外部からの接続を要する用途（VPNサーバ、一部のオンラインゲーム）が使えない</td></tr>
+      <tr><th>ポート枯渇</th><td>1つのグローバルアドレスを多数の加入者で分け合うため、<b>加入者あたりに使えるポート数が制限される</b></td></tr>
+      <tr><th>追跡性</th><td>同一IPアドレスを多数が共有するため、<b>ポート番号と時刻まで含めた膨大な変換ログ</b>がなければ発信者を特定できない</td></tr>
+      <tr><th>アクセス制限の巻き添え</th><td>あるサイトが不正利用者のIPアドレスを遮断すると、<b>同じアドレスを共有する無関係な加入者まで遮断される</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">IPv6 との関係 <span class="star">頻出</span></h4>
+    <ul style="margin-bottom:0">
+      <li><b>IPv6 ではアドレスが潤沢なため、原則としてNATを行わない。</b>
+        エンドツーエンドの透過性が回復し、この章で挙げた副作用の大半が解消される</li>
+      <li>ただし<b>「NATがなくなる＝無防備になる」わけではない</b>。
+        外部からの通信の制御は<b>ファイアウォールで明示的に行う</b>——これが正しい整理</li>
+      <li>IPv4/IPv6 の変換技術である <b>NAT64 / DNS64</b>（第3章）は、
+        アドレス節約ではなく<b>プロトコル世代をまたぐための変換</b>であり、目的が異なる</li>
+    </ul>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>IPv6化のメリットとして「NATが不要になる」→ <b>エンドツーエンド通信が可能になり、
+        NATに起因するアプリケーションの制約や変換ログ管理の負担がなくなるため</b></li>
+      <li>PPPoE から IPoE（IPv4 over IPv6）への移行 →
+        <b>MAP-E／DS-Lite ではポート番号の割当てが制限される</b>など、CGN と同種の制約が生じる（第7章）</li>
+      <li>NATを廃止する場合に代わりに必要な対策 → <b>ファイアウォールによる外部からの通信の明示的な制御</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第6章 NAT・アドレス変換 ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">06 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>

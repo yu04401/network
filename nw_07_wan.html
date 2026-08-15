@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第7章 WAN・拠点接続 ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: demarcation rule */
+  .demarc{margin-top:30px}
+  .demarc .bar{display:flex; height:28px; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .demarc .bar span{
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; white-space:nowrap; color:#fff;
+  }
+  .d1{background:#0E7C86; flex:0 0 11%}
+  .d2{background:#7C8F97; flex:0 0 13%}
+  .d3{background:#3B3E86; flex:0 0 11%}
+  .d4{background:#A61E4D; flex:1 1 auto}
+  .demarc .ticks{
+    display:flex; justify-content:space-between;
+    font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:7px;
+  }
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .demarc .bar span{font-size:9px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第7章　WAN・拠点接続
+      <span class="en">Wide Area Network</span>
+    </h1>
+    <p class="lede">
+      自社で線を引けない区間をどう調達するか、という章。技術そのものより
+      <b>「どこまでが自社の責任で、どこからが事業者の責任か」</b>という
+      <b>責任分界点</b>と、<b>品質（帯域保証か、ベストエフォートか）</b>が問われる。
+      近年は<b>クラウド利用の増加によるトラフィックの流れの変化</b>と、
+      それに応える <b>SD-WAN</b> が出題の中心になっている。
+    </p>
+    <div class="demarc" aria-hidden="true">
+      <div class="bar">
+        <span class="d1">CE</span><span class="d2">アクセス回線</span><span class="d3">PE</span><span class="d4">事業者網（閉域）</span>
+      </div>
+      <div class="ticks"><span>自社</span><span>← 責任分界点 →</span><span>通信事業者</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 WANサービスの選択肢</a>
+    <a href="#s2">2 MPLS</a>
+    <a href="#s3">3 帯域と品質</a>
+    <a href="#s4">4 アクセス回線技術</a>
+    <a href="#s5">5 モバイル回線と冗長化</a>
+    <a href="#s6">6 SD-WAN</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">7.1</span>WAN サービスの選択肢 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    拠点間を結ぶ手段は大きく4つ。<b>「どの層で接続されるか」</b>を軸に整理すると、
+    ルーティングの責任分界点も、通せるトラフィックの種類も自動的に導ける。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="広域イーサネットとIP-VPNの責任分界点の違い">
+      <!-- 広域イーサ -->
+      <text x="0" y="16" font-size="13" font-weight="700" fill="#0E7C86">広域イーサネット（L2接続）</text>
+      <rect x="0" y="26" width="700" height="86" fill="#E4F0F1" stroke="#0E7C86"/>
+      <rect x="20" y="46" width="110" height="46" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="75" y="66" font-size="11.5" text-anchor="middle" fill="#16232B">拠点Aルータ</text>
+      <text x="75" y="83" font-size="10" text-anchor="middle" fill="#0E7C86">OSPF/BGP</text>
+      <rect x="570" y="46" width="110" height="46" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="625" y="66" font-size="11.5" text-anchor="middle" fill="#16232B">拠点Bルータ</text>
+      <text x="625" y="83" font-size="10" text-anchor="middle" fill="#0E7C86">OSPF/BGP</text>
+      <rect x="230" y="52" width="240" height="34" fill="#F2F5F6" stroke="#D3DBDF" stroke-dasharray="4 3"/>
+      <text x="350" y="74" font-size="11.5" text-anchor="middle" fill="#6C7F88">事業者網（L2スイッチとして振る舞う）</text>
+      <line x1="130" y1="69" x2="230" y2="69" stroke="#0E7C86" stroke-width="2"/>
+      <line x1="470" y1="69" x2="570" y2="69" stroke="#0E7C86" stroke-width="2"/>
+      <text x="350" y="104" font-size="11" text-anchor="middle" fill="#0E7C86">拠点どうしが<tspan font-weight="700">同一セグメント</tspan>に見える。ルーティングは<tspan font-weight="700">利用者が全責任を持つ</tspan></text>
+
+      <!-- IP-VPN -->
+      <text x="0" y="146" font-size="13" font-weight="700" fill="#3B3E86">IP-VPN（L3接続）</text>
+      <rect x="0" y="156" width="700" height="86" fill="#E6E7F2" stroke="#3B3E86"/>
+      <rect x="20" y="176" width="90" height="46" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="65" y="203" font-size="11.5" text-anchor="middle" fill="#16232B">CE</text>
+      <rect x="590" y="176" width="90" height="46" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="635" y="203" font-size="11.5" text-anchor="middle" fill="#16232B">CE</text>
+      <rect x="160" y="176" width="80" height="46" fill="#FFFFFF" stroke="#3B3E86" stroke-width="2"/>
+      <text x="200" y="203" font-size="11.5" text-anchor="middle" font-weight="700" fill="#3B3E86">PE</text>
+      <rect x="460" y="176" width="80" height="46" fill="#FFFFFF" stroke="#3B3E86" stroke-width="2"/>
+      <text x="500" y="203" font-size="11.5" text-anchor="middle" font-weight="700" fill="#3B3E86">PE</text>
+      <rect x="270" y="182" width="160" height="34" fill="#F2F5F6" stroke="#D3DBDF" stroke-dasharray="4 3"/>
+      <text x="350" y="204" font-size="11.5" text-anchor="middle" fill="#6C7F88">MPLS 網（Pルータ）</text>
+      <line x1="110" y1="199" x2="160" y2="199" stroke="#3B3E86" stroke-width="2"/>
+      <line x1="240" y1="199" x2="270" y2="199" stroke="#3B3E86" stroke-width="2"/>
+      <line x1="430" y1="199" x2="460" y2="199" stroke="#3B3E86" stroke-width="2"/>
+      <line x1="540" y1="199" x2="590" y2="199" stroke="#3B3E86" stroke-width="2"/>
+      <text x="350" y="234" font-size="11" text-anchor="middle" fill="#3B3E86">CE–PE 間で経路を交換し、<tspan font-weight="700">事業者が拠点間のルーティングを担う</tspan></text>
+    </svg>
+    <figcaption><b>CE</b>＝Customer Edge（利用者側のルータ）、<b>PE</b>＝Provider Edge（事業者網の入口ルータ）。この2語は必ず出るので位置関係で覚える。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>WANサービスの比較 ― この表が本章の中心</caption>
+    <thead><tr><th></th><th>専用線</th><th>広域イーサネット</th><th>IP-VPN</th><th>インターネットVPN</th></tr></thead>
+    <tbody>
+      <tr><th>接続の層</th><td class="c">物理</td><td class="c"><b>L2</b></td><td class="c"><b>L3</b></td><td class="c">L3（トンネル）</td></tr>
+      <tr><th>網の性質</th><td class="c">占有</td><td class="c"><b>閉域網</b></td><td class="c"><b>閉域網</b></td><td class="c">インターネット（公衆網）</td></tr>
+      <tr><th>ルーティング<br>の責任</th><td>利用者</td><td><b>利用者</b>（事業者は関与しない）</td><td><b>事業者</b>（CE–PE間で経路交換）</td><td>利用者</td></tr>
+      <tr><th>通せるもの</th><td>何でも</td><td><b>IP以外も可</b>（L2で透過するため、非IPプロトコル・マルチキャストも扱いやすい）</td><td><b>IPのみ</b></td><td>IPのみ（トンネル内はL2も可）</td></tr>
+      <tr><th>拠点追加</th><td>都度個別に敷設</td><td>比較的容易だが、<b>拠点が増えるとルーティング設計の負担が利用者に集中</b></td><td><b>容易</b>。追加拠点はPEに接続すれば全拠点と疎通</td><td>容易</td></tr>
+      <tr><th>品質</th><td>帯域保証</td><td>メニューによる（帯域保証／ベストエフォート）</td><td>メニューによる</td><td><b>ベストエフォート</b></td></tr>
+      <tr><th>コスト</th><td>最も高い</td><td>高い</td><td>高い</td><td><b>安い</b></td></tr>
+      <tr><th>暗号化</th><td>不要（占有）</td><td>不要とされる（閉域）</td><td>不要とされる（閉域）</td><td><b>必須（IPsec等）</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <b>「閉域網だから暗号化は不要か」は論点になりうる。</b>
+    閉域網は<b>インターネットから論理的に分離されている</b>という意味であり、
+    事業者網内で物理的に完全隔離されているわけではない。
+    機密性の要求が特に高い場合は、閉域網の上でさらにIPsecを併用する設計もありうる、という整理をしておく。
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">選択理由の書き分け <span class="star">頻出</span></h4>
+    <ul style="margin-bottom:0">
+      <li><b>広域イーサネットを選ぶ理由</b>：「拠点間を同一のL2セグメントとして扱えるため、
+        自社の方針でルーティング設計を行える」「ルーティングプロトコルを事業者に依存せず選択できる」</li>
+      <li><b>IP-VPNを選ぶ理由</b>：「拠点間のルーティングを事業者に委ねられ、
+        <b>拠点数が多くても自社の設定・運用負担が増えない</b>」（拠点が多いほど有利）</li>
+      <li><b>インターネットVPNを選ぶ理由</b>：「回線コストを大幅に抑えられる」。
+        代わりに「<b>帯域・遅延が保証されないため、業務要件を満たせるか事前検証が必要</b>」と必ず併記する</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">7.2</span>MPLS <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">MPLS</span><span class="en">（Multi-Protocol Label Switching）</span>は、
+    IPアドレスではなく<b>ラベルという短い固定長の識別子で転送先を決める</b>方式。
+    IP-VPN の基盤技術であり、事業者網の内部で動いている。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 290" role="img" aria-label="MPLSのラベル転送とヘッダ構造">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#16232B">ラベルの挿入位置 ― 「レイヤ2.5」と呼ばれる理由</text>
+      <g font-size="11.5" text-anchor="middle">
+        <rect x="0" y="26" width="150" height="32" fill="#E6E7F2" stroke="#3B3E86"/><text x="75" y="47" fill="#3B3E86">L2ヘッダ</text>
+        <rect x="150" y="26" width="200" height="32" fill="#F7E6EC" stroke="#A61E4D" stroke-width="2"/><text x="250" y="47" fill="#A61E4D" font-weight="700">MPLSラベル（32bit）</text>
+        <rect x="350" y="26" width="150" height="32" fill="#E4F0F1" stroke="#0E7C86"/><text x="425" y="47" fill="#0E7C86">IPヘッダ</text>
+        <rect x="500" y="26" width="200" height="32" fill="#F2F5F6" stroke="#D3DBDF"/><text x="600" y="47" fill="#6C7F88">データ</text>
+      </g>
+      <g font-size="10.5" text-anchor="middle">
+        <rect x="150" y="66" width="110" height="26" fill="#FFFFFF" stroke="#A61E4D"/><text x="205" y="83" fill="#A61E4D">ラベル 20bit</text>
+        <rect x="260" y="66" width="40" height="26" fill="#FFFFFF" stroke="#A61E4D"/><text x="280" y="83" fill="#A61E4D">EXP</text>
+        <rect x="300" y="66" width="20" height="26" fill="#FFFFFF" stroke="#A61E4D"/><text x="310" y="83" fill="#A61E4D">S</text>
+        <rect x="320" y="66" width="30" height="26" fill="#FFFFFF" stroke="#A61E4D"/><text x="335" y="83" fill="#A61E4D">TTL</text>
+      </g>
+      <text x="360" y="84" font-size="10.5" fill="#6C7F88">EXP＝QoS用の優先度（3bit）／S＝ラベルスタックの最下位フラグ</text>
+
+      <!-- LSP -->
+      <text x="0" y="128" font-size="12.5" font-weight="700" fill="#16232B">LSP（ラベルスイッチパス）上での動作</text>
+      <g stroke="#16232B" fill="#FFFFFF" stroke-width="1.4">
+        <rect x="10" y="150" width="100" height="46"/>
+        <rect x="180" y="150" width="100" height="46"/>
+        <rect x="350" y="150" width="100" height="46"/>
+        <rect x="520" y="150" width="100" height="46"/>
+      </g>
+      <g font-size="12" text-anchor="middle" fill="#16232B">
+        <text x="60" y="170">LER</text><text x="230" y="170">LSR</text><text x="400" y="170">LSR</text><text x="570" y="170">LER</text>
+      </g>
+      <g font-size="10" text-anchor="middle" fill="#6C7F88">
+        <text x="60" y="188">入口＝PE</text><text x="230" y="188">中継＝P</text><text x="400" y="188">中継＝P</text><text x="570" y="188">出口＝PE</text>
+      </g>
+      <g stroke="#A61E4D" stroke-width="2.2" fill="none">
+        <line x1="110" y1="173" x2="176" y2="173" marker-end="url(#mm)"/>
+        <line x1="280" y1="173" x2="346" y2="173" marker-end="url(#mm)"/>
+        <line x1="450" y1="173" x2="516" y2="173" marker-end="url(#mm)"/>
+      </g>
+      <g font-size="10.5" text-anchor="middle" fill="#A61E4D" font-family="monospace">
+        <text x="143" y="166">L=17</text><text x="313" y="166">L=42</text><text x="483" y="166">L=9</text>
+      </g>
+      <g font-size="11" text-anchor="middle" fill="#0E7C86" font-weight="700">
+        <text x="60" y="216">push（付与）</text><text x="230" y="216">swap</text><text x="400" y="216">swap</text><text x="570" y="216">pop（除去）</text>
+      </g>
+      <rect x="0" y="232" width="700" height="52" fill="#E7EDEE"/>
+      <text x="14" y="252" font-size="12" fill="#16232B"><tspan font-weight="700">LER</tspan>（Label Edge Router）＝網の出入口。ラベルを付ける／外す。IP-VPNでは <tspan font-weight="700">PEルータ</tspan> がこれにあたる。</text>
+      <text x="14" y="272" font-size="12" fill="#16232B"><tspan font-weight="700">LSR</tspan>（Label Switching Router）＝中継。<tspan font-weight="700">IPヘッダを一切見ずに</tspan>ラベルだけで転送先を決め、次のラベルに貼り替える。</text>
+      <defs><marker id="mm" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker></defs>
+    </svg>
+    <figcaption>ラベルは<b>完全一致で検索できる</b>ため、IPのロンゲストマッチより高速に処理できる、というのが当初の動機。現在はハードウェアの進化で速度差は縮まっており、<b>VPNの実現とトラフィックエンジニアリング</b>が主な採用理由になっている。</figcaption>
+  </figure>
+
+  <h3>MPLS-VPN ― なぜ顧客ごとに分離できるのか</h3>
+  <p>
+    IP-VPN では、1台のPEルータが複数の顧客を収容する。
+    顧客Aと顧客Bが同じプライベートアドレス（例：<code>192.168.1.0/24</code>）を使っていても混ざらないのは、
+    PEルータが <span class="kw">VRF</span>（第3章）によって<b>顧客ごとに独立したルーティングテーブルを持つ</b>ためである。
+  </p>
+  <div class="card">
+    <ul style="margin-bottom:0">
+      <li><b>CE–PE 間</b>：顧客ごとに BGP・OSPF・スタティックのいずれかで経路を交換する</li>
+      <li><b>PE–PE 間</b>：<b>MP-BGP</b> を使って、顧客識別子を付けたVPN経路を交換する</li>
+      <li><b>P（コア）ルータ</b>：顧客の経路情報を一切持たず、<b>ラベルだけで転送する</b>。
+        これによりコアの負荷が顧客数に比例して増えない</li>
+    </ul>
+  </div>
+  <div class="note">
+    <b>ラベルは2段重ねになる（ラベルスタック）。</b>
+    外側が「どのPEまで運ぶか」、内側が「どの顧客のVRFに渡すか」を表す。
+    ヘッダの <b>S ビット</b>は、そのラベルがスタックの最下位かどうかを示すフラグである。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">7.3</span>帯域と品質 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>品質に関する用語</caption>
+    <thead><tr><th>用語</th><th>内容</th><th>設計上の意味</th></tr></thead>
+    <tbody>
+      <tr><th>ベストエフォート</th><td>「最大○○Mbps」とうたうが<b>速度を保証しない</b></td><td>安価。混雑時に品質が落ちるため、<b>音声・映像や基幹業務には注意が必要</b></td></tr>
+      <tr><th>帯域保証</th><td>契約した帯域を<b>常時確保する</b></td><td>高価。基幹業務・音声で採用</td></tr>
+      <tr><th>CIR</th><td><b>Committed Information Rate＝保証帯域</b>。これを超えた分はバースト扱いで、輻輳時に優先的に破棄される</td><td>「平常時はCIRで足りるが、バックアップ転送時のみ超過する」といった設計判断で登場</td></tr>
+      <tr><th>アクセス回線</th><td>拠点から事業者網の収容局までの区間</td><td><b>ここが最も細く、ボトルネックになりやすい</b>。網内の帯域が太くても実効速度はここで決まる</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>「網内は10Gbpsだが拠点の実効速度が100Mbps止まり」→ <b>アクセス回線の速度が上限だから</b></li>
+      <li>ベストエフォート回線でVoIPを使う際の懸念 → <b>遅延・ジッタ・パケットロスが保証されず、通話品質が確保できない</b>。
+        対策は帯域保証回線の採用、または<b>QoSによる優先制御</b>（第16章）</li>
+      <li>拠点数×帯域から本社側の回線速度を算出させる計算問題（<b>集約点の帯域設計</b>）</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">7.4</span>アクセス回線の技術 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>PPP と認証</h3>
+  <p>
+    <span class="kw">PPP</span><span class="en">（Point-to-Point Protocol）</span>は、
+    1対1の回線でリンクを確立し、認証を行い、上位プロトコルの設定（IPアドレスの払出しなど）を行うプロトコル。
+    <b>LCP でリンクを確立 → 認証 → NCP（IPCP）でIPアドレス等を設定</b>という順で動く。
+  </p>
+  <div class="tbl-scroll">
+  <table>
+    <caption>PPP の認証方式</caption>
+    <thead><tr><th>方式</th><th>仕組み</th><th>評価</th></tr></thead>
+    <tbody>
+      <tr><th>PAP</th><td>IDとパスワードを<b>そのまま送る</b></td><td>盗聴されると即座に漏えいする。非推奨</td></tr>
+      <tr><th>CHAP <span class="star">頻出</span></th><td><b>チャレンジ／レスポンス方式</b>。サーバが乱数（チャレンジ）を送り、
+        クライアントは<b>パスワードと乱数から計算したハッシュ値（レスポンス）</b>を返す</td><td><b>パスワードそのものがネットワークを流れない</b>。
+        さらに<b>接続中も定期的に再認証できる</b>のが特徴</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>PPPoE と IPoE <span class="star">頻出</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="PPPoEとIPoEの経路の違い">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#A61E4D">PPPoE ― 網終端装置を経由する</text>
+      <g font-size="11" text-anchor="middle">
+        <rect x="0" y="28" width="110" height="40" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/><text x="55" y="53" fill="#16232B">宅内ルータ</text>
+        <rect x="150" y="28" width="140" height="40" fill="#F2F5F6" stroke="#D3DBDF"/><text x="220" y="53" fill="#6C7F88">アクセス網</text>
+        <rect x="330" y="28" width="150" height="40" fill="#F7E6EC" stroke="#A61E4D" stroke-width="2"/><text x="405" y="47" fill="#A61E4D" font-weight="700">網終端装置</text><text x="405" y="62" fill="#A61E4D" font-size="9.5">（POI）</text>
+        <rect x="520" y="28" width="120" height="40" fill="#E6E7F2" stroke="#3B3E86"/><text x="580" y="53" fill="#3B3E86">ISP</text>
+      </g>
+      <line x1="110" y1="48" x2="150" y2="48" stroke="#16232B"/>
+      <line x1="290" y1="48" x2="330" y2="48" stroke="#16232B"/>
+      <line x1="480" y1="48" x2="520" y2="48" stroke="#16232B"/>
+      <text x="0" y="90" font-size="11.5" fill="#A61E4D">PPPセッションを張ってISPが認証・IPアドレス払出し。<tspan font-weight="700">全利用者のトラフィックが網終端装置に集中し、夕方に混雑する</tspan></text>
+      <text x="0" y="108" font-size="11" fill="#6C7F88">PPPoEヘッダ8バイト分MTUが減る（1500 → 1492）→ MSSは1452</text>
+
+      <text x="0" y="146" font-size="12.5" font-weight="700" fill="#0E7C86">IPoE ― ネイティブに接続する</text>
+      <g font-size="11" text-anchor="middle">
+        <rect x="0" y="158" width="110" height="40" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/><text x="55" y="183" fill="#16232B">宅内ルータ</text>
+        <rect x="150" y="158" width="200" height="40" fill="#F2F5F6" stroke="#D3DBDF"/><text x="250" y="183" fill="#6C7F88">アクセス網（IPv6ネイティブ）</text>
+        <rect x="390" y="158" width="150" height="40" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/><text x="465" y="183" fill="#0E7C86" font-weight="700">VNE事業者網</text>
+        <rect x="580" y="158" width="110" height="40" fill="#E6E7F2" stroke="#3B3E86"/><text x="635" y="183" fill="#3B3E86">インターネット</text>
+      </g>
+      <line x1="110" y1="178" x2="150" y2="178" stroke="#0E7C86" stroke-width="2"/>
+      <line x1="350" y1="178" x2="390" y2="178" stroke="#0E7C86" stroke-width="2"/>
+      <line x1="540" y1="178" x2="580" y2="178" stroke="#0E7C86" stroke-width="2"/>
+      <text x="0" y="220" font-size="11.5" fill="#0E7C86"><tspan font-weight="700">PPPのセッション確立が不要で、網終端装置を経由しないため輻輳の影響を受けにくい</tspan></text>
+      <text x="0" y="240" font-size="11.5" fill="#16232B">ただし<tspan font-weight="700">IPoEはIPv6が前提</tspan>。IPv4通信も行うには「IPv4 over IPv6」の仕組みが要る。</text>
+    </svg>
+    <figcaption>「夜間に速度が落ちる」現象の説明として問われやすい。原因は回線の物理速度ではなく、<b>PPPoEの網終端装置における輻輳</b>である。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>IPv4 over IPv6 の方式 <span class="star b">差がつく</span></caption>
+    <thead><tr><th>方式</th><th>NATを行う場所</th><th>特徴</th></tr></thead>
+    <tbody>
+      <tr><th>MAP-E</th><td><b>利用者側のルータ</b></td><td>1つのグローバルIPv4アドレスを複数の利用者で共有し、<b>利用できるポート番号の範囲が割り当てられる</b>。範囲内であればポート開放が可能</td></tr>
+      <tr><th>DS-Lite</th><td><b>事業者側（AFTR）</b></td><td>利用者側はNATせずトンネルするだけ。設定は簡単だが、<b>利用者側でポート開放ができない</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    どちらも<b>IPv4パケットをIPv6でカプセル化する</b>ため、<b>実効MTUが減る</b>点は共通。
+    第4章のMSS調整が必要になる。
+  </p>
+
+  <p>
+    <span class="kw">L2TP</span><span class="star b">差がつく</span>
+    <span class="en">（Layer 2 Tunneling Protocol）</span>は、PPPのフレームをIPネットワーク上でトンネリングする技術。
+    <b>それ自体には暗号化機能がない</b>ため、実運用では <b>L2TP/IPsec</b> として
+    IPsecと組み合わせ、リモートアクセスVPNに用いる。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">7.5</span>モバイル回線と回線冗長化 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>モバイル回線の使いどころ</h3>
+  <ul>
+    <li><b>バックアップ回線</b>：固定回線の障害時に自動で切り替える。<b>物理的に経路が完全に独立している</b>のが最大の価値</li>
+    <li><b>仮設・短期の拠点</b>：工事期間を待たずに開通できる</li>
+    <li><b>災害対策</b>：固定回線の被災時にも使える可能性がある</li>
+    <li><b>留意点</b>：従量課金による費用、電波状況への依存、固定回線より帯域と安定性が劣る</li>
+  </ul>
+
+  <h3>回線冗長化の設計 <span class="star">頻出</span></h3>
+  <div class="card">
+    <h4 style="margin-top:0">冗長化で押さえるべき3つの観点</h4>
+    <ol style="margin-bottom:0">
+      <li><b>切替方式</b>：
+        <b>アクティブ／スタンバイ</b>（フローティングスタティックやルーティングプロトコルで自動切替）か、
+        <b>アクティブ／アクティブ</b>（両系を常時使い負荷分散）か</li>
+      <li><b>独立性</b>：<b>異なる事業者・異なる経路・異なる引込口</b>にする。
+        契約が別でも<b>同じ管路・同じ電柱を通っていれば同時に切れる</b>ため、意味がない</li>
+      <li><b>切替後の帯域</b>：バックアップ回線の帯域が主回線より細い場合、
+        <b>切替後にどの業務を優先するか（QoS）</b>、あるいは<b>一部業務を停止するか</b>を事前に決めておく</li>
+    </ol>
+  </div>
+  <div class="note">
+    <b>障害検知の観点も忘れない。</b>回線がリンクダウンしない形の障害（対向側の故障、途中区間の断）では、
+    ルータはリンクアップのまま切替が起こらない。<b>BFD</b>（第3章）や
+    <b>疎通監視（定期的なping・回線品質測定）</b>による検知が必要になる。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">7.6</span>SD-WAN <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">SD-WAN</span>は、<b>複数の回線（閉域網・インターネット・モバイル）を束ね、
+    その上に論理的なトンネル網を構築して、コントローラから集中管理する</b>方式。
+    背景にあるのは<b>クラウド／SaaS利用の増加によるトラフィックの流れの変化</b>である。
+  </p>
+
+  <h3>オーバーレイとアンダーレイ</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>2層構造</caption>
+    <thead><tr><th>層</th><th>実体</th><th>役割</th></tr></thead>
+    <tbody>
+      <tr><th>アンダーレイ</th><td>物理的な回線そのもの（IP-VPN、インターネット、LTE/5G）</td><td>とにかくパケットを運ぶ。<b>事業者が管理する領域</b></td></tr>
+      <tr><th>オーバーレイ</th><td>その上に張られた<b>論理トンネル（IPsec等）</b></td><td>拠点間の論理的な接続。<b>下の回線が何であっても同じように扱える</b>ため、回線の切替・追加が容易になる</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    第10章の VXLAN も同じ<b>オーバーレイ／アンダーレイ</b>という構図を持つ。
+    <b>「物理の上に論理を重ね、物理の制約から論理を切り離す」</b>という考え方は、
+    データセンタでもWANでも共通のパターンとして押さえておくと理解が速い。
+  </div>
+
+  <h3>ローカルブレイクアウト <span class="star">頻出</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 280" role="img" aria-label="従来のバックホール構成とローカルブレイクアウトの比較">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#A61E4D">従来：すべて本社経由（バックホール）</text>
+      <g font-size="11" text-anchor="middle">
+        <rect x="0" y="30" width="100" height="40" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/><text x="50" y="55" fill="#16232B">拠点</text>
+        <rect x="230" y="30" width="120" height="40" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.5"/><text x="290" y="55" fill="#3B3E86">本社（FW/Proxy）</text>
+        <rect x="470" y="30" width="110" height="40" fill="#F2F5F6" stroke="#D3DBDF"/><text x="525" y="55" fill="#6C7F88">SaaS</text>
+      </g>
+      <line x1="100" y1="50" x2="230" y2="50" stroke="#A61E4D" stroke-width="2.2"/>
+      <line x1="350" y1="50" x2="470" y2="50" stroke="#A61E4D" stroke-width="2.2"/>
+      <text x="165" y="42" font-size="10" text-anchor="middle" fill="#A61E4D">閉域網</text>
+      <text x="600" y="46" font-size="10.5" fill="#A61E4D">遠回り＝遅延増</text>
+      <text x="0" y="94" font-size="11.5" fill="#A61E4D">→ <tspan font-weight="700">本社の回線とFWにトラフィックが集中し、クラウド利用が増えるほど逼迫する</tspan></text>
+
+      <text x="0" y="134" font-size="12.5" font-weight="700" fill="#0E7C86">ローカルブレイクアウト：SaaS宛は拠点から直接</text>
+      <g font-size="11" text-anchor="middle">
+        <rect x="0" y="148" width="100" height="40" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/><text x="50" y="173" fill="#16232B">拠点</text>
+        <rect x="230" y="210" width="120" height="40" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.5"/><text x="290" y="235" fill="#3B3E86">本社（社内系）</text>
+        <rect x="470" y="148" width="110" height="40" fill="#F2F5F6" stroke="#D3DBDF"/><text x="525" y="173" fill="#6C7F88">SaaS</text>
+      </g>
+      <line x1="100" y1="162" x2="470" y2="162" stroke="#0E7C86" stroke-width="2.4"/>
+      <text x="285" y="154" font-size="10.5" text-anchor="middle" fill="#0E7C86" font-weight="700">インターネットへ直接（SaaS宛のみ）</text>
+      <line x1="70" y1="188" x2="235" y2="215" stroke="#3B3E86" stroke-width="2"/>
+      <text x="130" y="212" font-size="10.5" fill="#3B3E86">社内システム宛は従来どおり</text>
+
+      <rect x="0" y="256" width="700" height="24" fill="#E4F0F1"/>
+      <text x="12" y="273" font-size="11.5" fill="#0E7C86">効果：<tspan font-weight="700">本社回線・FWの負荷軽減＋SaaSへの遅延短縮</tspan>　／　課題：拠点ごとの<tspan font-weight="700">セキュリティ確保（SWG・SASE の併用）</tspan></text>
+    </svg>
+    <figcaption>「クラウド利用が増えて本社のインターネット回線が逼迫した」という課題文に対する定番の解答。<b>効果と、それに伴うセキュリティ上の課題をセットで書く</b>と得点が伸びる（第13章のSASE／SWG／ZTNAに接続）。</figcaption>
+  </figure>
+
+  <h3>SD-WAN のその他の機能</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>主な機能</caption>
+    <thead><tr><th>機能</th><th>内容</th><th>効果</th></tr></thead>
+    <tbody>
+      <tr><th>回線品質測定</th><td>各回線の<b>遅延・ジッタ・パケットロス</b>を常時測定する</td><td><b>リンクダウンしない品質劣化も検知</b>し、閾値超過で自動的に別回線へ切り替えられる</td></tr>
+      <tr><th>アプリケーション<br>単位の経路制御</th><td>通信の内容を識別し、<b>業務システムは閉域網、Web会議は低遅延の回線</b>のように振り分ける</td><td>回線コストを抑えつつ重要業務の品質を確保できる</td></tr>
+      <tr><th>ゼロタッチ<br>プロビジョニング</th><td>機器を拠点に送って<b>電源とケーブルをつなぐだけ</b>で、起動時に自動的に設定を取得する</td><td><b>拠点への技術者派遣が不要</b>になり、多拠点展開の工数と期間を大幅に削減できる</td></tr>
+      <tr><th>集中管理</th><td>コントローラから全拠点のポリシーを一括で配布する</td><td>設定の均一化、変更作業の効率化、設定ミスの削減</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>SD-WAN導入の効果 → <b>「複数回線を用途に応じて使い分けられ、閉域網の帯域増強より低コストで必要な品質を確保できる」</b>
+        ＋<b>「拠点機器の設定を集中管理でき、展開・変更の運用負荷を削減できる」</b></li>
+      <li>ゼロタッチプロビジョニングの利点 → <b>拠点へ技術者を派遣せずに開通でき、展開期間と費用を削減できる</b></li>
+      <li>ローカルブレイクアウト導入時の懸念 → <b>拠点からインターネットへ直接出るため、
+        本社のFW・プロキシによる集中的なセキュリティ対策が効かなくなる</b>。
+        対策はクラウド型のSWG／SASEの利用、または拠点側でのURLフィルタリング</li>
+      <li>回線品質測定が必要な理由 → <b>リンクは維持されたまま品質だけが劣化する障害は、
+        リンクダウン検知では切り替えられないため</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第7章 WAN・拠点接続 ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">07 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>

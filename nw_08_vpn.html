@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第8章 VPN・暗号化 ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: ESP tunnel packet rule */
+  .esp{margin-top:30px}
+  .esp .bar{display:flex; height:28px; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .esp .bar span{
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:10px; letter-spacing:.03em; white-space:nowrap; color:#fff;
+  }
+  .e1{background:#3B3E86; flex:0 0 15%}
+  .e2{background:#A61E4D; flex:0 0 12%}
+  .e3{background:#0E7C86; flex:1 1 auto}
+  .e4{background:#A61E4D; flex:0 0 11%}
+  .e5{background:#7C8F97; flex:0 0 12%}
+  .esp .ticks{
+    display:flex; justify-content:space-between;
+    font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:7px;
+  }
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .esp .bar span{font-size:8.5px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第8章　VPN・暗号化
+      <span class="en">IPsec / TLS / SSL-VPN</span>
+    </h1>
+    <p class="lede">
+      公衆網の上に安全な通路を作る技術。設問は<b>「何を守るのか（秘匿・完全性・認証）」</b>と
+      <b>「どこからどこまでを守るのか（区間）」</b>の2軸で整理できる。
+      IPsec は拠点間、SSL-VPN はリモートアクセス、TLS はアプリケーション単位——
+      という<b>守る区間の違い</b>が、そのまま方式選択の理由になる。
+    </p>
+    <div class="esp" aria-hidden="true">
+      <div class="bar">
+        <span class="e1">新IPヘッダ</span><span class="e2">ESPヘッダ</span><span class="e3">元のIPパケット（暗号化）</span><span class="e4">ESPトレーラ</span><span class="e5">認証データ</span>
+      </div>
+      <div class="ticks"><span>平文</span><span>← 暗号化される範囲 →</span><span>完全性の検証</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 暗号技術の基礎</a>
+    <a href="#s2">2 IPsec の構成要素</a>
+    <a href="#s3">3 IKE と SA</a>
+    <a href="#s4">4 IPsec の設計論点</a>
+    <a href="#s5">5 TLS</a>
+    <a href="#s6">6 SSL-VPN</a>
+    <a href="#s7">7 オフロードと可視化</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">8.1</span>暗号技術の基礎 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>2種類の暗号方式</caption>
+    <thead><tr><th></th><th>共通鍵暗号（対称鍵）</th><th>公開鍵暗号（非対称鍵）</th></tr></thead>
+    <tbody>
+      <tr><th>鍵</th><td>暗号化と復号に<b>同じ鍵</b></td><td>暗号化と復号に<b>対になる別の鍵</b></td></tr>
+      <tr><th>速度</th><td><b>高速</b></td><td>低速（数百〜数千倍の処理コスト）</td></tr>
+      <tr><th>課題</th><td><b>鍵配送問題</b>：相手にどうやって安全に鍵を渡すか</td><td>処理が重く、大量データには向かない</td></tr>
+      <tr><th>代表</th><td><b>AES</b>、3DES</td><td>RSA、楕円曲線暗号（ECDSA／ECDHE）</td></tr>
+      <tr><th>鍵の数</th><td>n人が相互に通信するには n(n−1)/2 個</td><td>n人でも 2n 個（各自が公開鍵・秘密鍵を1組）</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>ハイブリッド方式 ― IPsec も TLS もこれ</h3>
+  <figure>
+    <svg viewBox="0 0 700 170" role="img" aria-label="ハイブリッド暗号方式の考え方">
+      <rect x="0" y="20" width="330" height="130" fill="#E6E7F2" stroke="#3B3E86"/>
+      <text x="165" y="44" font-size="13" text-anchor="middle" font-weight="700" fill="#3B3E86">① 鍵の共有だけ</text>
+      <text x="165" y="62" font-size="13" text-anchor="middle" font-weight="700" fill="#3B3E86">公開鍵暗号／DH鍵交換</text>
+      <text x="20" y="92" font-size="11.5" fill="#16232B">・相手が本物かを確かめる（認証）</text>
+      <text x="20" y="112" font-size="11.5" fill="#16232B">・盗聴されている経路でも</text>
+      <text x="20" y="130" font-size="11.5" fill="#16232B">　安全に<tspan font-weight="700">セッション鍵</tspan>を共有できる</text>
+
+      <text x="345" y="90" font-size="20" text-anchor="middle" fill="#6C7F88">▶</text>
+
+      <rect x="370" y="20" width="330" height="130" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="535" y="44" font-size="13" text-anchor="middle" font-weight="700" fill="#0E7C86">② 実データの暗号化</text>
+      <text x="535" y="62" font-size="13" text-anchor="middle" font-weight="700" fill="#0E7C86">共通鍵暗号（AES）</text>
+      <text x="390" y="92" font-size="11.5" fill="#16232B">・共有したセッション鍵を使う</text>
+      <text x="390" y="112" font-size="11.5" fill="#16232B">・<tspan font-weight="700">高速に大量のデータを処理できる</tspan></text>
+      <text x="390" y="130" font-size="11.5" fill="#16232B">・鍵は通信ごとに使い捨てる</text>
+    </svg>
+    <figcaption><b>公開鍵暗号の「鍵配送を解決できる」利点と、共通鍵暗号の「速い」利点を組み合わせる</b>のがハイブリッド方式。「なぜ全部を公開鍵暗号でやらないのか」→ 処理が重すぎるから、が定番の解答。</figcaption>
+  </figure>
+
+  <h3>完全性と認証</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>守る対象と使う技術</caption>
+    <thead><tr><th>守りたいもの</th><th>技術</th><th>仕組み</th></tr></thead>
+    <tbody>
+      <tr><th>秘匿性<br>（盗聴されない）</th><td>暗号化（AES など）</td><td>鍵を知らなければ内容が読めない</td></tr>
+      <tr><th>完全性<br>（改ざんされない）</th><td>ハッシュ関数（<b>SHA-256</b>）</td><td>データから固定長の値を計算。1ビットでも変わると値が全く変わる。<b>一方向性</b>があり元に戻せない</td></tr>
+      <tr><th>完全性＋<br>送信元認証</th><td><b>HMAC</b></td><td>ハッシュ計算に<b>共通鍵を混ぜる</b>。鍵を知る者しか正しい値を作れないため、改ざん検知に加えて「相手が鍵を共有した本人である」ことも確認できる</td></tr>
+      <tr><th>否認防止</th><td>ディジタル署名</td><td><b>送信者の秘密鍵</b>でハッシュ値を暗号化。<b>公開鍵</b>で誰でも検証できるため、本人が「送っていない」と言えない</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>HMAC とディジタル署名の違いを押さえる。</b>
+    HMAC は<b>共通鍵</b>を使うため、検証できるのは鍵を共有している相手だけであり、
+    <b>両者が同じ鍵を持つので「相手が偽造した」可能性を排除できない＝否認防止にはならない</b>。
+    ディジタル署名は<b>秘密鍵を持つ本人しか作れない</b>ので否認防止が成立する。
+    IPsec や TLS の通信中の完全性検証には、高速な HMAC が使われる。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">8.2</span>IPsec の構成要素 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">IPsec</span>は、<b>IP層で暗号化と認証を行う</b>プロトコル群。
+    上位のアプリケーションを一切変更せずに保護できるのが最大の特徴で、
+    <b>拠点間VPNの標準</b>となっている。押さえるべきは<b>「2つのプロトコル」×「2つのモード」</b>の組み合わせ。
+  </p>
+
+  <h3>AH と ESP</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>2つのセキュリティプロトコル</caption>
+    <thead><tr><th></th><th>AH（Authentication Header）</th><th>ESP（Encapsulating Security Payload）</th></tr></thead>
+    <tbody>
+      <tr><th>プロトコル番号</th><td class="c m">51</td><td class="c m">50</td></tr>
+      <tr><th>暗号化</th><td class="c"><b>しない</b></td><td class="c"><b>する</b></td></tr>
+      <tr><th>完全性・認証</th><td>する（<b>IPヘッダも保護対象に含む</b>）</td><td>する（<b>IPヘッダは対象外</b>）</td></tr>
+      <tr><th>NAT越え</th><td><b>不可</b>。NATがIPヘッダを書き換えると<b>完全性の検証に失敗する</b></td><td>そのままでは不可（ポート番号がないため）だが、<b>NAT-T で解決できる</b></td></tr>
+      <tr><th>実運用</th><td>ほとんど使われない</td><td><b>事実上こちらだけを使う</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>「秘匿が不要なら AH でよいのか」</b>——理屈の上ではそうだが、
+    <b>NATと共存できないという致命的な制約</b>があるため、実際には ESP の認証機能のみを使う（暗号化なしのESP）か、
+    素直に ESP で暗号化する。試験では<b>「AHはNATを越えられない理由」</b>が問われる。
+  </div>
+
+  <h3>トランスポートモードとトンネルモード <span class="star">頻出</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 300" role="img" aria-label="IPsecの2つのモードのパケット構造">
+      <text x="0" y="16" font-size="12" fill="#6C7F88">元のIPパケット</text>
+      <g font-size="11" text-anchor="middle">
+        <rect x="0" y="24" width="150" height="30" fill="#E6E7F2" stroke="#3B3E86"/><text x="75" y="44" fill="#3B3E86">元IPヘッダ</text>
+        <rect x="150" y="24" width="130" height="30" fill="#F2F5F6" stroke="#D3DBDF"/><text x="215" y="44" fill="#6C7F88">TCPヘッダ</text>
+        <rect x="280" y="24" width="280" height="30" fill="#F2F5F6" stroke="#D3DBDF"/><text x="420" y="44" fill="#6C7F88">データ</text>
+      </g>
+
+      <!-- transport -->
+      <text x="0" y="90" font-size="12.5" font-weight="700" fill="#3B3E86">トランスポートモード ― 元のIPヘッダを残す</text>
+      <g font-size="11" text-anchor="middle">
+        <rect x="0" y="100" width="150" height="32" fill="#E6E7F2" stroke="#3B3E86"/><text x="75" y="121" fill="#3B3E86">元IPヘッダ</text>
+        <rect x="150" y="100" width="90" height="32" fill="#F7E6EC" stroke="#A61E4D"/><text x="195" y="121" fill="#A61E4D">ESP</text>
+        <rect x="240" y="100" width="320" height="32" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.8"/><text x="400" y="121" fill="#0E7C86" font-weight="700">TCPヘッダ＋データ（暗号化）</text>
+        <rect x="560" y="100" width="90" height="32" fill="#F7E6EC" stroke="#A61E4D"/><text x="605" y="121" fill="#A61E4D">トレーラ</text>
+      </g>
+      <text x="0" y="152" font-size="11.5" fill="#3B3E86">・送信元／宛先IPアドレスは<tspan font-weight="700">見える</tspan>　・用途＝<tspan font-weight="700">ホスト間（エンドツーエンド）の保護</tspan>、L2TP/IPsec</text>
+
+      <!-- tunnel -->
+      <text x="0" y="196" font-size="12.5" font-weight="700" fill="#0E7C86">トンネルモード ― 元のパケット全体を包み、新しいIPヘッダを付ける</text>
+      <g font-size="11" text-anchor="middle">
+        <rect x="0" y="206" width="130" height="32" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.8"/><text x="65" y="227" fill="#3B3E86" font-weight="700">新IPヘッダ</text>
+        <rect x="130" y="206" width="80" height="32" fill="#F7E6EC" stroke="#A61E4D"/><text x="170" y="227" fill="#A61E4D">ESP</text>
+        <rect x="210" y="206" width="360" height="32" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.8"/><text x="390" y="227" fill="#0E7C86" font-weight="700">元IPヘッダ＋TCP＋データ（すべて暗号化）</text>
+        <rect x="570" y="206" width="80" height="32" fill="#F7E6EC" stroke="#A61E4D"/><text x="610" y="227" fill="#A61E4D">トレーラ</text>
+      </g>
+      <text x="0" y="258" font-size="11.5" fill="#0E7C86">・<tspan font-weight="700">元の送信元／宛先IPアドレスも隠せる</tspan>（新IPヘッダはVPN装置どうしのアドレス）</text>
+      <text x="0" y="276" font-size="11.5" fill="#0E7C86">・用途＝<tspan font-weight="700">拠点間VPN（ゲートウェイ間）</tspan>。端末はIPsecを意識しない</text>
+      <text x="0" y="296" font-size="11" fill="#A61E4D">・新しいIPヘッダの分だけオーバーヘッドが増える（合計で50〜60バイト程度）→ MTU/MSS調整が必要</text>
+    </svg>
+    <figcaption>拠点間VPNの構成図が出たら、まず<b>ESPのトンネルモード</b>と考えてよい。「内部のアドレス体系を秘匿できる」という利点まで書けるようにしておく。</figcaption>
+  </figure>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">8.3</span>IKE と SA の確立 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    暗号化するには、両者が<b>同じ鍵と同じアルゴリズムを持っている</b>必要がある。
+    それを安全に取り決めるのが <span class="kw">IKE</span><span class="en">（Internet Key Exchange、UDP 500番）</span>で、
+    取り決めた内容の集合を <span class="kw">SA</span><span class="en">（Security Association）</span>と呼ぶ。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 340" role="img" aria-label="IKEフェーズ1とフェーズ2の役割">
+      <line x1="120" y1="34" x2="120" y2="320" stroke="#D3DBDF" stroke-width="1.5"/>
+      <line x1="560" y1="34" x2="560" y2="320" stroke="#D3DBDF" stroke-width="1.5"/>
+      <text x="120" y="22" font-size="12.5" text-anchor="middle" font-weight="700" fill="#16232B">拠点AのVPN装置</text>
+      <text x="560" y="22" font-size="12.5" text-anchor="middle" font-weight="700" fill="#16232B">拠点BのVPN装置</text>
+
+      <rect x="0" y="44" width="700" height="130" fill="#E6E7F2" stroke="#3B3E86"/>
+      <text x="14" y="66" font-size="13" font-weight="700" fill="#3B3E86">フェーズ1 ─ IKE SA（ISAKMP SA）を作る</text>
+      <text x="14" y="86" font-size="11.5" fill="#16232B">目的：<tspan font-weight="700">「これから鍵の相談をするための、安全な相談用の通路」を作る</tspan></text>
+      <line x1="120" y1="106" x2="556" y2="106" stroke="#3B3E86" stroke-width="2" marker-end="url(#k1)"/>
+      <text x="340" y="100" font-size="11" text-anchor="middle" fill="#3B3E86">① 暗号アルゴリズムなどの提案・合意</text>
+      <line x1="120" y1="130" x2="556" y2="130" stroke="#3B3E86" stroke-width="2" marker-end="url(#k1)"/>
+      <text x="340" y="124" font-size="11" text-anchor="middle" fill="#3B3E86">② <tspan font-weight="700">DH鍵交換</tspan>（盗聴されている経路でも共通の鍵を生成できる）</text>
+      <line x1="120" y1="154" x2="556" y2="154" stroke="#3B3E86" stroke-width="2" marker-end="url(#k1)"/>
+      <text x="340" y="148" font-size="11" text-anchor="middle" fill="#3B3E86">③ <tspan font-weight="700">相手認証</tspan>（事前共有鍵 PSK ／ ディジタル証明書）</text>
+      <text x="576" y="112" font-size="10.5" fill="#3B3E86">双方向で</text>
+      <text x="576" y="127" font-size="10.5" fill="#3B3E86"><tspan font-weight="700">1本</tspan></text>
+
+      <rect x="0" y="186" width="700" height="100" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="14" y="208" font-size="13" font-weight="700" fill="#0E7C86">フェーズ2 ─ IPsec SA を作る</text>
+      <text x="14" y="228" font-size="11.5" fill="#16232B">目的：<tspan font-weight="700">「実際の業務データを流すための通路」を、フェーズ1の通路の中で安全に取り決める</tspan></text>
+      <line x1="120" y1="250" x2="556" y2="250" stroke="#0E7C86" stroke-width="2" marker-end="url(#k2)"/>
+      <text x="340" y="244" font-size="11" text-anchor="middle" fill="#0E7C86">④ 暗号化対象（セレクタ）・モード・実データ用の鍵を合意</text>
+      <text x="576" y="248" font-size="10.5" fill="#0E7C86"><tspan font-weight="700">方向ごとに1本</tspan></text>
+      <text x="576" y="263" font-size="10.5" fill="#0E7C86">＝計2本</text>
+      <text x="14" y="274" font-size="11.5" fill="#A61E4D">※ PFS を有効にすると、ここでも<tspan font-weight="700">改めてDH鍵交換</tspan>を行う</text>
+
+      <rect x="0" y="298" width="700" height="34" fill="#F2F5F6" stroke="#D3DBDF"/>
+      <text x="14" y="320" font-size="12" fill="#16232B">確立後、実データは <tspan font-family="monospace" font-weight="700">ESP</tspan> で保護されて流れる。各SAは <tspan font-family="monospace" font-weight="700">SPI</tspan> という番号で識別される。</text>
+      <defs>
+        <marker id="k1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#3B3E86"/></marker>
+        <marker id="k2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+      </defs>
+    </svg>
+    <figcaption><b>フェーズ1で「相談用の通路」、フェーズ2で「本番用の通路」</b>——この2段構えを言葉で説明できるかが要。<b>IKE SAは双方向1本、IPsec SAは方向ごとに1本ずつ計2本</b>という数の違いも頻出。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>IKE 関連の用語</caption>
+    <thead><tr><th>用語</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>DH鍵交換</th><td><b>盗聴されている通信路の上でも、双方が同じ秘密の値を共有できる</b>アルゴリズム。互いに公開値を交換し、それぞれの秘密値と組み合わせて同じ結果を導く。<b>鍵そのものは一度もネットワークを流れない</b></td></tr>
+      <tr><th>事前共有鍵<br>（PSK）</th><td>両拠点に同じ文字列を設定しておく。設定は簡単だが、<b>拠点数が増えると鍵の配布・管理が煩雑</b>になり、漏えいリスクも高まる</td></tr>
+      <tr><th>ディジタル<br>証明書認証</th><td>PKI（第12章）を用い、CAが発行した証明書で相手を認証する。<b>拠点数が多い環境では管理性・安全性の両面で優れる</b>が、CAの構築・運用が必要</td></tr>
+      <tr><th>PFS <span class="star b">差がつく</span></th><td><b>Perfect Forward Secrecy</b>。フェーズ2でも新たにDH鍵交換を行い、フェーズ1の鍵から独立した鍵を生成する。これにより<b>長期の鍵が将来漏えいしても、過去に記録された通信を遡って復号できない</b></td></tr>
+      <tr><th>SPI</th><td>Security Parameter Index。<b>どのSAで処理すべきかを識別する番号</b>。ESPヘッダに含まれる</td></tr>
+      <tr><th>リプレイ防止</th><td>ESPヘッダの<b>シーケンス番号</b>により、攻撃者が正規のパケットを記録して再送する攻撃を検知・破棄する</td></tr>
+      <tr><th>メインモード／<br>アグレッシブモード</th><td>フェーズ1の手順。<b>メインモード</b>は6メッセージを要するが<b>相手のIDを暗号化して保護</b>できる。<b>アグレッシブモード</b>は3メッセージで速いが<b>IDが平文で流れる</b>。<b>相手のIPアドレスが不定（動的IP）の場合はアグレッシブモードを使う</b></td></tr>
+      <tr><th>IKEv2</th><td>メッセージ数の削減、<b>NAT-Tの標準搭載</b>、EAPによる利用者認証への対応、経路変更への追従など、v1の課題を整理した後継。新規構築ではv2が基本</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>フェーズ1とフェーズ2で確立されるSAの名称と本数 → <b>IKE SA（1本）／IPsec SA（方向ごとに1本、計2本）</b></li>
+      <li>PSKではなく証明書認証を採用する理由 → <b>「拠点数が多く、共通の事前共有鍵では
+        漏えい時の影響範囲が全拠点に及ぶうえ、鍵の配布・更新の運用負荷が大きいため」</b></li>
+      <li>PFSを有効にする理由 → <b>「鍵が漏えいしても、それ以前に記録された通信を復号されないようにするため」</b></li>
+      <li>アグレッシブモードを使う場面 → <b>接続元のIPアドレスが固定でない（動的に変わる）場合</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">8.4</span>IPsec の設計論点 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>カプセル化オーバーヘッドと MTU</h3>
+  <p>
+    ESPトンネルモードでは、<b>新IPヘッダ・ESPヘッダ・初期化ベクタ・パディング・ESPトレーラ・認証データ</b>が加わり、
+    合計で<b>おおむね50〜60バイト</b>の増加になる。NAT-T を併用すればさらに UDP ヘッダ8バイトが乗る。
+  </p>
+  <div class="card">
+    <p style="margin-bottom:0">
+      MTU 1500 の経路で <b>実効的に運べるデータ量が減る</b>ため、そのままでは
+      <b>フラグメントの多発、あるいは DF=1 のパケットの破棄（PMTUDブラックホール）</b>が起きる。
+      対策は第4章と同じく、<b>VPN装置でのMSSクランプ</b>、または<b>トンネルインタフェースのMTU設定</b>。
+      「IPsec VPN 導入後に、特定の業務システムだけ動かない」という設問はこの筋で読む。
+    </p>
+  </div>
+
+  <h3>セレクタ</h3>
+  <p>
+    <span class="kw">セレクタ</span>は、<b>どの通信をIPsecで保護するかを定義する条件</b>
+    （送信元／宛先アドレス、プロトコル、ポート番号）。
+    ここに合致した通信だけがトンネルへ入る。
+    <b>両拠点でセレクタの定義が一致していないとフェーズ2が確立しない</b>ため、
+    設定不一致の典型的な原因になる。
+  </p>
+
+  <h3>GRE over IPsec <span class="star">頻出</span></h3>
+  <p>
+    IPsec には <b>ユニキャストのIPパケットしか運べない</b>という制約がある。
+    そのため、<b>マルチキャストを使うルーティングプロトコル（OSPFなど）を
+    IPsecトンネル越しに動かすことができない</b>。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 210" role="img" aria-label="GRE over IPsecの二重カプセル化">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#A61E4D">IPsec 単体：OSPF のマルチキャストが通せない</text>
+      <rect x="0" y="26" width="700" height="34" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="14" y="48" font-size="12" fill="#16232B">→ 拠点間で動的ルーティングが組めず、<tspan font-weight="700">スタティックルートを手動で書き続ける必要がある</tspan></text>
+
+      <text x="0" y="90" font-size="12.5" font-weight="700" fill="#0E7C86">GRE over IPsec：GRE で包んでから IPsec で保護する</text>
+      <g font-size="10.5" text-anchor="middle">
+        <rect x="0" y="100" width="110" height="34" fill="#E6E7F2" stroke="#3B3E86"/><text x="55" y="122" fill="#3B3E86">新IPヘッダ</text>
+        <rect x="110" y="100" width="80" height="34" fill="#F7E6EC" stroke="#A61E4D"/><text x="150" y="122" fill="#A61E4D">ESP</text>
+        <rect x="190" y="100" width="110" height="34" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.8"/><text x="245" y="122" fill="#0E7C86" font-weight="700">GREヘッダ</text>
+        <rect x="300" y="100" width="290" height="34" fill="#F2F5F6" stroke="#D3DBDF"/><text x="445" y="122" fill="#6C7F88">元のパケット（OSPFのマルチキャストも可）</text>
+        <rect x="590" y="100" width="90" height="34" fill="#F7E6EC" stroke="#A61E4D"/><text x="635" y="122" fill="#A61E4D">トレーラ</text>
+      </g>
+      <text x="0" y="156" font-size="12" fill="#0E7C86">GRE（プロトコル番号47）は<tspan font-weight="700">任意のプロトコルをユニキャストのIPで包める</tspan>ため、</text>
+      <text x="0" y="176" font-size="12" fill="#0E7C86">包んだ結果はIPsecが扱えるユニキャストになる → <tspan font-weight="700">トンネル越しにOSPFやマルチキャストを流せる</tspan>。</text>
+      <text x="0" y="200" font-size="11" fill="#A61E4D">代償：GREヘッダ（24バイト程度）が追加され、MTUがさらに減る。</text>
+    </svg>
+    <figcaption><b>順番に注意</b>：GRE で包んでから IPsec で保護する（GRE <i>over</i> IPsec）。「暗号化されるのはGREヘッダも含めた中身全体」という関係を図で押さえる。</figcaption>
+  </figure>
+
+  <p>
+    <span class="kw">DMVPN</span><span class="star b">差がつく</span>は、
+    ハブ&amp;スポーク構成を基本としつつ、<b>拠点間で直接通信が必要になったときだけ
+    スポーク間に動的にトンネルを張る</b>技術。
+    全拠点間をフルメッシュで事前設定する手間を省きながら、<b>拠点間通信がハブを経由する遠回りを避けられる</b>。
+  </p>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>IPsecトンネル上でOSPFを動かしたい → <b>GRE over IPsec を用いる</b>。
+        理由は<b>「IPsecはマルチキャストを転送できないため、GREでユニキャストにカプセル化する必要がある」</b></li>
+      <li>VPN導入後に大きなデータの転送が失敗する → <b>カプセル化によるMTU減少</b>。対策はMSSクランプ</li>
+      <li>拠点数が増えたときのトンネル本数 → <b>フルメッシュなら n(n−1)/2 本</b>。管理負荷の議論につながる</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">8.5</span>TLS <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">TLS</span><span class="en">（Transport Layer Security、旧SSL）</span>は、
+    <b>TCPの上、アプリケーションの下</b>で動作し、<b>アプリケーション単位で</b>暗号化・完全性・サーバ認証を提供する。
+    IPsec が「経路まるごと」を守るのに対し、TLS は「この通信だけ」を守る。
+  </p>
+
+  <h3>ハンドシェイクの流れ</h3>
+  <figure>
+    <svg viewBox="0 0 700 330" role="img" aria-label="TLSハンドシェイクの流れ">
+      <line x1="130" y1="34" x2="130" y2="290" stroke="#D3DBDF" stroke-width="1.5"/>
+      <line x1="560" y1="34" x2="560" y2="290" stroke="#D3DBDF" stroke-width="1.5"/>
+      <text x="130" y="22" font-size="12.5" text-anchor="middle" font-weight="700" fill="#16232B">クライアント</text>
+      <text x="560" y="22" font-size="12.5" text-anchor="middle" font-weight="700" fill="#16232B">サーバ</text>
+
+      <line x1="130" y1="60" x2="556" y2="60" stroke="#0E7C86" stroke-width="2" marker-end="url(#t1)"/>
+      <text x="343" y="52" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">ClientHello</text>
+      <text x="343" y="76" font-size="10.5" text-anchor="middle" fill="#6C7F88">対応する暗号スイートの一覧・乱数・<tspan font-weight="700">SNI（接続先ホスト名）</tspan></text>
+
+      <line x1="560" y1="106" x2="134" y2="106" stroke="#3B3E86" stroke-width="2" marker-end="url(#t2)"/>
+      <text x="343" y="98" font-size="12" text-anchor="middle" font-weight="700" fill="#3B3E86">ServerHello</text>
+      <text x="343" y="122" font-size="10.5" text-anchor="middle" fill="#6C7F88">使用する暗号スイートを1つ決定・乱数</text>
+
+      <line x1="560" y1="152" x2="134" y2="152" stroke="#3B3E86" stroke-width="2" marker-end="url(#t2)"/>
+      <text x="343" y="144" font-size="12" text-anchor="middle" font-weight="700" fill="#3B3E86">Certificate（サーバ証明書）</text>
+      <text x="343" y="168" font-size="10.5" text-anchor="middle" fill="#6C7F88">中間CA証明書を含む証明書チェーンを送る</text>
+
+      <rect x="10" y="182" width="240" height="66" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="24" y="202" font-size="11.5" font-weight="700" fill="#0E7C86">クライアントが証明書を検証</text>
+      <text x="24" y="220" font-size="10.5" fill="#16232B">・信頼するCAまでチェーンがつながるか</text>
+      <text x="24" y="236" font-size="10.5" fill="#16232B">・有効期限／失効（CRL・OCSP）／名前の一致</text>
+
+      <line x1="130" y1="266" x2="556" y2="266" stroke="#0E7C86" stroke-width="2" marker-end="url(#t1)"/>
+      <text x="343" y="258" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">鍵交換 → セッション鍵の生成 → Finished</text>
+      <text x="343" y="282" font-size="10.5" text-anchor="middle" fill="#6C7F88">以降は<tspan font-weight="700">共通鍵暗号（AES）</tspan>で暗号化された通信</text>
+
+      <rect x="0" y="298" width="700" height="30" fill="#E7EDEE"/>
+      <text x="12" y="318" font-size="11.5" fill="#16232B">サーバ認証は必須。<tspan font-weight="700">クライアント証明書による相互認証</tspan>は任意で、要求する場合はサーバから CertificateRequest を送る。</text>
+      <defs>
+        <marker id="t1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+        <marker id="t2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#3B3E86"/></marker>
+      </defs>
+    </svg>
+    <figcaption>ハンドシェイクは<b>公開鍵技術で相手を確認しセッション鍵を共有する</b>段階、それ以降は<b>共通鍵暗号で高速に通信する</b>段階。8.1のハイブリッド方式そのものである。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>TLS1.2 と TLS1.3</caption>
+    <thead><tr><th></th><th>TLS 1.2</th><th>TLS 1.3</th></tr></thead>
+    <tbody>
+      <tr><th>ハンドシェイク</th><td>2往復（2-RTT）</td><td><b>1往復（1-RTT）</b>。再接続時は 0-RTT も可能</td></tr>
+      <tr><th>鍵交換</th><td>RSA鍵交換も選択可能</td><td><b>ECDHE などに限定＝PFSが必須</b>になった</td></tr>
+      <tr><th>暗号スイート</th><td>脆弱な方式（RC4、3DESなど）も含む</td><td><b>安全なものだけに絞り込み</b>、選択の余地を減らした</td></tr>
+      <tr><th>秘匿範囲</th><td>証明書などが平文で流れる</td><td><b>ハンドシェイクの大部分も暗号化</b>される</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>SNI <span class="star">頻出</span></h3>
+  <p>
+    <span class="kw">SNI</span><span class="en">（Server Name Indication）</span>は、
+    ClientHello に<b>接続したいホスト名を入れて送る</b>拡張。
+    サーバは<b>TLSハンドシェイクの前にはHTTPのHostヘッダを読めない</b>ため、
+    これがないと<b>1つのIPアドレスで複数のドメインを扱う（バーチャルホスト）際に、
+    どの証明書を提示すべきか判断できない</b>。
+  </p>
+  <div class="note">
+    <b>SNI は平文で流れる。</b>そのため通信内容は暗号化されていても、
+    <b>「どのサイトに接続しているか」は経路上から観測できる</b>。
+    これは<b>プロキシやファイアウォールがSNIを見てURLフィルタリングを行える</b>という
+    運用上の利点でもあり、同時にプライバシー上の課題でもある（ECH による暗号化の動きがある）。
+    <b>第13章のSWG／URLフィルタリングと直結する論点。</b>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">8.6</span>SSL-VPN <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">SSL-VPN</span>は、<b>TLSを使ったリモートアクセスVPN</b>。
+    在宅勤務・外出先からの社内アクセスで用いる。実現方式は3つあり、
+    <b>「通せる通信の範囲」と「クライアントに必要なもの」がトレードオフ</b>になっている。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 300" role="img" aria-label="SSL-VPNの3方式">
+      <!-- 1 -->
+      <rect x="0" y="20" width="700" height="80" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="14" y="42" font-size="13" font-weight="700" fill="#0E7C86">① リバースプロキシ型</text>
+      <text x="14" y="62" font-size="11.5" fill="#16232B">VPN装置がWebサーバの代理となり、ブラウザからのHTTPS接続を社内サーバへ中継する。</text>
+      <text x="14" y="82" font-size="11.5" fill="#16232B">必要なもの：<tspan font-weight="700">ブラウザのみ</tspan>　／　使えるもの：<tspan font-weight="700">Webアプリケーションだけ</tspan></text>
+      <text x="580" y="62" font-size="11" fill="#0E7C86">導入が最も容易</text>
+      <text x="580" y="80" font-size="11" fill="#A61E4D">対応範囲は最も狭い</text>
+
+      <!-- 2 -->
+      <rect x="0" y="110" width="700" height="80" fill="#E6E7F2" stroke="#3B3E86"/>
+      <text x="14" y="132" font-size="13" font-weight="700" fill="#3B3E86">② ポートフォワード型</text>
+      <text x="14" y="152" font-size="11.5" fill="#16232B">小さなプログラムを端末に読み込ませ、特定のTCPポート宛の通信をトンネルへ転送する。</text>
+      <text x="14" y="172" font-size="11.5" fill="#16232B">必要なもの：<tspan font-weight="700">実行モジュール</tspan>　／　使えるもの：<tspan font-weight="700">対応させた特定のTCPアプリケーション</tspan></text>
+
+      <!-- 3 -->
+      <rect x="0" y="200" width="700" height="90" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="14" y="222" font-size="13" font-weight="700" fill="#A61E4D">③ L2フォワーディング型（トンネル型）</text>
+      <text x="14" y="242" font-size="11.5" fill="#16232B">専用クライアントが<tspan font-weight="700">仮想NIC</tspan>を作り、端末の通信をまるごとトンネルへ流す。</text>
+      <text x="14" y="262" font-size="11.5" fill="#16232B">必要なもの：<tspan font-weight="700">専用クライアントソフトの導入</tspan>　／　使えるもの：<tspan font-weight="700">ほぼすべての通信</tspan></text>
+      <text x="14" y="282" font-size="11.5" fill="#A61E4D">→ IPsec-VPN に近い使い勝手。端末が社内LANに直接つながっているかのように扱える。</text>
+    </svg>
+    <figcaption>「専用ソフトの導入が不要」という要件があればリバースプロキシ型、「業務システム全般を使いたい」ならL2フォワーディング型、と条件から逆算する。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>IPsec-VPN と SSL-VPN の比較 <span class="star">頻出</span></caption>
+    <thead><tr><th></th><th>IPsec-VPN</th><th>SSL-VPN</th></tr></thead>
+    <tbody>
+      <tr><th>主な用途</th><td><b>拠点間の常時接続</b></td><td><b>個人端末からのリモートアクセス</b></td></tr>
+      <tr><th>動作層</th><td>L3（IP層）</td><td>L4〜L7（TLS）</td></tr>
+      <tr><th>クライアント</th><td>専用装置または専用ソフトが必要</td><td>方式による。<b>リバースプロキシ型ならブラウザだけ</b></td></tr>
+      <tr><th>通せる通信</th><td>IPユニキャスト全般（設定した範囲）</td><td>方式による。狭い〜広い</td></tr>
+      <tr><th>経路上の通過性</th><td><b>NAT越えにNAT-Tが必要</b>。UDP500/4500 の許可も要る</td><td><b>TCP 443 を使うため、多くの環境でそのまま通る</b></td></tr>
+      <tr><th>アクセス制御</th><td>アドレス・ポート単位</td><td><b>利用者単位・アプリケーション単位で細かく制御しやすい</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>SSL-VPNを選ぶ理由 → <b>「TCP 443 を使うため、訪問先やホテルなど接続元の環境を問わず利用できる可能性が高く、
+        端末への専用ソフト導入も最小限で済むため」</b></li>
+      <li>リバースプロキシ型の制約 → <b>Webアプリケーション以外は利用できない</b></li>
+      <li>リモートアクセスVPNの認証強化 → <b>ID／パスワードに加え、クライアント証明書やワンタイムパスワードによる
+        多要素認証</b>（第12章）</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 7 ===================== -->
+<section id="s7">
+<div class="wrap">
+  <h2><span class="num">8.7</span>SSLオフロードと SSL可視化 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>暗号化された通信を<b>途中の機器がいったん復号する</b>という点では同じだが、目的が正反対である。</p>
+
+  <figure>
+    <svg viewBox="0 0 700 260" role="img" aria-label="SSLオフロードとSSL可視化の違い">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#0E7C86">SSLオフロード（負荷分散装置） ― サーバを軽くするため</text>
+      <g font-size="11" text-anchor="middle">
+        <rect x="0" y="26" width="110" height="40" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/><text x="55" y="51" fill="#16232B">利用者</text>
+        <rect x="240" y="26" width="140" height="40" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/><text x="310" y="51" fill="#0E7C86" font-weight="700">負荷分散装置</text>
+        <rect x="520" y="26" width="120" height="40" fill="#F2F5F6" stroke="#D3DBDF"/><text x="580" y="51" fill="#6C7F88">Webサーバ</text>
+      </g>
+      <line x1="110" y1="46" x2="240" y2="46" stroke="#0E7C86" stroke-width="2.4"/>
+      <text x="175" y="38" font-size="10" text-anchor="middle" fill="#0E7C86">HTTPS（暗号）</text>
+      <line x1="380" y1="46" x2="520" y2="46" stroke="#6C7F88" stroke-width="2" stroke-dasharray="5 4"/>
+      <text x="450" y="38" font-size="10" text-anchor="middle" fill="#6C7F88">HTTP（平文）</text>
+      <text x="0" y="88" font-size="11.5" fill="#16232B">効果：<tspan font-weight="700">サーバの暗号処理の負荷をなくせる</tspan>／平文になるので<tspan font-weight="700">URLやCookieを見たL7振分けができる</tspan></text>
+      <text x="0" y="108" font-size="11.5" fill="#A61E4D">留意：装置〜サーバ間が平文になるため、その区間の安全が確保された内部NWであることが前提</text>
+
+      <text x="0" y="152" font-size="12.5" font-weight="700" fill="#A61E4D">SSL可視化（復号） ― 中身を検査するため</text>
+      <g font-size="11" text-anchor="middle">
+        <rect x="0" y="162" width="110" height="40" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/><text x="55" y="187" fill="#16232B">社内端末</text>
+        <rect x="240" y="162" width="140" height="40" fill="#F7E6EC" stroke="#A61E4D" stroke-width="2"/><text x="310" y="187" fill="#A61E4D" font-weight="700">FW／プロキシ</text>
+        <rect x="520" y="162" width="140" height="40" fill="#F2F5F6" stroke="#D3DBDF"/><text x="590" y="187" fill="#6C7F88">外部サイト</text>
+      </g>
+      <line x1="110" y1="182" x2="240" y2="182" stroke="#A61E4D" stroke-width="2.4"/>
+      <line x1="380" y1="182" x2="520" y2="182" stroke="#A61E4D" stroke-width="2.4"/>
+      <text x="175" y="174" font-size="10" text-anchor="middle" fill="#A61E4D">内部CAの証明書</text>
+      <text x="450" y="174" font-size="10" text-anchor="middle" fill="#A61E4D">本来のサーバ証明書</text>
+      <text x="0" y="224" font-size="11.5" fill="#16232B">仕組み：装置が<tspan font-weight="700">中間者として2本のTLSセッションを張り</tspan>、いったん復号して検査し、再び暗号化して転送する。</text>
+      <text x="0" y="244" font-size="11.5" fill="#16232B">前提：<tspan font-weight="700">内部CAのルート証明書を全端末に配布</tspan>しておく必要がある（そうしないと証明書エラーになる）。</text>
+    </svg>
+    <figcaption>SSL可視化は、<b>暗号化通信の中に隠されたマルウェアや情報漏えいを検知する</b>ために行う。HTTPSの普及により、これがないとセキュリティ機器がほぼ何も検査できなくなるためである。</figcaption>
+  </figure>
+
+  <div class="card">
+    <h4 style="margin-top:0">SSL可視化の課題 <span class="star">頻出</span></h4>
+    <ul style="margin-bottom:0">
+      <li><b>プライバシーと法的配慮</b>：私的な通信の内容まで見えてしまうため、利用規程での明示と同意が必要。
+        銀行・医療など特定カテゴリは復号対象から除外する運用が一般的</li>
+      <li><b>証明書ピンニングを行うアプリは失敗する</b>：あらかじめ特定の証明書のみを信頼するよう作られたアプリは、
+        差し替えられた証明書を拒否して通信できなくなる。<b>例外リストによる除外が必要</b></li>
+      <li><b>処理性能</b>：復号・再暗号化は重い処理であり、機器のスループットがボトルネックになりやすい</li>
+      <li><b>QUIC（HTTP/3）への未対応</b>：復号できないため、<b>UDP443を遮断してTCPへフォールバックさせる</b>運用がとられる（第4章）</li>
+    </ul>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>SSLオフロードの目的 → <b>「Webサーバの暗号化処理の負荷を軽減し、
+        併せて復号後の内容を用いたL7での振分けやCookieによるセッション維持を可能にするため」</b></li>
+      <li>SSL可視化の必要性 → <b>「通信が暗号化されているとIPS・WAF・URLフィルタが内容を検査できず、
+        マルウェアの侵入や情報の持ち出しを検知できないため」</b></li>
+      <li>SSL可視化の導入時に必要な準備 → <b>内部CAのルート証明書を全端末に配布すること</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第8章 VPN・暗号化 ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">08 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>
