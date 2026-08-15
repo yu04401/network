@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第1章 物理層・伝送 ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: transmission-window spectrum rule */
+  .spectrum{margin-top:30px}
+  .spectrum .bar{
+    height:9px; border-radius:1px;
+    background:linear-gradient(90deg,#3B3E86 0%,#2C6B8F 26%,#0E7C86 52%,#7A5B9B 76%,#A61E4D 100%);
+  }
+  .spectrum .ticks{
+    display:flex; justify-content:space-between;
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.12em;
+    color:var(--muted); margin-top:7px;
+  }
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:#E6E7F2}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  .mono td,.mono th{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+  .svg-ink{fill:var(--ink)}
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第1章　物理層・伝送
+      <span class="en">Physical Layer &amp; Transmission</span>
+    </h1>
+    <p class="lede">
+      「線とビットの層」。午後の問題文では表に出にくいが、<b>速度が出ない・リンクが上がらない・距離が届かない・電力が足りない</b>という
+      障害シナリオの根っこになる。用語を覚えるだけでなく、<b>制約値（100m・給電電力・波長）と、その制約が生まれる理由</b>まで
+      言えるようにしておく。
+    </p>
+    <div class="spectrum" aria-hidden="true">
+      <div class="bar"></div>
+      <div class="ticks">
+        <span>UTP 銅線</span><span>850nm MMF</span><span>1310nm SMF</span><span>1550nm DWDM</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 イーサネット規格</a>
+    <a href="#s2">2 伝送媒体</a>
+    <a href="#s3">3 光モジュール</a>
+    <a href="#s4">4 MDI／オートネゴ</a>
+    <a href="#s5">5 PoE</a>
+    <a href="#s6">6 距離と遅延</a>
+    <a href="#s7">7 符号化</a>
+    <a href="#s8">8 多重化</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">1.1</span>イーサネット規格</h2>
+  <div class="rule"></div>
+
+  <p>
+    規格名は <code>10GBASE-SR</code> のように <b>「速度 + BASE + 媒体・符号化記号」</b> で構成される。
+    記号の意味を知っていれば、初見の規格名でも媒体と距離感が推測できる。ここは丸暗記より<b>読み方</b>を押さえる。
+  </p>
+
+  <div class="card">
+    <h4 style="margin-top:0">規格名の読み方</h4>
+    <ul style="margin-bottom:0">
+      <li><b>数字</b>＝伝送速度（10 = 10Mbit/s、1000 = 1Gbit/s、10G = 10Gbit/s）</li>
+      <li><b>BASE</b>＝ベースバンド伝送（信号を変調せずそのまま流す）。対義は BROAD（ブロードバンド）だが現行規格はすべて BASE</li>
+      <li><b>T</b>＝Twisted pair（より対線＝メタル）</li>
+      <li><b>S</b>＝Short wavelength（<span class="en">850nm</span>／マルチモード）、<b>L</b>＝Long（<span class="en">1310nm</span>／主にシングルモード）、<b>E</b>＝Extra long（<span class="en">1550nm</span>）</li>
+      <li><b>X</b>＝<span class="en">8B/10B</span> 符号化、<b>R</b>＝<span class="en">64B/66B</span> 符号化 ← <b>符号化方式まで規格名に入っている</b></li>
+    </ul>
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>主要イーサネット規格の比較</caption>
+    <thead>
+      <tr><th>規格</th><th>速度</th><th>媒体</th><th>最大距離（目安）</th><th>符号化</th><th>備考</th></tr>
+    </thead>
+    <tbody>
+      <tr><th>10BASE-T</th><td>10M</td><td>UTP Cat3以上</td><td class="c">100 m</td><td>マンチェスタ</td><td>2対（4芯）使用</td></tr>
+      <tr><th>100BASE-TX</th><td>100M</td><td>UTP Cat5以上</td><td class="c">100 m</td><td>4B/5B + MLT-3</td><td>2対使用。残り2対は空き→PoEの給電に使える</td></tr>
+      <tr><th>1000BASE-T</th><td>1G</td><td>UTP Cat5e以上</td><td class="c">100 m</td><td>8B1Q4 / PAM5</td><td><b>4対すべて</b>を双方向同時に使用</td></tr>
+      <tr><th>10GBASE-T</th><td>10G</td><td>Cat6A以上</td><td class="c">100 m<br>（Cat6は55 m）</td><td>64B/66B</td><td>エイリアンクロストーク対策でCat6A（外被シールド強化）が必要</td></tr>
+      <tr><th>1000BASE-SX</th><td>1G</td><td>MMF 850nm</td><td class="c">〜550 m</td><td>8B/10B</td><td>構内・フロア間。安価</td></tr>
+      <tr><th>1000BASE-LX</th><td>1G</td><td>SMF 1310nm<br>（MMFも可）</td><td class="c">〜5 km</td><td>8B/10B</td><td>キャンパス・拠点間</td></tr>
+      <tr><th>10GBASE-SR</th><td>10G</td><td>MMF 850nm</td><td class="c">〜300 m<br>（OM3）</td><td>64B/66B</td><td>データセンタ内のLeaf–Spine間で多用</td></tr>
+      <tr><th>10GBASE-LR</th><td>10G</td><td>SMF 1310nm</td><td class="c">〜10 km</td><td>64B/66B</td><td>ビル間・拠点間</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>ビル間 400m の接続に <code>1000BASE-T</code> が使えない理由 →「UTP は100mまで」→ 光（SX/LX）を選択させる</li>
+      <li>「既設のCat6配線を流用して10Gへ」→ <b>10GBASE-T は Cat6 では55m まで</b>という距離制約を答えさせる</li>
+      <li>MMF か SMF か（＝SR か LR か）を、図中の距離表記から選ばせる</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">1.2</span>伝送媒体 ― メタルと光</h2>
+  <div class="rule"></div>
+
+  <h3>より対線（ツイストペアケーブル）</h3>
+  <p>
+    <span class="kw">UTP</span><span class="en">（Unshielded Twisted Pair）</span>は、シールドのない撚り対線。LAN配線の標準。
+    <span class="kw">STP</span><span class="en">（Shielded Twisted Pair）</span>はシールド付きで、工場など<b>ノイズの強い環境</b>で使う。
+    ただしアース（接地）を正しく取らないと逆にノイズを拾うため、施工要件が厳しい。
+  </p>
+
+  <div class="note">
+    <b>用語の罠：STP は2つある。</b>
+    物理層の <b>STP = Shielded Twisted Pair（シールド付きより対線）</b>と、
+    L2の <b>STP = Spanning Tree Protocol（スパニングツリー）</b>。
+    午後の問題文では文脈で判別する。答案に書くときは、問題文中の表記をそのまま使うこと。
+  </div>
+
+  <p>
+    <b>なぜ「撚る」のか</b>：2本1組で<b>差動信号</b>（＋と−で逆位相）を送るため、外来ノイズは両方の線に同じ向き
+    （コモンモード）で乗る。受信側で差を取るとノイズが相殺される。撚りのピッチを対ごとに変えることで、
+    対どうしの干渉（<span class="kw">クロストーク</span>）も抑えている。
+  </p>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>UTPカテゴリ</caption>
+    <thead>
+      <tr><th>カテゴリ</th><th>伝送帯域</th><th>主な対応規格</th><th>ポイント</th></tr>
+    </thead>
+    <tbody>
+      <tr><th>Cat5e</th><td class="c">100 MHz</td><td>1000BASE-T</td><td>ギガの最低ライン。現行の最低限</td></tr>
+      <tr><th>Cat6</th><td class="c">250 MHz</td><td>1000BASE-T / 10GBASE-T(55m)</td><td>十字介在で対間クロストークを低減</td></tr>
+      <tr><th>Cat6A</th><td class="c">500 MHz</td><td>10GBASE-T（100m）</td><td><b>10Gを100m引くならこれ</b></td></tr>
+      <tr><th>Cat7</th><td class="c">600 MHz</td><td>10GBASE-T</td><td>各対＋全体シールド（STP構造）。コネクタはGG45/TERAでRJ-45と非互換</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>光ファイバ</h3>
+  <p>
+    中心の <b>コア</b>と、その外側の屈折率が低い <b>クラッド</b>の境界で光を全反射させて伝送する。
+    電磁ノイズの影響を受けず、減衰が小さいため長距離に強い。曲げ・折れに弱く、接続には融着や専用コネクタが要る。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 260" role="img" aria-label="シングルモードファイバとマルチモードファイバの光の伝わり方の比較図">
+      <!-- SMF -->
+      <text x="0" y="18" font-size="14" font-weight="700" fill="#16232B">シングルモード（SMF）　コア径 約9μm</text>
+      <rect x="0" y="34" width="560" height="60" fill="#E7EDEE" stroke="#D3DBDF"/>
+      <rect x="0" y="55" width="560" height="18" fill="#E4F0F1" stroke="#0E7C86" stroke-dasharray="0"/>
+      <line x1="0" y1="64" x2="560" y2="64" stroke="#0E7C86" stroke-width="2.5"/>
+      <text x="572" y="60" font-size="11" fill="#6C7F88">同時到達</text>
+      <text x="572" y="76" font-size="11" fill="#6C7F88">＝波形が崩れない</text>
+      <text x="4" y="110" font-size="11" fill="#6C7F88">クラッド／コア（細い）：光路は1本だけ＝モード分散なし → 長距離（10km〜数十km）</text>
+
+      <!-- MMF -->
+      <text x="0" y="160" font-size="14" font-weight="700" fill="#16232B">マルチモード（MMF）　コア径 50 / 62.5μm</text>
+      <rect x="0" y="176" width="560" height="60" fill="#E7EDEE" stroke="#D3DBDF"/>
+      <rect x="0" y="186" width="560" height="40" fill="#F2F5F6" stroke="#D3DBDF"/>
+      <line x1="0" y1="206" x2="560" y2="206" stroke="#A61E4D" stroke-width="2"/>
+      <polyline points="0,206 70,187 140,225 210,187 280,225 350,187 420,225 490,187 545,212" fill="none" stroke="#3B3E86" stroke-width="2"/>
+      <polyline points="0,206 105,190 210,222 315,190 420,222 525,192 545,200" fill="none" stroke="#7A5B9B" stroke-width="2"/>
+      <text x="572" y="200" font-size="11" fill="#6C7F88">到達時刻が</text>
+      <text x="572" y="216" font-size="11" fill="#6C7F88">ばらつく</text>
+      <text x="4" y="252" font-size="11" fill="#6C7F88">太いコアに複数の光路（モード）＝モード分散で波形が広がる → 距離が制限される（〜数百m）</text>
+    </svg>
+    <figcaption>コアが太いほど光の通り道が複数でき、経路長の差＝到達時間差（モード分散）が生じる。これが MMF の距離が短い理由。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>SMF と MMF</caption>
+    <thead><tr><th></th><th>シングルモード（SMF）</th><th>マルチモード（MMF）</th></tr></thead>
+    <tbody>
+      <tr><th>コア径</th><td>約 9μm</td><td>50μm / 62.5μm</td></tr>
+      <tr><th>波長</th><td>1310nm / 1550nm</td><td>850nm</td></tr>
+      <tr><th>光源</th><td>レーザ（高価）</td><td>LED / VCSEL（安価）</td></tr>
+      <tr><th>距離</th><td>長距離（km〜数十km）</td><td>短距離（〜数百m）</td></tr>
+      <tr><th>用途</th><td>拠点間・WAN・キャリア</td><td>構内・データセンタ内</td></tr>
+      <tr><th>識別色（一般的）</th><td>黄</td><td>オレンジ／アクア（OM3・OM4）</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>
+    <span class="kw">ダークファイバ</span>は、通信事業者が敷設済みでまだ使っていない（＝光が通っていない＝暗い）芯線を
+    そのまま借りるサービス。<b>両端の伝送装置は利用者側で用意する</b>ため、速度・プロトコルを自由に決められ、
+    帯域も専有できる。「回線事業者のサービス品目に縛られず大容量を確保したい」という設計要件で登場する。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">1.3</span>光トランシーバ（SFP／SFP+／QSFP）</h2>
+  <div class="rule"></div>
+
+  <p>
+    スイッチのポートに<b>後から挿す小型の光モジュール</b>。本体を替えずに、距離・波長・媒体（メタル／光）に応じた
+    モジュールを選べるのが最大の利点。<b>活線挿抜（ホットスワップ）</b>可能。
+  </p>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>トランシーバの世代</caption>
+    <thead><tr><th>形状</th><th>速度</th><th>正式名／構造</th><th>典型的な用途</th></tr></thead>
+    <tbody>
+      <tr><th>SFP</th><td class="c">1G</td><td>Small Form-factor Pluggable。LCコネクタ2芯</td><td>アクセス／ディストリビューション間</td></tr>
+      <tr><th>SFP+</th><td class="c">10G</td><td>SFPと同サイズで10G対応</td><td>コアスイッチ間、サーバ接続</td></tr>
+      <tr><th>QSFP+ / QSFP28</th><td class="c">40G / 100G</td><td><b>Q = Quad</b>。4レーンを束ねる。MPO多芯コネクタ</td><td>データセンタのSpine接続、上位リンク</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <p style="margin-bottom:0">
+      「同一機種のスイッチだが、拠点Aは 500m、拠点Bは 8km 離れている」→
+      <b>本体は共通のまま、SFPだけ SX（MMF）と LX（SMF）で使い分ける</b>という設計の妥当性を書かせる。
+      「機器を統一でき、保守部品を共通化できる」という<b>運用面のメリット</b>まで書けると強い。
+    </p>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">1.4</span>MDI／MDI-X・オートネゴシエーション・二重モード</h2>
+  <div class="rule"></div>
+
+  <h3>MDI と MDI-X</h3>
+  <p>
+    <span class="kw">MDI</span><span class="en">（Medium Dependent Interface）</span>は「1・2番ピンで送信、3・6番ピンで受信」する側。
+    PC・サーバのNIC やルータがこれにあたる。
+    <span class="kw">MDI-X</span>は機器内部で送受信を入れ替えてある側で、スイッチのポートが該当する（X = Crossover）。
+  </p>
+  <p>
+    MDI と MDI-X をストレートケーブルでつなげば送信と受信が正しく向き合う。
+    しかし<b>同じ種類どうし（PC–PC、スイッチ–スイッチ）</b>を結ぶと送信同士がぶつかるため、
+    かつては<b>クロスケーブル</b>が必要だった。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="MDIとMDI-Xの結線とAuto MDI/MDI-Xの説明図">
+      <!-- left case -->
+      <text x="0" y="16" font-size="13" font-weight="700" fill="#16232B">MDI ⇄ MDI-X（PC ― スイッチ）：ストレートでOK</text>
+      <rect x="10" y="34" width="120" height="76" fill="#FFFFFF" stroke="#16232B"/>
+      <text x="70" y="60" font-size="12" text-anchor="middle" fill="#16232B">PC（MDI）</text>
+      <text x="24" y="82" font-size="11" font-family="monospace" fill="#A61E4D">1,2 TX</text>
+      <text x="24" y="100" font-size="11" font-family="monospace" fill="#0E7C86">3,6 RX</text>
+      <rect x="230" y="34" width="130" height="76" fill="#FFFFFF" stroke="#16232B"/>
+      <text x="295" y="60" font-size="12" text-anchor="middle" fill="#16232B">SW（MDI-X）</text>
+      <text x="300" y="82" font-size="11" font-family="monospace" fill="#0E7C86">1,2 RX</text>
+      <text x="300" y="100" font-size="11" font-family="monospace" fill="#A61E4D">3,6 TX</text>
+      <line x1="130" y1="78" x2="230" y2="78" stroke="#A61E4D" stroke-width="2"/>
+      <line x1="130" y1="96" x2="230" y2="96" stroke="#0E7C86" stroke-width="2"/>
+      <text x="180" y="128" font-size="11" text-anchor="middle" fill="#6C7F88">ストレート</text>
+
+      <!-- right case -->
+      <text x="0" y="172" font-size="13" font-weight="700" fill="#16232B">MDI ⇄ MDI（PC ― PC）：送信同士が衝突 → クロスが必要</text>
+      <rect x="10" y="188" width="120" height="52" fill="#FFFFFF" stroke="#16232B"/>
+      <text x="70" y="206" font-size="12" text-anchor="middle" fill="#16232B">PC（MDI）</text>
+      <text x="24" y="228" font-size="11" font-family="monospace" fill="#A61E4D">1,2 TX</text>
+      <rect x="230" y="188" width="130" height="52" fill="#FFFFFF" stroke="#16232B"/>
+      <text x="295" y="206" font-size="12" text-anchor="middle" fill="#16232B">PC（MDI）</text>
+      <text x="300" y="228" font-size="11" font-family="monospace" fill="#A61E4D">1,2 TX</text>
+      <line x1="130" y1="224" x2="230" y2="224" stroke="#A61E4D" stroke-width="2" stroke-dasharray="5 4"/>
+      <text x="180" y="216" font-size="14" text-anchor="middle" fill="#A61E4D">✕</text>
+
+      <!-- auto -->
+      <rect x="400" y="150" width="300" height="94" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="416" y="176" font-size="13" font-weight="700" fill="#0E7C86">Auto MDI/MDI-X</text>
+      <text x="416" y="198" font-size="11.5" fill="#16232B">相手の結線を自動判別し、内部で</text>
+      <text x="416" y="216" font-size="11.5" fill="#16232B">送受信を入れ替える。ケーブル種別を</text>
+      <text x="416" y="234" font-size="11.5" fill="#16232B">意識しなくてよくなる。</text>
+    </svg>
+    <figcaption>1000BASE-T は4対すべてを双方向で使うため、規格として自動極性判別を備えている。</figcaption>
+  </figure>
+
+  <h3>オートネゴシエーション</h3>
+  <p>
+    リンクアップ時に <span class="kw">FLP</span><span class="en">（Fast Link Pulse）</span>というパルス列を交換し、
+    互いが対応する<b>速度</b>と<b>二重モード</b>を通知し合って、両者が使える中で最も高性能な組み合わせを選ぶ仕組み。
+  </p>
+  <p>
+    相手がオートネゴに応答しない（速度・二重を固定設定している）場合、受信信号の種類から速度だけを推測する
+    <b>パラレル検出</b>にフォールバックする。このとき<b>二重モードは判定できないため、安全側の半二重になる</b>。
+    これが次の障害を生む。
+  </p>
+
+  <h3>デュプレックスミスマッチ <span class="star">頻出</span></h3>
+  <p>
+    片側が<b>全二重</b>、もう片側が<b>半二重</b>という食い違い。リンクは正常に上がり、pingも通るので気づきにくいが、
+    半二重側から見ると「相手が送っている最中に自分も送ってくる」状態になり、
+    <b>コリジョン／レイトコリジョン、FCSエラー、再送</b>が多発してスループットが数%まで落ちる。
+  </p>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>設定の組み合わせと結果</caption>
+    <thead><tr><th>機器A</th><th>機器B</th><th>結果</th></tr></thead>
+    <tbody>
+      <tr><td>Auto</td><td>Auto</td><td><b>正常</b>（両者で全二重を合意）</td></tr>
+      <tr><td>1000/全二重 固定</td><td>1000/全二重 固定</td><td><b>正常</b>（ただし設定ミスに弱い）</td></tr>
+      <tr><td>Auto</td><td>100/全二重 固定</td><td><b>ミスマッチ</b>：Aはパラレル検出で100M<b>半</b>二重に。B は全二重 → 障害</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>「リンクは上がっているのに転送速度が極端に遅い」→ 原因は <b>デュプレックスミスマッチ</b>、根拠は<b>片側のみオートネゴ設定</b></li>
+      <li>確認方法 →「両端のインタフェースの<b>速度・二重モードの設定値と実際のリンク状態</b>、および<b>エラーカウンタ（コリジョン／FCSエラー）</b>を確認する」</li>
+      <li>対策 →「<b>両端をオートネゴシエーションに統一する</b>（またはどちらも同じ値で固定する）」</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <b>全二重ならコリジョンは起きない。</b> 送信路と受信路が独立しているため、
+    <b>CSMA/CD は不要（無効化される）</b>。「コリジョンドメイン」という概念自体が全二重リンクでは意味を持たない。
+    ここは第2章のリピータハブ／L2スイッチの話につながる。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">1.5</span>PoE ― LANケーブルによる給電 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">PoE</span><span class="en">（Power over Ethernet）</span>は、LANケーブルでデータと電力を同時に送る技術。
+    無線AP・IP電話・ネットワークカメラなど、<b>電源コンセントを引きにくい場所の機器</b>に使う。
+    給電側を <span class="kw">PSE</span><span class="en">（Power Sourcing Equipment：PoE対応スイッチ等）</span>、
+    受電側を <span class="kw">PD</span><span class="en">（Powered Device）</span>と呼ぶ。
+  </p>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>PoE規格と電力（1ポートあたり）</caption>
+    <thead>
+      <tr><th>規格</th><th>通称</th><th>Type</th><th>クラス</th><th>PSE給電</th><th>PD受電</th><th>使用対</th></tr>
+    </thead>
+    <tbody>
+      <tr><th>IEEE802.3af</th><td>PoE</td><td class="c">Type 1</td><td class="c">0〜3</td><td class="c">15.4 W</td><td class="c">12.95 W</td><td class="c">2対</td></tr>
+      <tr><th>IEEE802.3at</th><td>PoE+</td><td class="c">Type 2</td><td class="c">4</td><td class="c">30 W</td><td class="c">25.5 W</td><td class="c">2対</td></tr>
+      <tr><th rowspan="2">IEEE802.3bt</th><td rowspan="2">PoE++<br>（4PPoE）</td><td class="c">Type 3</td><td class="c">5〜6</td><td class="c">60 W</td><td class="c">51 W</td><td class="c">4対</td></tr>
+      <tr><td class="c">Type 4</td><td class="c">7〜8</td><td class="c">90 W</td><td class="c">71.3 W</td><td class="c">4対</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <b>PSE給電＞PD受電</b>になっているのは、<b>ケーブル上の電力損失（最大100mぶんの導体抵抗）</b>を見込んでいるため。
+    「給電15.4Wなのに受電12.95W」の差の理由を問われたら、この一言を書く。
+  </div>
+
+  <h4>給電方式：Alternative A / B</h4>
+  <figure>
+    <svg viewBox="0 0 700 210" role="img" aria-label="PoEのAlternative AとBの給電に使う対の図">
+      <text x="0" y="16" font-size="13" font-weight="700" fill="#16232B">Alternative A（信号線に重畳＝ファントム給電）</text>
+      <g font-size="11.5" font-family="monospace">
+        <rect x="10" y="28" width="660" height="26" fill="#F7E6EC" stroke="#A61E4D"/>
+        <text x="20" y="46" fill="#A61E4D">対1（1,2）：データ ＋ 電力</text>
+        <rect x="10" y="58" width="660" height="26" fill="#F7E6EC" stroke="#A61E4D"/>
+        <text x="20" y="76" fill="#A61E4D">対2（3,6）：データ ＋ 電力</text>
+        <rect x="10" y="88" width="660" height="20" fill="#F2F5F6" stroke="#D3DBDF"/>
+        <text x="20" y="103" fill="#6C7F88">対3（4,5）／対4（7,8）：未使用（100BASE-TXの場合）</text>
+      </g>
+      <text x="0" y="140" font-size="13" font-weight="700" fill="#16232B">Alternative B（空き対を使用）</text>
+      <g font-size="11.5" font-family="monospace">
+        <rect x="10" y="152" width="660" height="22" fill="#F2F5F6" stroke="#D3DBDF"/>
+        <text x="20" y="168" fill="#6C7F88">対1（1,2）／対2（3,6）：データのみ</text>
+        <rect x="10" y="178" width="660" height="22" fill="#E4F0F1" stroke="#0E7C86"/>
+        <text x="20" y="194" fill="#0E7C86">対3（4,5）／対4（7,8）：電力のみ</text>
+      </g>
+    </svg>
+    <figcaption>Alternative A はデータ信号に直流を重ねる（ファントム給電）。差動信号の差分は変わらないためデータに影響しない。1000BASE-T は4対すべてを使うため、どちらの方式でも重畳になる。802.3bt は4対すべてで給電して大電力化した。</figcaption>
+  </figure>
+
+  <h4>給電開始のシーケンス</h4>
+  <ol>
+    <li><b>検出（Detection）</b>：PSE が低電圧をかけ、PD 側の <code>25kΩ</code> の特徴的な抵抗を検出。PoE非対応機器を壊さないための安全確認</li>
+    <li><b>クラス分類（Classification）</b>：PD が必要とする電力クラスを判定</li>
+    <li><b>給電開始</b>：規定電圧（<code>44〜57V</code> 程度の直流）を供給</li>
+    <li><b>監視</b>：PD を外すと給電を停止</li>
+  </ol>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li><b>電力バジェット計算</b>：「PoEスイッチの総給電容量 370W。PoE+ の AP（25.5W）を何台収容できるか」といった台数計算。
+        <b>ポート数ではなくスイッチ全体の給電能力が上限</b>になる点が引っかけ</li>
+      <li>「APの電源工事が不要になる」＝<b>設置場所の自由度が上がる／工事費を抑えられる</b>という設計上のメリット記述</li>
+      <li><b>UPS を PoE スイッチにつなげば、AP・IP電話まで一括で無停電化できる</b>（可用性設計との組み合わせ）</li>
+      <li>802.3af のスイッチに 802.3at の AP をつないだ場合 → <b>電力不足で起動しない／機能が制限される</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">1.6</span>ケーブル長制限と伝送遅延</h2>
+  <div class="rule"></div>
+
+  <h3>なぜ UTP は 100m なのか</h3>
+  <ul>
+    <li><b>減衰と雑音</b>：距離が伸びるほど信号は減衰し、S/N比が確保できなくなる（現在の主因）</li>
+    <li><b>スロットタイム</b>：半二重（CSMA/CD）時代は、フレームを送り終える前にコリジョンを検知できる必要があった。
+      最遠端まで往復する時間（ラウンドトリップ）が最小フレーム送信時間内に収まるよう、ネットワーク直径が制限された</li>
+  </ul>
+  <p class="note" style="margin-top:0">
+    <b>100m の内訳（構造化配線）：</b>フロア配線盤〜情報コンセントの水平配線が最大 <b>90m</b>、
+    両端のパッチコード等で <b>10m</b>。合わせて 100m。「機器間で100m」ではなく「配線全体で100m」である点に注意。
+  </p>
+
+  <h3>伝送遅延の分解 <span class="star">計算</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>4種類の遅延</caption>
+    <thead><tr><th>種別</th><th>内容</th><th>計算</th></tr></thead>
+    <tbody>
+      <tr><th>伝搬遅延</th><td>信号が距離を進むのにかかる時間</td><td>距離 ÷ 伝搬速度<br>（銅・光とも約 20万 km/s ＝ <b>約5μs/km</b>）</td></tr>
+      <tr><th>伝送遅延</th><td>データをすべて回線に送り出すのにかかる時間</td><td>データ量 ÷ 回線速度</td></tr>
+      <tr><th>処理遅延</th><td>機器内での転送先判断・カプセル化</td><td>機器性能に依存</td></tr>
+      <tr><th>キューイング遅延</th><td>混雑時に送信バッファで待つ時間</td><td>負荷に依存（→ QoSの章）</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <b>目安</b>：東京–大阪間 約500km なら伝搬遅延は片道約 2.5ms、往復（RTT）で約5ms。
+    実際は経路長が直線距離より長く、機器の処理も入るため、実測は 10〜20ms 程度になる。
+    「拠点間の応答が遅い原因は帯域か距離か」を切り分ける議論で使う。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 7 ===================== -->
+<section id="s7">
+<div class="wrap">
+  <h2><span class="num">1.7</span>符号化</h2>
+  <div class="rule"></div>
+
+  <p>
+    0/1 のビット列をそのまま電圧に置き換えると不都合がある。符号化はそれを解決するための「詰め替え」であり、
+    目的は次の3つ。
+  </p>
+  <ul>
+    <li><b>クロック同期</b>：受信側がビットの区切りを見失わないよう、信号に定期的な遷移を作る</li>
+    <li><b>直流成分の除去（DCバランス）</b>：0または1が続くと直流が偏り、トランス結合された回路を通れない</li>
+    <li><b>制御符号・誤り検出</b>：データとして現れない特殊なビット列で、フレームの開始／アイドルなどを表す</li>
+  </ul>
+
+  <figure>
+    <svg viewBox="0 0 420 200" role="img" aria-label="NRZとマンチェスタ符号の波形比較">
+      <g font-family="monospace" font-size="12" fill="#6C7F88">
+        <text x="90" y="14">1</text><text x="150" y="14">0</text><text x="210" y="14">1</text><text x="270" y="14">1</text><text x="330" y="14">0</text>
+      </g>
+      <g stroke="#D3DBDF" stroke-dasharray="3 3">
+        <line x1="60" y1="20" x2="60" y2="190"/><line x1="120" y1="20" x2="120" y2="190"/>
+        <line x1="180" y1="20" x2="180" y2="190"/><line x1="240" y1="20" x2="240" y2="190"/>
+        <line x1="300" y1="20" x2="300" y2="190"/><line x1="360" y1="20" x2="360" y2="190"/>
+      </g>
+      <text x="0" y="38" font-size="12" font-weight="700" fill="#16232B">NRZ</text>
+      <path d="M60,50 H120 V90 H180 V50 H300 V90 H360" fill="none" stroke="#A61E4D" stroke-width="2.5"/>
+      <text x="0" y="112" font-size="10.5" fill="#6C7F88">同符号が続くと</text>
+      <text x="0" y="126" font-size="10.5" fill="#6C7F88">遷移が消える</text>
+
+      <text x="0" y="152" font-size="12" font-weight="700" fill="#16232B">マンチェスタ</text>
+      <path d="M60,180 H90 V140 H150 V180 H210 V140 H240 V180 H270 V140 H330 V180 H360" fill="none" stroke="#0E7C86" stroke-width="2.5"/>
+    </svg>
+    <figcaption>マンチェスタ符号はビットの中央で必ず信号が反転するため、受信側はその遷移からクロックを再生できる（自己同期）。代償として必要帯域が2倍＝伝送効率50%。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>符号化方式の比較</caption>
+    <thead><tr><th>方式</th><th>仕組み</th><th>伝送効率</th><th>採用規格</th></tr></thead>
+    <tbody>
+      <tr><th>NRZ</th><td>0/1を電圧レベルに対応（Non Return to Zero）</td><td class="c">100%</td><td>他方式の土台</td></tr>
+      <tr><th>マンチェスタ</th><td>ビット中央で必ず反転させ自己同期</td><td class="c">50%</td><td>10BASE-T</td></tr>
+      <tr><th>4B/5B</th><td>4ビットを5ビットに変換し、遷移を保証</td><td class="c">80%</td><td>100BASE-<b>TX</b>、FDDI</td></tr>
+      <tr><th>8B/10B</th><td>8ビットを10ビットに変換。DCバランス（ディスパリティ）も担保</td><td class="c">80%</td><td>1000BASE-<b>X</b>（SX/LX）、FC</td></tr>
+      <tr><th>64B/66B</th><td>64ビットに2ビットの同期ヘッダを付ける。オーバーヘッド最小</td><td class="c">約97%</td><td>10GBASE-<b>R</b>（SR/LR）、10GBASE-T</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 覚え方</span>
+    <p style="margin-bottom:0">
+      規格名の記号がそのまま符号化を表す。<br>
+      <b>X → 8B/10B</b>（1000BASE-S<b>X</b>／L<b>X</b>）　　<b>R → 64B/66B</b>（10GBASE-S<b>R</b>／L<b>R</b>）<br>
+      高速になるほどオーバーヘッドを削る方向（20% → 3%）に進化した、という流れで理解する。
+    </p>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 8 ===================== -->
+<section id="s8">
+<div class="wrap">
+  <h2><span class="num">1.8</span>多重化 ― TDM と WDM</h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">多重化</span>は、1本の伝送路に複数の通信を同時に載せる技術。<b>何を分割して共有するか</b>で分類する。
+  </p>
+
+  <h3>TDM（時分割多重）</h3>
+  <p>
+    <span class="en">Time Division Multiplexing</span>。時間を細かいスロットに区切り、
+    各チャネルに順番に割り当てる。<b>使わなくてもスロットは確保される＝帯域が保証される</b>のが特徴で、
+    専用線や SDH／PDH などキャリア網の基盤で使われてきた。逆に空きスロットは無駄になる（統計多重に劣る）。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 110" role="img" aria-label="時分割多重の概念図">
+      <text x="0" y="14" font-size="12" fill="#6C7F88">時間 →</text>
+      <g font-size="11" font-family="monospace" text-anchor="middle">
+        <rect x="0" y="26" width="84" height="34" fill="#E4F0F1" stroke="#0E7C86"/><text x="42" y="48" fill="#0E7C86">A</text>
+        <rect x="86" y="26" width="84" height="34" fill="#F7E6EC" stroke="#A61E4D"/><text x="128" y="48" fill="#A61E4D">B</text>
+        <rect x="172" y="26" width="84" height="34" fill="#E6E7F2" stroke="#3B3E86"/><text x="214" y="48" fill="#3B3E86">C</text>
+        <rect x="258" y="26" width="84" height="34" fill="#E4F0F1" stroke="#0E7C86"/><text x="300" y="48" fill="#0E7C86">A</text>
+        <rect x="344" y="26" width="84" height="34" fill="#F7E6EC" stroke="#A61E4D"/><text x="386" y="48" fill="#A61E4D">B</text>
+        <rect x="430" y="26" width="84" height="34" fill="#E6E7F2" stroke="#3B3E86"/><text x="472" y="48" fill="#3B3E86">C</text>
+        <rect x="516" y="26" width="84" height="34" fill="#E4F0F1" stroke="#0E7C86"/><text x="558" y="48" fill="#0E7C86">A</text>
+        <rect x="602" y="26" width="84" height="34" fill="#F2F5F6" stroke="#D3DBDF"/><text x="644" y="48" fill="#6C7F88">空</text>
+      </g>
+      <text x="0" y="82" font-size="11.5" fill="#16232B">固定スロット割当 → 帯域は保証されるが、送るものがなくてもスロットは占有される（右端「空」）</text>
+    </svg>
+    <figcaption>TDM は時間軸で分ける。これに対し WDM は波長（色）で分けるので、同じ瞬間に複数の通信が流れる。</figcaption>
+  </figure>
+
+  <h3>WDM（波長分割多重）</h3>
+  <p>
+    <span class="en">Wavelength Division Multiplexing</span>。1本の光ファイバに<b>波長の異なる光</b>を同時に流し、
+    受信側でプリズムのように分離する。<b>ファイバ本数を増やさずに容量を増やせる</b>のが最大の価値で、
+    敷設コストの高い長距離区間ほど効果が大きい。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 170" role="img" aria-label="CWDMとDWDMの波長間隔の比較図">
+      <text x="0" y="14" font-size="13" font-weight="700" fill="#16232B">CWDM　波長間隔 20nm ・ 最大18波程度</text>
+      <line x1="0" y1="44" x2="660" y2="44" stroke="#D3DBDF" stroke-width="1"/>
+      <g stroke-width="3">
+        <line x1="20" y1="28" x2="20" y2="60" stroke="#3B3E86"/>
+        <line x1="110" y1="28" x2="110" y2="60" stroke="#2C6B8F"/>
+        <line x1="200" y1="28" x2="200" y2="60" stroke="#0E7C86"/>
+        <line x1="290" y1="28" x2="290" y2="60" stroke="#5E8F5A"/>
+        <line x1="380" y1="28" x2="380" y2="60" stroke="#7A5B9B"/>
+        <line x1="470" y1="28" x2="470" y2="60" stroke="#A0468C"/>
+        <line x1="560" y1="28" x2="560" y2="60" stroke="#A61E4D"/>
+        <line x1="650" y1="28" x2="650" y2="60" stroke="#8A3A2E"/>
+      </g>
+      <text x="0" y="78" font-size="11" fill="#6C7F88">間隔が広い → 温度制御（波長安定化）が不要 → 装置が安価。距離は短め（〜80km程度）</text>
+
+      <text x="0" y="112" font-size="13" font-weight="700" fill="#16232B">DWDM　波長間隔 0.8nm(100GHz)以下 ・ 数十〜100波以上</text>
+      <line x1="0" y1="140" x2="660" y2="140" stroke="#D3DBDF" stroke-width="1"/>
+      <g stroke-width="2" stroke="#0E7C86">
+        <line x1="20" y1="126" x2="20" y2="154"/><line x1="40" y1="126" x2="40" y2="154"/><line x1="60" y1="126" x2="60" y2="154"/>
+        <line x1="80" y1="126" x2="80" y2="154"/><line x1="100" y1="126" x2="100" y2="154"/><line x1="120" y1="126" x2="120" y2="154"/>
+        <line x1="140" y1="126" x2="140" y2="154"/><line x1="160" y1="126" x2="160" y2="154"/><line x1="180" y1="126" x2="180" y2="154"/>
+        <line x1="200" y1="126" x2="200" y2="154"/><line x1="220" y1="126" x2="220" y2="154"/><line x1="240" y1="126" x2="240" y2="154"/>
+        <line x1="260" y1="126" x2="260" y2="154"/><line x1="280" y1="126" x2="280" y2="154"/><line x1="300" y1="126" x2="300" y2="154"/>
+        <line x1="320" y1="126" x2="320" y2="154"/><line x1="340" y1="126" x2="340" y2="154"/><line x1="360" y1="126" x2="360" y2="154"/>
+        <line x1="380" y1="126" x2="380" y2="154"/><line x1="400" y1="126" x2="400" y2="154"/><line x1="420" y1="126" x2="420" y2="154"/>
+      </g>
+      <text x="436" y="146" font-size="11" fill="#6C7F88">… 1530〜1565nm（Cバンド）に高密度に配置</text>
+      <text x="0" y="168" font-size="11" fill="#6C7F88">狭い間隔 → 精密な波長制御が必要で高価。EDFA で一括増幅でき、長距離大容量に適する</text>
+    </svg>
+    <figcaption>C = Coarse（粗い）、D = Dense（密）。頭文字がそのまま波長間隔を表している。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>多重化方式の整理</caption>
+    <thead><tr><th>方式</th><th>分割する軸</th><th>特徴</th></tr></thead>
+    <tbody>
+      <tr><th>TDM</th><td>時間</td><td>スロット固定。帯域保証。専用線・SDH</td></tr>
+      <tr><th>FDM</th><td>周波数</td><td>アナログ的な分割。放送・ADSLなど</td></tr>
+      <tr><th>CWDM</th><td>波長（粗）</td><td>安価・小規模・中距離。企業の拠点間で採用しやすい</td></tr>
+      <tr><th>DWDM</th><td>波長（密）</td><td>高価・大容量・長距離。キャリアのバックボーン</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <p style="margin-bottom:0">
+      「拠点間のファイバ芯線が2芯しかないが、回線を4系統に増やしたい」→
+      <b>WDM 装置を導入し、1芯に複数波長を多重する</b>。理由は<b>新規のファイバ敷設が不要で、
+      短期間・低コストで帯域を増設できる</b>から。ダークファイバ＋WDM はこの文脈でセットで出る。
+    </p>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第1章 物理層・伝送 ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">01 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>
