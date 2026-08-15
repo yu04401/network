@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OSPF ｜ ネットワークスペシャリスト 技術リファレンス</title>
+<style>
+:root{
+  --ink:#16202b;
+  --ink-2:#41505f;
+  --ink-3:#6d7c8b;
+  --paper:#fbfaf7;
+  --panel:#f2f0ea;
+  --rule:#d9d5cb;
+  --rule-2:#bfb9ab;
+  --signal:#0d5c63;
+  --signal-bg:#e4eeed;
+  --warn:#8a4a12;
+  --warn-bg:#f6ede1;
+  --mono:"SFMono-Regular",Consolas,"Osaka-Mono","MS Gothic",monospace;
+  --gothic:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif;
+  --mincho:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--gothic);font-size:15px;line-height:1.9;
+  font-feature-settings:"palt";
+}
+.wrap{max-width:860px;margin:0 auto;padding:0 28px 120px}
+
+/* ── 表紙 ── */
+header.cover{padding:72px 0 40px;border-bottom:2px solid var(--ink)}
+.eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;
+  color:var(--signal);text-transform:uppercase;margin:0 0 18px
+}
+h1{
+  font-family:var(--mincho);font-size:44px;font-weight:600;
+  line-height:1.25;margin:0 0 14px;letter-spacing:.02em
+}
+h1 .sub{display:block;font-size:17px;font-weight:400;color:var(--ink-2);margin-top:10px;letter-spacing:.06em}
+.cover p.lead{margin:22px 0 0;color:var(--ink-2);font-size:15px;max-width:62ch}
+
+/* ── 目次 ── */
+nav.toc{margin:36px 0 0;padding:22px 26px;background:var(--panel);border:1px solid var(--rule)}
+nav.toc h2{font-family:var(--gothic);font-size:12px;letter-spacing:.18em;margin:0 0 14px;color:var(--ink-3);border:0;padding:0}
+nav.toc ol{margin:0;padding:0;list-style:none;counter-reset:toc;
+  columns:2;column-gap:32px}
+nav.toc li{counter-increment:toc;margin:0 0 7px;break-inside:avoid}
+nav.toc li::before{content:counter(toc,decimal-leading-zero);font-family:var(--mono);
+  font-size:11px;color:var(--signal);margin-right:10px}
+nav.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent}
+nav.toc a:hover{border-bottom-color:var(--signal)}
+
+/* ── 見出し ── */
+section{margin-top:64px;scroll-margin-top:20px}
+h2{
+  font-family:var(--mincho);font-size:27px;font-weight:600;margin:0 0 6px;
+  padding-bottom:10px;border-bottom:1px solid var(--ink);letter-spacing:.02em
+}
+h2 .num{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--signal);
+  display:block;letter-spacing:.16em;margin-bottom:6px}
+h3{font-family:var(--gothic);font-size:17px;font-weight:600;margin:38px 0 10px;
+  padding-left:12px;border-left:3px solid var(--signal)}
+h4{font-size:14px;font-weight:600;margin:24px 0 6px;color:var(--ink-2)}
+p{margin:0 0 14px}
+strong{font-weight:600}
+code{font-family:var(--mono);font-size:.88em;background:var(--panel);
+  padding:2px 5px;border:1px solid var(--rule)}
+
+/* ── 表 ── */
+table{width:100%;border-collapse:collapse;margin:18px 0 22px;font-size:14px}
+caption{text-align:left;font-size:12px;color:var(--ink-3);margin-bottom:8px;
+  font-family:var(--mono);letter-spacing:.08em}
+th,td{border:1px solid var(--rule);padding:9px 11px;text-align:left;vertical-align:top;line-height:1.7}
+thead th{background:var(--ink);color:var(--paper);font-weight:600;font-size:13px;
+  border-color:var(--ink)}
+tbody tr:nth-child(even){background:#f6f4ef}
+td.c,th.c{text-align:center}
+.mk{font-family:var(--mono);font-size:12px;color:var(--signal);font-weight:600}
+
+/* ── 図 ── */
+figure{margin:26px 0;padding:22px 20px 16px;background:#fff;border:1px solid var(--rule)}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:14px;padding-top:10px;border-top:1px solid var(--rule);
+  font-size:12.5px;color:var(--ink-3);line-height:1.75}
+
+/* ── 注意ブロック ── */
+.note,.trap{padding:16px 18px;margin:20px 0;border-left:3px solid;font-size:14px}
+.note{background:var(--signal-bg);border-color:var(--signal)}
+.trap{background:var(--warn-bg);border-color:var(--warn)}
+.note .lbl,.trap .lbl{display:block;font-size:11px;letter-spacing:.14em;
+  font-family:var(--mono);margin-bottom:7px}
+.note .lbl{color:var(--signal)} .trap .lbl{color:var(--warn)}
+.note p:last-child,.trap p:last-child{margin-bottom:0}
+
+/* ── コマンド ── */
+pre{background:var(--ink);color:#e8e6df;font-family:var(--mono);font-size:13px;
+  line-height:1.8;padding:16px 18px;margin:16px 0;overflow-x:auto;border-radius:0}
+pre .cm{color:#8fb3b6}
+
+/* ── リスト ── */
+ul,ol{margin:0 0 16px;padding-left:1.5em}
+li{margin-bottom:6px}
+
+/* ── 自己確認問題 ── */
+.quiz{counter-reset:q;list-style:none;padding:0;margin:0}
+.quiz li{counter-increment:q;border:1px solid var(--rule);background:#fff;
+  padding:16px 18px 16px 52px;margin-bottom:10px;position:relative;break-inside:avoid}
+.quiz li::before{content:"Q" counter(q);position:absolute;left:16px;top:16px;
+  font-family:var(--mono);font-size:12px;color:var(--signal);font-weight:600}
+.quiz .a{display:block;margin-top:9px;padding-top:9px;border-top:1px dashed var(--rule-2);
+  font-size:13.5px;color:var(--ink-2)}
+.quiz .a::before{content:"A ";font-family:var(--mono);color:var(--signal)}
+
+/* ── クロスリファレンス ── */
+.xref{font-size:13px;color:var(--ink-3);margin:26px 0 0;padding-top:14px;
+  border-top:1px solid var(--rule)}
+.xref span{font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+  color:var(--signal);margin-right:10px}
+
+footer{margin-top:80px;padding-top:20px;border-top:2px solid var(--ink);
+  font-size:12px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+@media (max-width:640px){
+  .wrap{padding:0 18px 80px}
+  h1{font-size:32px} h2{font-size:22px}
+  nav.toc ol{columns:1}
+  table{font-size:13px} th,td{padding:7px 8px}
+}
+@media print{
+  body{background:#fff;font-size:10.5pt;line-height:1.75}
+  .wrap{max-width:none;padding:0}
+  header.cover{padding-top:0}
+  section{page-break-inside:auto;margin-top:32px}
+  h2{page-break-after:avoid} h3,h4{page-break-after:avoid}
+  figure,table,.note,.trap,.quiz li,pre{page-break-inside:avoid}
+  nav.toc{background:#fff}
+  pre{background:#fff;color:#000;border:1px solid #999}
+  pre .cm{color:#555}
+  thead th{background:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="cover">
+  <p class="eyebrow">NW Reference / Chapter 03-2 — Routing</p>
+  <h1>OSPF
+    <span class="sub">Open Shortest Path First ／ リンクステート型 IGP</span>
+  </h1>
+  <p class="lead">午後Ⅰ・午後Ⅱで最も安定して出題される内部ルーティングプロトコル。用語の暗記ではなく、<strong>構成図にコストを書き込み、障害時にどの経路へ切り替わるかを追える</strong>ことを到達点とする。</p>
+</header>
+
+<nav class="toc">
+  <h2>目次</h2>
+  <ol>
+    <li><a href="#s1">位置づけと基本原理</a></li>
+    <li><a href="#s2">隣接確立のフロー</a></li>
+    <li><a href="#s3">DR / BDR</a></li>
+    <li><a href="#s4">エリアと ABR / ASBR</a></li>
+    <li><a href="#s5">LSA タイプ</a></li>
+    <li><a href="#s6">コストと経路選択</a></li>
+    <li><a href="#s7">特殊エリア</a></li>
+    <li><a href="#s8">用語定義表</a></li>
+    <li><a href="#s9">試験での問われ方</a></li>
+    <li><a href="#s10">自己確認問題</a></li>
+  </ol>
+</nav>
+
+<!-- ══ 1 ══ -->
+<section id="s1">
+  <h2><span class="num">01</span>位置づけと基本原理</h2>
+
+  <p>OSPF は AS 内部の経路制御を担う <strong>IGP</strong>（Interior Gateway Protocol）で、IP プロトコル番号 <code>89</code> で直接動作する。TCP／UDP を使わないため、再送や順序保証はプロトコル自身が実装している。</p>
+
+  <h3>リンクステート型とは何が違うのか</h3>
+  <p>距離ベクトル型（RIP）は「隣から聞いた経路の伝聞」を中継する。自分より先のトポロジは知らないまま、隣が言う距離を信じて足し算するだけなので、経路が消えたことに気づくのが遅れ、ルーティングループが発生しやすい。</p>
+  <p>リンクステート型は逆で、各ルータが<strong>自分の接続情報（LSA）だけ</strong>をエリア全体に配り、全員が同一の <strong>LSDB</strong>（リンクステートデータベース＝ネットワークの地図）を持つ。地図が全員一致していれば、各自が独立に最短経路を計算しても矛盾は起きない。これがループに強い理由である。</p>
+
+  <table>
+    <caption>方式の比較</caption>
+    <thead><tr><th style="width:22%">観点</th><th style="width:39%">距離ベクトル型（RIP）</th><th>リンクステート型（OSPF）</th></tr></thead>
+    <tbody>
+      <tr><td>持つ情報</td><td>宛先ごとの距離と方向</td><td>ネットワーク全体の地図（LSDB）</td></tr>
+      <tr><td>広報するもの</td><td>自分の経路表そのもの</td><td>自分のリンク状態（LSA）のみ</td></tr>
+      <tr><td>計算方法</td><td>受け取った距離に加算</td><td>ダイクストラ法で自力計算</td></tr>
+      <tr><td>メトリック</td><td>ホップ数（最大15）</td><td>コスト（帯域幅ベース）</td></tr>
+      <tr><td>収束</td><td>遅い・ループしやすい</td><td>速い・ループに強い</td></tr>
+      <tr><td>負荷</td><td>小</td><td>CPU／メモリを消費する</td></tr>
+    </tbody>
+  </table>
+
+  <p>最後の行が、次章のエリア分割へつながる。LSDB が大きくなるほど SPF 計算の負荷が上がるため、<strong>規模を分割して抑える仕組みが必要になる</strong>。</p>
+
+  <h3>経路表ができるまで</h3>
+  <ol>
+    <li>Hello でネイバーを発見する</li>
+    <li>LSA を交換し、LSDB をエリア内で同期する</li>
+    <li>LSDB に対して <strong>SPF アルゴリズム（ダイクストラ法）</strong>を実行し、自分を根とする SPF ツリーを作る</li>
+    <li>ツリーから最小コストの経路を取り出し、経路表へ登録する</li>
+  </ol>
+  <p>LSDB はエリア内の全ルータで同一だが、<strong>SPF ツリーはルータごとに異なる</strong>。同じ地図から、各自が自分の現在地を起点に経路を引くためである。</p>
+</section>
+
+<!-- ══ 2 ══ -->
+<section id="s2">
+  <h2><span class="num">02</span>隣接確立のフロー</h2>
+
+  <p>OSPF ルータ同士が情報交換できる状態になるまでには、7 つのステートを経る。<code>show ip ospf neighbor</code> で見えるのは、この途中経過である。</p>
+
+  <figure>
+    <svg viewBox="0 0 820 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OSPF隣接確立のステート遷移図">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#41505f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <g font-family="sans-serif">
+        <!-- 上段 -->
+        <rect x="20" y="30" width="112" height="44" rx="4" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="76" y="52" text-anchor="middle" font-size="14" fill="#16202b">Down</text>
+        <text x="76" y="67" text-anchor="middle" font-size="11" fill="#6d7c8b">未検出</text>
+
+        <rect x="176" y="30" width="112" height="44" rx="4" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="232" y="52" text-anchor="middle" font-size="14" fill="#16202b">Init</text>
+        <text x="232" y="67" text-anchor="middle" font-size="11" fill="#6d7c8b">Hello受信</text>
+
+        <rect x="332" y="30" width="132" height="44" rx="4" fill="#e4eeed" stroke="#0d5c63" stroke-width="1.4"/>
+        <text x="398" y="52" text-anchor="middle" font-size="14" fill="#0d5c63" font-weight="600">2WAY</text>
+        <text x="398" y="67" text-anchor="middle" font-size="11" fill="#0d5c63">相互認識・DR選出</text>
+
+        <line x1="132" y1="52" x2="170" y2="52" stroke="#41505f" stroke-width="1.2" marker-end="url(#ar)"/>
+        <line x1="288" y1="52" x2="326" y2="52" stroke="#41505f" stroke-width="1.2" marker-end="url(#ar)"/>
+
+        <!-- 分岐 -->
+        <path d="M464 52 L520 52" fill="none" stroke="#41505f" stroke-width="1.2"/>
+        <path d="M520 52 L520 96 L556 96" fill="none" stroke="#41505f" stroke-width="1.2" marker-end="url(#ar)"/>
+        <path d="M520 52 L520 180 L556 180" fill="none" stroke="#41505f" stroke-width="1.2" marker-end="url(#ar)"/>
+
+        <rect x="562" y="74" width="238" height="44" rx="4" fill="#f6ede1" stroke="#8a4a12"/>
+        <text x="681" y="96" text-anchor="middle" font-size="13" fill="#8a4a12">DROTHER 同士 → ここで停止</text>
+        <text x="681" y="111" text-anchor="middle" font-size="11" fill="#8a4a12">2WAY/DROTHER は正常状態</text>
+
+        <rect x="562" y="158" width="238" height="44" rx="4" fill="#e4eeed" stroke="#0d5c63"/>
+        <text x="681" y="180" text-anchor="middle" font-size="13" fill="#0d5c63">DR / BDR との間 → 継続</text>
+        <text x="681" y="195" text-anchor="middle" font-size="11" fill="#0d5c63">隣接関係（adjacency）を確立</text>
+
+        <!-- 下段 -->
+        <rect x="20" y="196" width="112" height="40" rx="4" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="76" y="221" text-anchor="middle" font-size="13" fill="#16202b">ExStart</text>
+        <rect x="152" y="196" width="112" height="40" rx="4" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="208" y="221" text-anchor="middle" font-size="13" fill="#16202b">Exchange</text>
+        <rect x="284" y="196" width="112" height="40" rx="4" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="340" y="221" text-anchor="middle" font-size="13" fill="#16202b">Loading</text>
+        <rect x="416" y="196" width="112" height="40" rx="4" fill="#0d5c63" stroke="#0d5c63"/>
+        <text x="472" y="221" text-anchor="middle" font-size="13" fill="#ffffff" font-weight="600">Full</text>
+
+        <line x1="132" y1="216" x2="146" y2="216" stroke="#41505f" stroke-width="1.2" marker-end="url(#ar)"/>
+        <line x1="264" y1="216" x2="278" y2="216" stroke="#41505f" stroke-width="1.2" marker-end="url(#ar)"/>
+        <line x1="396" y1="216" x2="410" y2="216" stroke="#41505f" stroke-width="1.2" marker-end="url(#ar)"/>
+      </g>
+    </svg>
+    <figcaption>2WAY が分岐点。ここで DR / BDR が選出され、DROTHER 同士は 2WAY で意図的に停止する。全ペアが Full になるわけではない点が、DR を置く効果そのものを表している。</figcaption>
+  </figure>
+
+  <table>
+    <caption>ステートの意味と、そこで止まる原因</caption>
+    <thead><tr><th style="width:17%">ステート</th><th style="width:41%">何が起きているか</th><th>ここで停止する主因</th></tr></thead>
+    <tbody>
+      <tr><td>Init</td><td>相手の Hello は届いたが、その中に自分の Router ID が載っていない</td><td>片方向通信。ACL・VLAN 設定ミス</td></tr>
+      <tr><td>2WAY</td><td>相手の Hello に自分の Router ID があり、相互認識が成立</td><td>DROTHER 同士なら<strong>正常</strong></td></tr>
+      <tr><td>ExStart</td><td>DBD 交換のためのマスタ／スレーブ決定</td><td><strong>MTU 不一致</strong>（定番の出題）</td></tr>
+      <tr><td>Exchange</td><td>DBD（LSDB の目次）を交換</td><td>MTU、パケット欠落</td></tr>
+      <tr><td>Loading</td><td>足りない LSA を LSR で要求し、LSU で受け取る</td><td>LSA の破損、リソース不足</td></tr>
+      <tr><td>Full</td><td>LSDB が完全に同期した</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <h3>ネイバーになるための一致条件</h3>
+  <p>以下が 1 つでも食い違うと隣接は上がらない。障害切り分け問題では、この表を順に潰していくのが定石。</p>
+  <ul>
+    <li><strong>エリア ID</strong>が一致していること</li>
+    <li><strong>サブネット（マスク）</strong>が同一であること</li>
+    <li><strong>Hello / Dead インターバル</strong>が一致していること</li>
+    <li><strong>認証</strong>の方式と鍵が一致していること</li>
+    <li><strong>スタブフラグ</strong>が一致していること</li>
+    <li>Router ID が重複していないこと</li>
+  </ul>
+
+  <div class="note">
+    <span class="lbl">TIMER</span>
+    <p>Hello は既定 10 秒間隔、Dead インターバルはその 4 倍の 40 秒。Dead を待つ限り検知に最大 40 秒かかるため、高速な障害検知が要件なら <strong>BFD</strong> を併用するか、タイマ自体を短縮する。タイマは両端で一致させる必要がある。</p>
+  </div>
+</section>
+
+<!-- ══ 3 ══ -->
+<section id="s3">
+  <h2><span class="num">03</span>DR / BDR</h2>
+
+  <h3>なぜ代表を立てるのか</h3>
+  <p>イーサネットのようなマルチアクセスセグメントで n 台が全組み合わせで隣接すると、隣接関係は <strong>n(n−1)/2</strong> 本になり、同じ LSA が何度も往復する。そこで代表を立て、DROTHER は <strong>DR および BDR とだけ</strong>隣接する。隣接数は <strong>2n−3</strong> 本に減る（DR–BDR が 1 本、残り n−2 台がそれぞれ 2 本）。</p>
+
+  <div class="note">
+    <span class="lbl">CAUTION — 何が減っているのか</span>
+    <p>減るのは <strong>LSDB を同期する相手の数</strong>であって、データの通り道ではない。DROTHER 同士は同一セグメント上にいるため、実際のパケットは今までどおり直接届き、DR を経由しない。DR が担うのは<strong>地図の配布業務だけ</strong>である。</p>
+    <p>また、隣接しない DROTHER 同士も Hello の交換は続けている。<strong>ネイバー</strong>（2WAY 以上＝相手を認識している）と<strong>隣接</strong>（Full＝LSDB を完全同期している）は別概念であり、記述問題では使い分けが求められる。</p>
+  </div>
+
+  <table>
+    <caption>隣接関係の本数</caption>
+    <thead><tr><th style="width:26%">構成</th><th class="c" style="width:18%">一般式</th><th class="c" style="width:12%">4 台</th><th class="c" style="width:12%">8 台</th><th>内訳（4 台の場合）</th></tr></thead>
+    <tbody>
+      <tr><td>DR なし（全ペア Full）</td><td class="c">n(n−1)÷2</td><td class="c">6</td><td class="c">28</td><td>全 6 通りの組み合わせ</td></tr>
+      <tr><td>DR / BDR あり</td><td class="c"><strong>2n−3</strong></td><td class="c">5</td><td class="c">13</td><td>DR–BDR、DR–A、DR–B、BDR–A、BDR–B</td></tr>
+    </tbody>
+  </table>
+  <p>台数が増えるほど差が開く。片方は二次関数的に、もう片方は線形にしか増えないためである。</p>
+
+  <h3>BDR を置く理由</h3>
+  <p>削減だけなら DR 1 台で足りる。BDR が必要なのは、<strong>DR 障害時に選挙をやり直すと、その間セグメント全体の LSA 配布が止まる</strong>ためである。BDR は DROTHER からの更新（224.0.0.6 宛）を常に受信しており、DR と同一の LSDB を保持している。ゆえに再同期なしで即座に代役を務められる。「受信はするが配布はしない」という非対称が要点。</p>
+
+  <h3>LSA の流れと 2 つのマルチキャストアドレス</h3>
+
+  <figure>
+    <svg viewBox="0 0 820 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DR経由のLSA配布フロー">
+      <defs>
+        <marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#0d5c63" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <g font-family="sans-serif">
+        <rect x="30" y="66" width="170" height="60" rx="4" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="115" y="92" text-anchor="middle" font-size="14" fill="#16202b" font-weight="600">DROTHER</text>
+        <text x="115" y="110" text-anchor="middle" font-size="11.5" fill="#6d7c8b">リンク変化を検知</text>
+
+        <text x="290" y="80" text-anchor="middle" font-size="12.5" fill="#0d5c63" font-family="monospace">224.0.0.6</text>
+        <text x="290" y="118" text-anchor="middle" font-size="11" fill="#6d7c8b">AllDRouters</text>
+        <line x1="206" y1="96" x2="368" y2="96" stroke="#0d5c63" stroke-width="1.4" marker-end="url(#ar2)"/>
+
+        <rect x="376" y="60" width="170" height="72" rx="4" fill="#e4eeed" stroke="#0d5c63" stroke-width="1.4"/>
+        <text x="461" y="86" text-anchor="middle" font-size="14" fill="#0d5c63" font-weight="600">DR / BDR</text>
+        <text x="461" y="104" text-anchor="middle" font-size="11.5" fill="#0d5c63">両方が受信する</text>
+        <text x="461" y="121" text-anchor="middle" font-size="11.5" fill="#0d5c63">配布するのは DR のみ</text>
+
+        <text x="636" y="80" text-anchor="middle" font-size="12.5" fill="#0d5c63" font-family="monospace">224.0.0.5</text>
+        <text x="636" y="118" text-anchor="middle" font-size="11" fill="#6d7c8b">AllSPFRouters</text>
+        <line x1="552" y1="96" x2="714" y2="96" stroke="#0d5c63" stroke-width="1.4" marker-end="url(#ar2)"/>
+
+        <rect x="722" y="66" width="76" height="60" rx="4" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="760" y="92" text-anchor="middle" font-size="13" fill="#16202b" font-weight="600">全ルータ</text>
+        <text x="760" y="110" text-anchor="middle" font-size="11" fill="#6d7c8b">同期完了</text>
+
+        <line x1="30" y1="160" x2="798" y2="160" stroke="#d9d5cb" stroke-width="1"/>
+        <text x="30" y="180" font-size="11.5" fill="#6d7c8b">BDR は 224.0.0.6 を常に受信しているため、DR 障害時に再同期なしで昇格できる</text>
+      </g>
+    </svg>
+    <figcaption>更新は一度 DR に集約され、DR が責任を持って配り直す。BDR は「受信するが配布しない」待機役。</figcaption>
+  </figure>
+
+  <table>
+    <caption>マルチキャストアドレスの使い分け</caption>
+    <thead><tr><th style="width:24%">アドレス</th><th style="width:26%">名称</th><th>受信するのは誰か</th></tr></thead>
+    <tbody>
+      <tr><td><code>224.0.0.5</code></td><td>AllSPFRouters</td><td>OSPF ルータ全て（Hello もこの宛先）</td></tr>
+      <tr><td><code>224.0.0.6</code></td><td>AllDRouters</td><td><strong>DR と BDR のみ</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h3>選出シナリオ ── 何がどの順で決まるか</h3>
+
+  <p>選出は瞬時に終わるものではなく、<strong>タイマ待ち → 候補の絞り込み → BDR 選出 → DR 選出</strong>という順序を踏む。次の 4 台を例に追う。</p>
+
+  <table>
+    <caption>前提条件</caption>
+    <thead><tr><th class="c" style="width:14%">ルータ</th><th class="c" style="width:18%">priority</th><th class="c" style="width:22%">Router ID</th><th>備考</th></tr></thead>
+    <tbody>
+      <tr><td class="c">R1</td><td class="c">1</td><td class="c">1.1.1.1</td><td>既定値</td></tr>
+      <tr><td class="c">R2</td><td class="c">1</td><td class="c">2.2.2.2</td><td>既定値</td></tr>
+      <tr><td class="c">R3</td><td class="c"><strong>10</strong></td><td class="c">3.3.3.3</td><td>最高値</td></tr>
+      <tr><td class="c">R4</td><td class="c"><strong>0</strong></td><td class="c">4.4.4.4</td><td>選出対象外</td></tr>
+    </tbody>
+  </table>
+
+  <figure>
+    <svg viewBox="0 0 820 286" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DRとBDRが段階的に決まる過程">
+      <g font-family="sans-serif">
+        <text x="176" y="22" font-size="11.5" fill="#6d7c8b">R1 ／ pri 1</text>
+        <text x="316" y="22" font-size="11.5" fill="#6d7c8b">R2 ／ pri 1</text>
+        <text x="456" y="22" font-size="11.5" fill="#6d7c8b">R3 ／ pri 10</text>
+        <text x="596" y="22" font-size="11.5" fill="#6d7c8b">R4 ／ pri 0</text>
+
+        <text x="20" y="66" font-size="12.5" fill="#41505f">① Wait Timer 満了</text>
+        <text x="20" y="82" font-size="11" fill="#6d7c8b">40 秒の待機後</text>
+        <rect x="176" y="38" width="124" height="52" rx="5" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="238" y="69" text-anchor="middle" font-size="13" fill="#16202b">候補</text>
+        <rect x="316" y="38" width="124" height="52" rx="5" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="378" y="69" text-anchor="middle" font-size="13" fill="#16202b">候補</text>
+        <rect x="456" y="38" width="124" height="52" rx="5" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="518" y="69" text-anchor="middle" font-size="13" fill="#16202b">候補</text>
+        <rect x="596" y="38" width="124" height="52" rx="5" fill="#faf9f6" stroke="#bfb9ab" stroke-dasharray="4 3"/>
+        <text x="658" y="69" text-anchor="middle" font-size="13" fill="#8a4a12">対象外</text>
+
+        <text x="20" y="142" font-size="12.5" fill="#41505f">② BDR を先に選ぶ</text>
+        <text x="20" y="158" font-size="11" fill="#6d7c8b">DR 表明者を除いて比較</text>
+        <rect x="176" y="114" width="124" height="52" rx="5" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="238" y="139" text-anchor="middle" font-size="13" fill="#16202b">候補</text>
+        <text x="238" y="155" text-anchor="middle" font-size="10.5" fill="#6d7c8b">RID 小</text>
+        <rect x="316" y="114" width="124" height="52" rx="5" fill="#e4eeed" stroke="#0d5c63" stroke-width="1.4"/>
+        <text x="378" y="139" text-anchor="middle" font-size="13" fill="#0d5c63" font-weight="600">BDR</text>
+        <text x="378" y="155" text-anchor="middle" font-size="10.5" fill="#0d5c63">RID 大で勝利</text>
+        <rect x="456" y="114" width="124" height="52" rx="5" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="518" y="139" text-anchor="middle" font-size="13" fill="#16202b">DR を表明</text>
+        <text x="518" y="155" text-anchor="middle" font-size="10.5" fill="#6d7c8b">BDR 対象外</text>
+        <rect x="596" y="114" width="124" height="52" rx="5" fill="#faf9f6" stroke="#bfb9ab" stroke-dasharray="4 3"/>
+        <text x="658" y="142" text-anchor="middle" font-size="13" fill="#8a4a12">対象外</text>
+
+        <text x="20" y="218" font-size="12.5" fill="#41505f">③ DR を選び確定</text>
+        <text x="20" y="234" font-size="11" fill="#6d7c8b">隣接確立へ</text>
+        <rect x="176" y="190" width="124" height="52" rx="5" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="238" y="221" text-anchor="middle" font-size="13" fill="#16202b">DROTHER</text>
+        <rect x="316" y="190" width="124" height="52" rx="5" fill="#e4eeed" stroke="#0d5c63" stroke-width="1.4"/>
+        <text x="378" y="221" text-anchor="middle" font-size="13" fill="#0d5c63" font-weight="600">BDR</text>
+        <rect x="456" y="190" width="124" height="52" rx="5" fill="#f6ede1" stroke="#8a4a12" stroke-width="1.6"/>
+        <text x="518" y="221" text-anchor="middle" font-size="13" fill="#8a4a12" font-weight="600">DR</text>
+        <rect x="596" y="190" width="124" height="52" rx="5" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="658" y="221" text-anchor="middle" font-size="13" fill="#16202b">DROTHER</text>
+
+        <line x1="20" y1="264" x2="800" y2="264" stroke="#d9d5cb"/>
+        <text x="20" y="280" font-size="11.5" fill="#6d7c8b">priority 0 の R4 は「不利になる」のではなく、最初から参加しない</text>
+      </g>
+    </svg>
+    <figcaption>priority が先、Router ID は後。この順序を逆にすると答えが変わる。</figcaption>
+  </figure>
+
+  <h4>① Wait Timer ── 40 秒待つ理由</h4>
+  <p>インタフェース起動後すぐには選出しない。<strong>Dead インターバルと同じ 40 秒</strong>、Hello を送りながら待機する。既に DR が存在するセグメントに後から参加した場合に、それを知らずに名乗り出るのを防ぐためである。この待ち時間があるため OSPF の隣接確立は起動直後が遅く、<code>point-to-point</code> 化はこの 40 秒を省く施策でもある。</p>
+
+  <h4>② BDR を先に選ぶ ── 直感に反する点</h4>
+  <p>「DR を決めてから次点を BDR にする」と考えがちだが、RFC 2328 の手順は <strong>BDR → DR</strong> の順である。DR 選出の対象は<strong>自分が DR だと表明しているルータに限られる</strong>ため、起動直後は候補が空になる。そこで先に BDR を決め、DR 表明者がいなければ BDR を昇格させる、という手順で必ず埋まるよう設計されている。</p>
+  <p>図の②で R3 が BDR にならないのは、R3 が既に DR を表明しているためである。</p>
+
+  <h4>③ 同値のときの決着</h4>
+  <p>R1 と R2 はともに priority 1。ここで Router ID の大きい <code>2.2.2.2</code> の R2 が BDR となる。</p>
+
+  <h3>確定後に起きるイベント</h3>
+  <table>
+    <thead><tr><th style="width:30%">出来事</th><th style="width:26%">結果</th><th>理由</th></tr></thead>
+    <tbody>
+      <tr><td>priority 100 の R5 を増設</td><td><strong>DR は交代しない</strong><br>R5 は DROTHER</td><td>プリエンプトしない。DR 交代は Type2 の再生成とセグメント全体の SPF 再計算を招くため、あえて動かさない</td></tr>
+      <tr><td>DR（R3）が故障</td><td>R2 が DR へ昇格<br>新 BDR は R5</td><td>選挙はやり直さない。BDR を置く目的が選挙時間の省略であるため</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <span class="lbl">CHECK — 検算の手順</span>
+    <p>構成図を渡されたら次の順で機械的に処理する。<strong>①</strong> priority 0 のルータに × をつける　<strong>②</strong> 残りの最高 priority、同値なら Router ID 最大 → DR　<strong>③</strong> その次点 → BDR　<strong>④</strong> 「増設した」「後で接続した」という時系列の記述があれば、<strong>交代していない</strong>ことを疑う。</p>
+    <p>④ が引っかけである。構成図の数値だけで ②③ を計算すると誤答する。問題文に時系列の記述がないか必ず確認すること。</p>
+  </div>
+
+  <h3>選出のルールと「設定方法」</h3>
+  <p>「このルータを DR にする」というコマンドは存在しない。できるのは<strong>選出結果を誘導すること</strong>だけである。</p>
+
+  <h4>手段1 ── プライオリティ（インタフェース単位）</h4>
+<pre>interface GigabitEthernet0/0
+ ip ospf priority 100</pre>
+  <table>
+    <thead><tr><th class="c" style="width:16%">値</th><th>挙動</th></tr></thead>
+    <tbody>
+      <tr><td class="c"><strong>0</strong></td><td><strong>選出対象から完全に外れる</strong>（永久に DROTHER）。低スペック機を確実に除外したいときに使う</td></tr>
+      <tr><td class="c">1</td><td>既定値</td></tr>
+      <tr><td class="c">2–255</td><td>大きいほど DR になりやすい</td></tr>
+    </tbody>
+  </table>
+
+  <h4>手段2 ── Router ID（同値のときの決着）</h4>
+  <p>プライオリティが同じなら Router ID の大きい方が勝つ。Router ID の決定順序は次のとおり。</p>
+  <ol>
+    <li><code>router-id</code> コマンドによる明示指定</li>
+    <li>最大のループバックインタフェースの IP アドレス</li>
+    <li>最大の物理インタフェースの IP アドレス</li>
+  </ol>
+<pre>router ospf 1
+ router-id 10.0.0.1</pre>
+  <p>実務ではループバックを使う。物理インタフェースだとリンクダウンで Router ID が変わり、OSPF プロセス全体が再起動しかねないためである。</p>
+
+  <h4>手段3 ── そもそも選出させない</h4>
+  <p>対向 2 台のリンクで DR を選ぶ意味はない。ネットワークタイプを変更すると選出プロセス自体が消える。</p>
+<pre>interface GigabitEthernet0/0
+ ip ospf network point-to-point   <span class="cm">! DR選出なし・Wait Timer なしで即隣接</span></pre>
+
+  <table>
+    <caption>ネットワークタイプ</caption>
+    <thead><tr><th style="width:26%">タイプ</th><th class="c" style="width:16%">DR 選出</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr><td>broadcast</td><td class="c">あり</td><td>3 台以上のイーサネットセグメント</td></tr>
+      <tr><td>point-to-point</td><td class="c"><strong>なし</strong></td><td>対向 2 台のリンク。収束高速化の常套手段</td></tr>
+      <tr><td>non-broadcast（NBMA）</td><td class="c">あり</td><td>フレームリレー等。neighbor の手動指定が必要</td></tr>
+    </tbody>
+  </table>
+
+  <div class="trap">
+    <span class="lbl">TRAP — プリエンプトしない</span>
+    <p>高プライオリティのルータを後から追加しても <strong>DR は交代しない</strong>。既存の DR が落ちるまでそのままである。反映させるには OSPF プロセスのクリア、またはインタフェースのフラップが必要。「設定したのに DR にならない」障害の大半がこれ。</p>
+  </div>
+
+  <div class="trap">
+    <span class="lbl">TRAP — 昇格の順序</span>
+    <p>DR が落ちたとき、<strong>選挙はやり直さない</strong>。BDR がそのまま DR へ昇格し、そのあとで残りの DROTHER から新しい BDR を選ぶ。BDR を置く目的が「選挙時間の省略」なので当然の挙動。</p>
+  </div>
+
+  <h3>選出後の情報交換 ── 初回同期</h3>
+
+  <p>DR / BDR が決まってからが本番である。まず<strong>初回の LSDB 同期</strong>があり、それが終わると<strong>変化時のみ更新が流れる</strong>運用状態へ移行する。</p>
+
+  <table>
+    <caption>OSPF パケットの 5 種類</caption>
+    <thead><tr><th class="c" style="width:9%">Type</th><th style="width:20%">名称</th><th>役割</th></tr></thead>
+    <tbody>
+      <tr><td class="c">1</td><td>Hello</td><td>ネイバー発見と維持、DR / BDR 選出</td></tr>
+      <tr><td class="c">2</td><td>DBD（DD）</td><td>LSDB の<strong>目次</strong>。LSA のヘッダ情報だけを載せる</td></tr>
+      <tr><td class="c">3</td><td>LSR</td><td>不足している LSA の<strong>要求</strong></td></tr>
+      <tr><td class="c">4</td><td>LSU</td><td>LSA の<strong>実体</strong>を運ぶ</td></tr>
+      <tr><td class="c">5</td><td>LSAck</td><td>受領確認</td></tr>
+    </tbody>
+  </table>
+
+  <figure>
+    <svg viewBox="0 0 820 316" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DROTHERとDRの間で行われる初回LSDB同期のシーケンス">
+      <defs>
+        <marker id="ar4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#0d5c63" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <g font-family="sans-serif">
+        <rect x="228" y="16" width="144" height="40" rx="5" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="300" y="41" text-anchor="middle" font-size="13.5" fill="#16202b" font-weight="600">DROTHER</text>
+        <rect x="568" y="16" width="144" height="40" rx="5" fill="#f6ede1" stroke="#8a4a12" stroke-width="1.4"/>
+        <text x="640" y="41" text-anchor="middle" font-size="13.5" fill="#8a4a12" font-weight="600">DR</text>
+
+        <line x1="300" y1="56" x2="300" y2="292" stroke="#bfb9ab" stroke-dasharray="4 4"/>
+        <line x1="640" y1="56" x2="640" y2="292" stroke="#bfb9ab" stroke-dasharray="4 4"/>
+
+        <line x1="196" y1="76" x2="196" y2="146" stroke="#0d5c63" stroke-width="2"/>
+        <text x="20" y="100" font-size="12.5" fill="#0d5c63" font-weight="600">ExStart → Exchange</text>
+        <text x="20" y="118" font-size="11" fill="#6d7c8b">マスタ／スレーブ決定</text>
+        <text x="20" y="134" font-size="11" fill="#6d7c8b">MTU の一致確認</text>
+
+        <text x="470" y="88" text-anchor="middle" font-size="12.5" fill="#0d5c63">DBD（LSDB の目次）</text>
+        <line x1="304" y1="102" x2="634" y2="102" stroke="#0d5c63" stroke-width="1.4" marker-end="url(#ar4)"/>
+        <text x="470" y="124" text-anchor="middle" font-size="12.5" fill="#0d5c63">DBD（相手側の目次）</text>
+        <line x1="636" y1="138" x2="306" y2="138" stroke="#0d5c63" stroke-width="1.4" marker-end="url(#ar4)"/>
+
+        <line x1="196" y1="160" x2="196" y2="250" stroke="#0d5c63" stroke-width="2"/>
+        <text x="20" y="184" font-size="12.5" fill="#0d5c63" font-weight="600">Loading</text>
+        <text x="20" y="202" font-size="11" fill="#6d7c8b">目次を突き合わせ、</text>
+        <text x="20" y="218" font-size="11" fill="#6d7c8b">不足分だけを要求する</text>
+
+        <text x="470" y="164" text-anchor="middle" font-size="12.5" fill="#0d5c63">LSR（不足分を要求）</text>
+        <line x1="304" y1="178" x2="634" y2="178" stroke="#0d5c63" stroke-width="1.4" marker-end="url(#ar4)"/>
+        <text x="470" y="200" text-anchor="middle" font-size="12.5" fill="#0d5c63">LSU（LSA の実体）</text>
+        <line x1="636" y1="214" x2="306" y2="214" stroke="#0d5c63" stroke-width="1.4" marker-end="url(#ar4)"/>
+        <text x="470" y="236" text-anchor="middle" font-size="12.5" fill="#0d5c63">LSAck（受領確認）</text>
+        <line x1="304" y1="250" x2="634" y2="250" stroke="#0d5c63" stroke-width="1.4" marker-end="url(#ar4)"/>
+
+        <rect x="228" y="266" width="484" height="34" rx="5" fill="#e4eeed" stroke="#0d5c63"/>
+        <text x="470" y="288" text-anchor="middle" font-size="13" fill="#0d5c63" font-weight="600">Full ── LSDB 同期完了。以降は SPF 計算へ</text>
+        <text x="20" y="288" font-size="12.5" fill="#0d5c63" font-weight="600">Full</text>
+      </g>
+    </svg>
+    <figcaption>いきなり全 LSA を送らず、まず目次（DBD）を交換して差分だけを要求する。第 2 章のステート遷移は、このやり取りの進行状況を表している。</figcaption>
+  </figure>
+
+  <h4>なぜ目次から始めるのか</h4>
+  <p>全 LSA を送り合うと、既に保持している情報まで転送することになる。そこで DBD で<strong>ヘッダ（Link State ID・シーケンス番号・LS Age）だけ</strong>を交換し、自分が持っていないもの、または古いものだけを LSR で要求する。差分同期の仕組みである。</p>
+  <p>新旧の判定は <strong>シーケンス番号 → チェックサム → LS Age</strong> の順で行う。</p>
+
+  <div class="note">
+    <span class="lbl">POINT — LSAck が必要な理由</span>
+    <p>OSPF は TCP を使わないため、再送と順序保証をプロトコル自身が持つ。LSAck が返らなければ LSU を再送する。<strong>信頼性を自前で確保している</strong>点が、TCP179 を使う BGP との構造的な違いとして問われる。</p>
+  </div>
+
+  <h3>運用状態での更新</h3>
+
+  <p>同期完了後は、リンク状態に変化があったときだけ LSU が流れる。DROTHER が <code>224.0.0.6</code> で DR へ送り、DR が <code>224.0.0.5</code> で配り直す（本章前半の図を参照）。BDR も受信しているが、DR が正常な間は配布しない。</p>
+
+  <table>
+    <caption>LSA に関するタイマ</caption>
+    <thead><tr><th style="width:26%">名称</th><th class="c" style="width:16%">既定値</th><th>意味</th></tr></thead>
+    <tbody>
+      <tr><td>LSRefreshTime</td><td class="c">30 分</td><td>変化がなくても LSA を再送出し、「まだ有効」であることを示す</td></tr>
+      <tr><td>MaxAge</td><td class="c">60 分</td><td>この LS Age に達した LSA は無効として破棄される</td></tr>
+      <tr><td>SPF ホールドタイム</td><td class="c">機種依存</td><td>短時間に連続して SPF 計算が走るのを抑制する</td></tr>
+    </tbody>
+  </table>
+
+  <div class="trap">
+    <span class="lbl">TRAP — 定期リフレッシュは経路更新ではない</span>
+    <p>30 分ごとの再送出は「LSA が生存していること」を示すためのものであり、経路表を作り直しているわけではない。<strong>SPF 再計算が走るのは LSDB の内容が実際に変化したときだけ</strong>。RIP のように定期的に経路表を配り直す方式と混同しないこと。</p>
+  </div>
+
+  <h4>SPF 再計算のトリガ</h4>
+  <ul>
+    <li>新しい LSA を受信し、LSDB の内容が変わったとき</li>
+    <li>自身のインタフェースがアップ／ダウンしたとき</li>
+    <li>ネイバーとの隣接が切れたとき（Dead インターバル満了、または BFD 検知）</li>
+    <li>DR / BDR が変化し、Type2 が作り直されたとき</li>
+  </ul>
+  <p>逆に言えば、トラフィック量が増えても輻輳が起きても SPF は再計算されない。OSPF が見ているのは<strong>トポロジと設定コストだけ</strong>であり、実際の負荷状況は経路選択に反映されない。これが、動的な負荷分散には別の仕組み（LB、SD-WAN、ポリシーベースルーティング）が必要になる理由である。</p>
+
+  <h3>確認コマンド</h3>
+<pre>show ip ospf neighbor    <span class="cm">! State欄: FULL/DR, FULL/BDR, 2WAY/DROTHER</span>
+show ip ospf interface   <span class="cm">! 自分の役割・priority・DR/BDR の Router ID</span>
+show ip ospf database    <span class="cm">! LSDB の中身。LSAタイプ・Adv Router・シーケンス番号</span></pre>
+  <p><code>show ip ospf database</code> で見えるシーケンス番号と LS Age を隣のルータと突き合わせれば、同期が取れているかを確認できる。値が食い違ったまま収束しない場合は、MTU 不一致や片方向通信を疑う。</p>
+</section>
+
+<!-- ══ 4 ══ -->
+<section id="s4">
+  <h2><span class="num">04</span>エリアと ABR / ASBR</h2>
+
+  <p>DR・ABR・ASBR が混同されやすいのは、この三つが<strong>同じ階層の役割ではない</strong>ためである。見ている境界の大きさが違うだけだと理解すれば区別は容易になる。</p>
+
+  <figure>
+    <svg viewBox="0 0 820 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AS・エリア・セグメントの階層と各役割の位置">
+      <defs>
+        <marker id="ar3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#41505f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <g font-family="sans-serif">
+        <rect x="190" y="34" width="600" height="238" rx="12" fill="#f6f4ef" stroke="#bfb9ab" stroke-dasharray="5 4"/>
+        <text x="212" y="60" font-size="13" fill="#41505f" font-weight="600">AS 65000（OSPF ドメイン）</text>
+
+        <rect x="214" y="82" width="216" height="168" rx="8" fill="#eef3f2" stroke="#0d5c63"/>
+        <text x="322" y="108" text-anchor="middle" font-size="14" fill="#0d5c63" font-weight="600">エリア0</text>
+        <text x="322" y="126" text-anchor="middle" font-size="11.5" fill="#0d5c63">バックボーン</text>
+
+        <rect x="560" y="82" width="210" height="168" rx="8" fill="#eef3f2" stroke="#0d5c63"/>
+        <text x="665" y="108" text-anchor="middle" font-size="14" fill="#0d5c63" font-weight="600">エリア1</text>
+        <text x="665" y="126" text-anchor="middle" font-size="11.5" fill="#0d5c63">通常エリア</text>
+
+        <rect x="234" y="158" width="140" height="58" rx="5" fill="#f6ede1" stroke="#8a4a12" stroke-width="1.3"/>
+        <text x="304" y="182" text-anchor="middle" font-size="14" fill="#8a4a12" font-weight="600">ASBR</text>
+        <text x="304" y="200" text-anchor="middle" font-size="11.5" fill="#8a4a12">AS の境界</text>
+
+        <rect x="412" y="158" width="152" height="58" rx="5" fill="#f6ede1" stroke="#8a4a12" stroke-width="1.3"/>
+        <text x="488" y="182" text-anchor="middle" font-size="14" fill="#8a4a12" font-weight="600">ABR</text>
+        <text x="488" y="200" text-anchor="middle" font-size="11.5" fill="#8a4a12">エリアの境界</text>
+
+        <rect x="592" y="158" width="152" height="58" rx="5" fill="#f6ede1" stroke="#8a4a12" stroke-width="1.3"/>
+        <text x="668" y="182" text-anchor="middle" font-size="14" fill="#8a4a12" font-weight="600">DR / BDR</text>
+        <text x="668" y="200" text-anchor="middle" font-size="11.5" fill="#8a4a12">セグメントの代表</text>
+
+        <text x="30" y="180" font-size="12.5" fill="#6d7c8b">他 AS・外部経路</text>
+        <line x1="36" y1="196" x2="228" y2="196" stroke="#41505f" stroke-width="1.2" marker-end="url(#ar3)"/>
+      </g>
+    </svg>
+    <figcaption>ABR はエリア0とエリア1の両方にまたがる。DR はエリア1の内側、ひとつのセグメントの中だけの役割である。</figcaption>
+  </figure>
+
+  <table>
+    <caption>三つの役割の決まり方</caption>
+    <thead><tr><th style="width:15%">役割</th><th style="width:24%">どこの境界か</th><th style="width:30%">何をするか</th><th>決まり方</th></tr></thead>
+    <tbody>
+      <tr><td><strong>DR/BDR</strong></td><td>ひとつのセグメント内</td><td>代表として LSA を集約・配布</td><td><strong>選挙</strong>（priority → Router ID）</td></tr>
+      <tr><td><strong>ABR</strong></td><td>エリアとエリアの間</td><td>エリア間経路を Type3 で渡す</td><td><strong>接続構成</strong>で自動的に決まる</td></tr>
+      <tr><td><strong>ASBR</strong></td><td>AS と外部の間</td><td>外部経路を Type5 で持ち込む</td><td><strong>再配布設定</strong>を書いた時点で決まる</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <span class="lbl">POINT</span>
+    <p>ABR / ASBR に「選定」の手続きは存在しない。設定した結果として自動的にそうなる肩書きである。また DR は<strong>インタフェース単位</strong>の役割なので、1 台が「セグメント A では DR、セグメント B では DROTHER」となることが普通に起きる。ABR / ASBR は装置単位の肩書き。</p>
+  </div>
+
+  <h3>ABR になる条件</h3>
+  <p>複数のエリアに属するインタフェースを持つこと。下の 2 行を書いた瞬間に ABR となる。</p>
+<pre>router ospf 1
+ network 10.0.0.0 0.0.0.255 area 0
+ network 10.0.1.0 0.0.0.255 area 1</pre>
+  <p>厳密には RFC 2328 の定義上、<strong>エリア0 に接続していること</strong>が条件に含まれる。エリア1 とエリア2 だけに繋がるルータは、エリア間経路がバックボーンを経由しなくなるため正しく機能しない。物理的にエリア0 へ届かない拠点の救済策が<strong>仮想リンク</strong>である。</p>
+
+  <h3>ASBR になる条件</h3>
+  <p>OSPF 以外の経路を OSPF へ再配布する設定を入れること。</p>
+<pre>router ospf 1
+ redistribute static subnets      <span class="cm">! これで ASBR になる</span>
+ default-information originate    <span class="cm">! デフォルトルート注入も同様</span></pre>
+  <p>判定基準は「外部と繋がっているか」ではなく<strong>「外部経路を OSPF に持ち込んでいるか」</strong>。インターネット接続があっても再配布していなければ ASBR ではない。</p>
+
+  <h3>他のルータはどう知るのか</h3>
+  <p>Type1（ルータ LSA）のフラグビットで通知される。</p>
+  <table>
+    <thead><tr><th class="c" style="width:16%">ビット</th><th>意味</th></tr></thead>
+    <tbody>
+      <tr><td class="c"><strong>B</strong></td><td>自分は ABR である</td></tr>
+      <tr><td class="c"><strong>E</strong></td><td>自分は ASBR である</td></tr>
+      <tr><td class="c"><strong>V</strong></td><td>仮想リンクの端点である</td></tr>
+    </tbody>
+  </table>
+
+  <h3>冗長構成では複数台が同時に ABR / ASBR になる</h3>
+  <p>DR と違い「1 台だけ」という制約がないため、冗長化のため 2 台並べるのが一般的。役割の兼任も普通に起こる（エリア0 とエリア1 に接続し＝ABR、スタティックを再配布し＝ASBR、配下 LAN で DR、という 1 台）。</p>
+</section>
+
+<!-- ══ 5 ══ -->
+<section id="s5">
+  <h2><span class="num">05</span>LSA タイプ</h2>
+
+  <p>「誰がどの LSA を出すか」が、そのまま役割の定義になっている。この対応を押さえると、前章までの話が一本につながる。</p>
+
+  <table>
+    <caption>主要な LSA タイプ</caption>
+    <thead><tr><th class="c" style="width:9%">Type</th><th style="width:20%">名称</th><th style="width:16%">生成するのは</th><th style="width:19%">伝わる範囲</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><td class="c"><strong>1</strong></td><td>ルータ LSA</td><td>全ルータ</td><td>同一エリア内</td><td>自分のリンクとコスト、B/E/V ビット</td></tr>
+      <tr><td class="c"><strong>2</strong></td><td>ネットワーク LSA</td><td><strong>DR のみ</strong></td><td>同一エリア内</td><td>セグメントに接続するルータの一覧</td></tr>
+      <tr><td class="c"><strong>3</strong></td><td>サマリ LSA</td><td><strong>ABR</strong></td><td>他エリアへ</td><td>エリア間のネットワーク経路</td></tr>
+      <tr><td class="c"><strong>4</strong></td><td>ASBR サマリ LSA</td><td><strong>ABR</strong></td><td>他エリアへ</td><td>ASBR への到達情報</td></tr>
+      <tr><td class="c"><strong>5</strong></td><td>AS 外部 LSA</td><td><strong>ASBR</strong></td><td>AS 全体（スタブを除く）</td><td>外部から再配布された経路</td></tr>
+      <tr><td class="c"><strong>7</strong></td><td>NSSA 外部 LSA</td><td>NSSA 内の ASBR</td><td>NSSA 内のみ</td><td>ABR で Type5 に変換される</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Type2 が必要な理由</h3>
+  <p>Type1 だけでは「私はこのセグメントに繋がっている」という各ルータの自己申告しかなく、<strong>誰と誰が同じセグメントにいるのか</strong>が確定しない。Type2 がその対応表となり、SPF ツリー上でセグメントを 1 つの疑似ノードとして扱えるようになる。</p>
+  <p>ここから 2 つの帰結が出る。<strong>DR がいなければ Type2 は存在しない</strong>（point-to-point 化したリンクでは生成されない）。そして<strong>DR が変われば Type2 は作り直される</strong>ため、DR のフラップはセグメント全体の SPF 再計算を招く。安定した機器を DR にすべき理由である。</p>
+
+  <h3>Type4 の役割</h3>
+  <p>他エリアのルータは Type5 で「外部経路がある」ことは知るが、<strong>その経路を配っている ASBR にどう到達するか</strong>を知らない。Type1 はエリアを越えないためである。そこで ABR が Type4 で「ASBR はこちら側にいる」と教える。Type5 と Type4 は必ずセットで機能する。</p>
+</section>
+
+<!-- ══ 6 ══ -->
+<section id="s6">
+  <h2><span class="num">06</span>コストと経路選択</h2>
+
+  <h3>コストの算出</h3>
+  <p>OSPF のメトリックはコストであり、既定では次式で求まる（小数は切り捨て、最小値は 1）。</p>
+  <p style="text-align:center;font-family:var(--mono);font-size:15px;background:var(--panel);padding:14px;border:1px solid var(--rule)">コスト ＝ 参照帯域幅 ÷ インタフェース帯域幅</p>
+
+  <table>
+    <caption>参照帯域幅 100Mbps（既定）の場合</caption>
+    <thead><tr><th style="width:34%">インタフェース</th><th class="c" style="width:22%">コスト</th><th>備考</th></tr></thead>
+    <tbody>
+      <tr><td>10 Mbps</td><td class="c">10</td><td></td></tr>
+      <tr><td>100 Mbps</td><td class="c">1</td><td></td></tr>
+      <tr><td>1 Gbps</td><td class="c">1</td><td>100M と区別できない</td></tr>
+      <tr><td>10 Gbps</td><td class="c">1</td><td>同上</td></tr>
+    </tbody>
+  </table>
+
+  <div class="trap">
+    <span class="lbl">TRAP — 参照帯域幅</span>
+    <p>既定値 100Mbps のままだと 100Mbps 以上が全て <strong>コスト 1</strong> になり、高速回線を優先できない。<code>auto-cost reference-bandwidth</code> で引き上げるが、<strong>ドメイン内の全ルータで同じ値に揃える</strong>必要がある。「なぜ 10G 回線ではなく 1G 回線が選ばれたのか」という設問は、ほぼこれが原因。</p>
+  </div>
+
+  <h3>コストは経路上の合計</h3>
+
+  <figure>
+    <svg viewBox="0 0 820 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="経路ごとのコスト合計比較">
+      <g font-family="sans-serif">
+        <circle cx="70" cy="105" r="26" fill="#0d5c63"/>
+        <text x="70" y="110" text-anchor="middle" font-size="13" fill="#fff" font-weight="600">R1</text>
+        <circle cx="750" cy="105" r="26" fill="#41505f"/>
+        <text x="750" y="110" text-anchor="middle" font-size="13" fill="#fff" font-weight="600">R5</text>
+
+        <circle cx="330" cy="46" r="24" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="330" y="51" text-anchor="middle" font-size="12.5" fill="#16202b">R2</text>
+        <circle cx="530" cy="46" r="24" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="530" y="51" text-anchor="middle" font-size="12.5" fill="#16202b">R3</text>
+        <circle cx="430" cy="168" r="24" fill="#f2f0ea" stroke="#bfb9ab"/>
+        <text x="430" y="173" text-anchor="middle" font-size="12.5" fill="#16202b">R4</text>
+
+        <line x1="93" y1="94" x2="308" y2="55" stroke="#0d5c63" stroke-width="2"/>
+        <line x1="354" y1="46" x2="506" y2="46" stroke="#0d5c63" stroke-width="2"/>
+        <line x1="552" y1="55" x2="727" y2="94" stroke="#0d5c63" stroke-width="2"/>
+        <text x="190" y="60" text-anchor="middle" font-size="12" fill="#0d5c63" font-family="monospace">10</text>
+        <text x="430" y="36" text-anchor="middle" font-size="12" fill="#0d5c63" font-family="monospace">10</text>
+        <text x="645" y="60" text-anchor="middle" font-size="12" fill="#0d5c63" font-family="monospace">10</text>
+
+        <line x1="92" y1="120" x2="408" y2="162" stroke="#8a4a12" stroke-width="2" stroke-dasharray="6 4"/>
+        <line x1="452" y1="162" x2="728" y2="120" stroke="#8a4a12" stroke-width="2" stroke-dasharray="6 4"/>
+        <text x="240" y="158" text-anchor="middle" font-size="12" fill="#8a4a12" font-family="monospace">20</text>
+        <text x="600" y="158" text-anchor="middle" font-size="12" fill="#8a4a12" font-family="monospace">20</text>
+
+        <rect x="120" y="86" width="180" height="38" rx="4" fill="#e4eeed" stroke="#0d5c63" opacity="0.95"/>
+        <text x="210" y="110" text-anchor="middle" font-size="12.5" fill="#0d5c63" font-weight="600">上経路 合計 30 ← 採用</text>
+        <rect x="500" y="86" width="180" height="38" rx="4" fill="#f6ede1" stroke="#8a4a12" opacity="0.95"/>
+        <text x="590" y="110" text-anchor="middle" font-size="12.5" fill="#8a4a12" font-weight="600">下経路 合計 40</text>
+      </g>
+    </svg>
+    <figcaption>ホップ数ではなくコストの合計で比較する。ホップが多くても合計が小さければそちらが選ばれる。</figcaption>
+  </figure>
+
+  <p>合計が等しい経路が複数ある場合は <strong>ECMP</strong> により等コストロードバランスが行われる（既定で最大 4 経路程度、機種依存）。</p>
+
+  <h3>外部経路のメトリックタイプ</h3>
+  <table>
+    <thead><tr><th class="c" style="width:14%">タイプ</th><th style="width:34%">コストの数え方</th><th>挙動</th></tr></thead>
+    <tbody>
+      <tr><td class="c"><strong>E2</strong><br><span style="font-size:11px;color:#6d7c8b">既定</span></td><td>外部で設定したコストのみ</td><td>内部の距離を無視するため、<strong>遠い方の ASBR が選ばれることがある</strong></td></tr>
+      <tr><td class="c"><strong>E1</strong></td><td>外部コスト ＋ ASBR までの内部コスト</td><td>実態に即した選択になる</td></tr>
+    </tbody>
+  </table>
+
+  <div class="trap">
+    <span class="lbl">TRAP — E2 の落とし穴</span>
+    <p>「本社と支社の両方にインターネット出口があるのに、なぜ支社の通信が本社側へ流れるのか」という障害シナリオは、E2 が内部コストを無視する性質が原因であることが多い。午後Ⅱの定番。</p>
+  </div>
+
+  <h3>経路選択の優先順位</h3>
+  <p>コストの大小より先に、経路の<strong>種別</strong>で優先順位が決まる。</p>
+  <ol>
+    <li>エリア内経路（O）</li>
+    <li>エリア間経路（O IA）</li>
+    <li>外部 E1</li>
+    <li>外部 E2</li>
+  </ol>
+  <p>したがって、コストが大きくてもエリア内経路がエリア間経路に優先される。</p>
+</section>
+
+<!-- ══ 7 ══ -->
+<section id="s7">
+  <h2><span class="num">07</span>特殊エリア</h2>
+
+  <p>末端の拠点が AS 外部の全経路を保持する必要はない。Type5 を止めてデフォルトルートで代替すれば、LSDB とメモリ・CPU を節約できる。これが特殊エリアの目的である。</p>
+
+  <table>
+    <caption>エリア種別と流入する LSA</caption>
+    <thead><tr>
+      <th style="width:23%">種別</th><th class="c" style="width:11%">Type3</th><th class="c" style="width:11%">Type4/5</th>
+      <th class="c" style="width:11%">Type7</th><th>特徴</th></tr></thead>
+    <tbody>
+      <tr><td>通常エリア</td><td class="c">○</td><td class="c">○</td><td class="c">—</td><td>全ての経路を保持</td></tr>
+      <tr><td>スタブエリア</td><td class="c">○</td><td class="c"><strong>×</strong></td><td class="c">—</td><td>外部経路はデフォルトルートで代替</td></tr>
+      <tr><td>トータリースタブ</td><td class="c"><strong>×</strong></td><td class="c"><strong>×</strong></td><td class="c">—</td><td>エリア間経路も遮断。最小構成</td></tr>
+      <tr><td>NSSA</td><td class="c">○</td><td class="c"><strong>×</strong></td><td class="c"><strong>○</strong></td><td>スタブでありながら ASBR を置ける</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <span class="lbl">POINT — 制約と回避策の因果</span>
+    <p>スタブエリアは Type5 を通さないため、<strong>スタブエリア内に ASBR は配置できない</strong>。しかし現実には「支社をスタブにしたいが、その支社にも独自のスタティック経路がある」という要求が生じる。これを解くために、Type7 という専用の LSA を使い ABR で Type5 へ変換する仕組みが <strong>NSSA</strong> である。制約 → 要求 → 回避策、という因果で覚える。</p>
+  </div>
+
+  <p>なお、スタブ系のエリアでは<strong>全ルータでスタブフラグを一致</strong>させる必要がある。片側だけ設定すると Hello の不一致で隣接が確立しない。第 2 章の一致条件と直結する。</p>
+</section>
+
+<!-- ══ 8 ══ -->
+<section id="s8">
+  <h2><span class="num">08</span>用語定義表</h2>
+  <p><span class="mk">★</span> 午後で頻出　<span class="mk">☆</span> 出れば差がつく</p>
+
+  <table>
+    <thead><tr><th class="c" style="width:7%"></th><th style="width:24%">用語</th><th>説明</th></tr></thead>
+    <tbody>
+      <tr><td class="c mk">★</td><td>LSA</td><td>リンク状態を伝える広告。タイプごとに生成者と伝播範囲が異なる</td></tr>
+      <tr><td class="c mk">★</td><td>LSDB</td><td>LSA を集めたデータベース。同一エリア内の全ルータで一致する</td></tr>
+      <tr><td class="c mk">★</td><td>SPF アルゴリズム</td><td>ダイクストラ法。LSDB から自分を根とする最短経路ツリーを作る</td></tr>
+      <tr><td class="c mk">★</td><td>エリア</td><td>LSDB 同期と SPF 計算の範囲を区切る単位</td></tr>
+      <tr><td class="c mk">★</td><td>バックボーン（Area 0）</td><td>全エリアが接続すべき中核エリア</td></tr>
+      <tr><td class="c mk">★</td><td>ABR</td><td>複数エリアに接続するルータ。Type3/4 を生成</td></tr>
+      <tr><td class="c mk">★</td><td>ASBR</td><td>外部経路を再配布するルータ。Type5 を生成</td></tr>
+      <tr><td class="c mk">★</td><td>DR / BDR</td><td>マルチアクセスセグメントの代表。隣接数と LSA 交換を削減</td></tr>
+      <tr><td class="c mk">★</td><td>Router ID</td><td>ルータを一意に識別する 32 ビット値。ループバック指定が定石</td></tr>
+      <tr><td class="c mk">★</td><td>Hello / Dead</td><td>既定 10 秒 / 40 秒。両端で一致が必要</td></tr>
+      <tr><td class="c mk">★</td><td>ネイバー / 隣接関係</td><td>2WAY までがネイバー、Full まで進んだ関係が隣接</td></tr>
+      <tr><td class="c mk">★</td><td>Wait Timer</td><td>選出前の待機時間。Dead と同じ既定 40 秒。既存 DR の見落としを防ぐ</td></tr>
+      <tr><td class="c mk">★</td><td>プリエンプト</td><td>OSPF の DR 選出は非プリエンプト。後から高 priority 機を入れても交代しない</td></tr>
+      <tr><td class="c mk">★</td><td>コスト</td><td>参照帯域幅 ÷ 帯域幅。経路上の合計で比較</td></tr>
+      <tr><td class="c mk">★</td><td>参照帯域幅</td><td>既定 100Mbps。全ルータで統一する必要がある</td></tr>
+      <tr><td class="c mk">★</td><td>パッシブインタフェース</td><td>Hello を送らないが、そのセグメントは経路として広報する</td></tr>
+      <tr><td class="c mk">★</td><td>スタブエリア</td><td>Type5 を遮断し、デフォルトルートで代替するエリア</td></tr>
+      <tr><td class="c mk">★</td><td>NSSA</td><td>スタブでありながら Type7 で ASBR を許容するエリア</td></tr>
+      <tr><td class="c mk">☆</td><td>仮想リンク</td><td>エリア0 に物理的に接続できないエリアの救済策</td></tr>
+      <tr><td class="c mk">★</td><td>ECMP</td><td>等コスト経路への負荷分散</td></tr>
+      <tr><td class="c mk">★</td><td>BFD</td><td>Dead を待たずに高速に障害を検知する補助プロトコル</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══ 9 ══ -->
+<section id="s9">
+  <h2><span class="num">09</span>試験での問われ方</h2>
+
+  <table>
+    <thead><tr><th style="width:38%">設問のかたち</th><th>解答の骨子</th></tr></thead>
+    <tbody>
+      <tr><td>エリアを分割する目的</td><td>LSDB の規模と SPF 計算の負荷を抑え、LSA のフラッディング範囲を限定するため</td></tr>
+      <tr><td>DR を選出する目的</td><td>隣接関係の数と LSA 交換量を削減するため</td></tr>
+      <tr><td>priority 0 を設定する理由</td><td>性能が低い、または経路上不適切な機器を DR の候補から除外するため</td></tr>
+      <tr><td>point-to-point にする理由</td><td>DR 選出を不要にし、隣接確立を高速化するため</td></tr>
+      <tr><td>ループバックを Router ID にする理由</td><td>物理リンク障害の影響を受けず Router ID を安定させるため</td></tr>
+      <tr><td>パッシブインタフェースの目的</td><td>不要な Hello 送信を止め、そのセグメントを経路情報としてのみ広報するため</td></tr>
+      <tr><td>ABR / ASBR の配置意図</td><td>選出ではなく<strong>設計判断</strong>。冗長性・経路集約・障害波及範囲の観点で答える</td></tr>
+      <tr><td>NSSA を採用する理由</td><td>外部経路を抑制しつつ、当該エリアに ASBR を配置する必要があるため</td></tr>
+      <tr><td>障害時の切替経路</td><td>各リンクのコストを図に書き込み、合計値を比較して答える</td></tr>
+      <tr><td>収束が遅い原因</td><td>Dead インターバル待ち。BFD 併用またはタイマ短縮で改善</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <span class="lbl">STRATEGY</span>
+    <p>DR は「動的に決まる」、ABR / ASBR は「設計者が意図して配置する」。この違いから、DR については<strong>選出結果が意図どおりか</strong>、ABR / ASBR については<strong>なぜそこに置いたか</strong>が問われる。問われ方が構造的に違うと理解しておくと、記述の方向性を外さない。</p>
+  </div>
+</section>
+
+<!-- ══ 10 ══ -->
+<section id="s10">
+  <h2><span class="num">10</span>自己確認問題</h2>
+  <p>用語の定義ではなく、<strong>フローを描いて説明できるか</strong>を基準に判定する。</p>
+
+  <ol class="quiz">
+    <li>同一セグメントに 4 台のルータがある。DR を使わない場合と使う場合で、隣接関係はそれぞれ何本になるか。
+      <span class="a">DR なし 6 本（4×3÷2）、DR あり 5 本。DR/BDR と他 2 台の組み合わせ。</span></li>
+    <li>DROTHER 同士の State が 2WAY のまま止まっている。これは障害か。
+      <span class="a">正常。DROTHER 同士は隣接せず 2WAY で停止する。DR との間が 2WAY なら異常。</span></li>
+    <li>ExStart で停止するとき、まず疑うべき原因は何か。
+      <span class="a">MTU 不一致。DBD 交換前のマスタ／スレーブ決定で止まる典型例。</span></li>
+    <li>高い priority を設定したルータを追加したが DR が交代しない。理由と対処は。
+      <span class="a">OSPF はプリエンプトしないため。OSPF プロセスのクリア、またはインタフェースのフラップが必要。</span></li>
+    <li>初回同期でいきなり LSU を送らず、まず DBD を交換するのはなぜか。
+      <span class="a">DBD は LSA のヘッダだけを載せた目次であり、これを突き合わせることで自分に不足している LSA だけを LSR で要求できる。既に持っている情報の再転送を避ける差分同期のため。</span></li>
+    <li>OSPF に LSAck が存在するのはなぜか。BGP との違いは。
+      <span class="a">OSPF は IP プロトコル番号 89 で直接動作し TCP を使わないため、再送と受領確認をプロトコル自身で実装する必要がある。BGP は TCP179 を使うため信頼性を TCP に任せている。</span></li>
+    <li>30 分ごとの LSA リフレッシュで SPF は再計算されるか。
+      <span class="a">されない。LSDB の内容が実際に変化したときだけ再計算が走る。リフレッシュは LSA が有効であることを示すための再送出であり、RIP のような定期的な経路表配布とは異なる。</span></li>
+    <li>回線が輻輳している。OSPF は自動的に空いている経路へ迂回するか。
+      <span class="a">しない。OSPF が参照するのはトポロジと設定コストのみで、実負荷は経路選択に反映されない。動的な負荷分散には LB や SD-WAN など別の仕組みが必要。</span></li>
+    <li>DR と BDR はどちらが先に選出されるか。またその理由は。
+      <span class="a">BDR が先。DR 選出の対象は自分が DR だと表明しているルータに限られ、起動直後は候補が空になる。先に BDR を決め、DR 表明者がいなければ BDR を昇格させることで必ず埋まるようにしている。</span></li>
+    <li>選出前に 40 秒待つのはなぜか。この待ち時間を省く方法は。
+      <span class="a">既に DR が存在するセグメントに後から参加した場合に、それを知らずに名乗り出るのを防ぐため（Wait Timer）。対向 2 台なら point-to-point 化すれば選出自体が不要になり待ち時間も消える。</span></li>
+    <li>priority 1／RID 1.1.1.1、priority 1／RID 2.2.2.2、priority 10／RID 3.3.3.3、priority 0／RID 4.4.4.4 の 4 台。DR と BDR はどれか。
+      <span class="a">DR は R3（最高 priority）、BDR は R2（priority 同値のため RID の大きい方）。priority 0 の R4 は最初から対象外。</span></li>
+    <li>DR が故障した。BDR は何をするか。選挙はやり直されるか。
+      <span class="a">BDR がそのまま DR へ昇格する。選挙のやり直しはなく、その後 DROTHER から新 BDR を選出する。</span></li>
+    <li>224.0.0.5 と 224.0.0.6 の違いを、送信者と受信者の観点で述べよ。
+      <span class="a">224.0.0.5（AllSPFRouters）は全 OSPF ルータが受信、DR からの配布と Hello に使う。224.0.0.6（AllDRouters）は DR と BDR のみが受信し、DROTHER が更新を送るときに使う。</span></li>
+    <li>Type1 だけでは不十分で Type2 が必要な理由は何か。
+      <span class="a">Type1 は各ルータの自己申告に過ぎず、どのルータ同士が同一セグメントにいるかが確定しない。Type2 がその対応表となる。</span></li>
+    <li>Type5 に加えて Type4 が必要なのはなぜか。
+      <span class="a">Type1 はエリアを越えないため、他エリアのルータは ASBR への到達方法を知らない。ABR が Type4 でそれを通知する。</span></li>
+    <li>あるルータが ABR かどうかは、どこを見れば分かるか。
+      <span class="a">Type1（ルータ LSA）の B ビット。ASBR は E ビット、仮想リンク端点は V ビット。</span></li>
+    <li>10Gbps と 1Gbps の経路があるのに 1Gbps 側が選ばれた。原因は。
+      <span class="a">参照帯域幅が既定の 100Mbps のままで、どちらもコスト 1 になっている。全ルータで参照帯域幅を統一して引き上げる。</span></li>
+    <li>E1 と E2 の違いを述べ、E2 で起こりうる問題を挙げよ。
+      <span class="a">E2 は外部コストのみ、E1 は外部コスト＋内部コスト。E2 は内部の距離を無視するため、遠い ASBR が選ばれ通信が遠回りすることがある。</span></li>
+    <li>スタブエリアに ASBR を置けないのはなぜか。その回避策は。
+      <span class="a">スタブは Type5 を通さないため、外部経路を広報できない。回避策は NSSA で、Type7 を使い ABR で Type5 に変換する。</span></li>
+    <li>DR・ABR・ASBR を「役割の単位」で区別せよ。
+      <span class="a">DR はインタフェース（セグメント）単位で選挙により決まる。ABR・ASBR は装置単位で、接続構成および再配布設定により自動的に決まる。</span></li>
+  </ol>
+
+  <p class="xref"><span>CROSS-REF</span>
+    経路再配布・AD 値は第3章、VRRP との併用と収束時間は第9章、MPLS-VPN における PE-CE 間ルーティングは第7章、BFD による高速検知は第18章と関連。稼働率・収束時間の計算は第21章で扱う。</p>
+</section>
+
+<footer>
+  <span>ネットワークスペシャリスト 技術リファレンス ／ OSPF</span>
+  <span>到達目標：構成図にコストを書き込み、障害時の切替経路を説明できること</span>
+</footer>
+
+</div>
+</body>
+</html>
