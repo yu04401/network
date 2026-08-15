@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第10章 データセンタ・仮想化・オーバーレイ ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(28px,5.4vw,42px); line-height:1.3;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: VXLAN encapsulation rule */
+  .vx{margin-top:30px}
+  .vx .bar{display:flex; height:28px; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .vx .bar span{
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:10px; letter-spacing:.02em; white-space:nowrap; color:#fff;
+  }
+  .v1{background:#7C8F97; flex:0 0 12%}
+  .v2{background:#3B3E86; flex:0 0 12%}
+  .v3{background:#0E7C86; flex:0 0 11%}
+  .v4{background:#A61E4D; flex:0 0 13%}
+  .v5{background:#E4F0F1; color:#16232B!important; flex:1 1 auto}
+  .vx .ticks{
+    display:flex; justify-content:space-between;
+    font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:7px;
+  }
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .vx .bar span{font-size:8px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第10章　データセンタ・仮想化・オーバーレイ
+      <span class="en">Data Center &amp; Overlay</span>
+    </h1>
+    <p class="lede">
+      この章のすべては<b>「サーバが物理的な場所に縛られなくなった」</b>という一点から派生している。
+      仮想マシンが自由に移動するには、移動先でも<b>同じL2セグメントに居続ける</b>必要がある。
+      しかしL2を広げるとSTPと規模の限界にぶつかる——
+      この矛盾を解いたのが <b>VXLAN によるオーバーレイ</b>である。
+      その必然性を語れることが本章の到達点になる。
+    </p>
+    <div class="vx" aria-hidden="true">
+      <div class="bar">
+        <span class="v1">外側Ether</span><span class="v2">外側IP</span><span class="v3">UDP 4789</span><span class="v4">VXLAN / VNI</span><span class="v5">元のイーサネットフレーム（MAC in UDP）</span>
+      </div>
+      <div class="ticks"><span>アンダーレイ（IP網）で運ばれる</span><span>オーバーレイの中身＝仮想的なL2</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 サーバ仮想化と仮想スイッチ</a>
+    <a href="#s2">2 DCのトラフィックとLeaf-Spine</a>
+    <a href="#s3">3 VXLAN</a>
+    <a href="#s4">4 BUMトラフィックとEVPN</a>
+    <a href="#s5">5 SDN・OpenFlow</a>
+    <a href="#s6">6 VDI・シンクライアント</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">10.1</span>サーバ仮想化と仮想スイッチ <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>基本構成</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>サーバ仮想化の用語</caption>
+    <thead><tr><th>用語</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>ハイパバイザ</th><td>1台の物理サーバ上で複数の仮想マシンを動かす基盤ソフトウェア。
+        <b>ハードウェア上で直接動くベアメタル型</b>と、既存OS上で動くホスト型がある</td></tr>
+      <tr><th>ホストサーバ／<br>ゲストOS</th><td>物理サーバ側が<b>ホスト</b>、その上で動く仮想マシンのOSが<b>ゲスト</b></td></tr>
+      <tr><th>仮想NIC</th><td>ゲストOSから見えるNIC。<b>それぞれ固有のMACアドレスを持つ</b></td></tr>
+      <tr><th>仮想スイッチ<br>（vSwitch） <span class="star">頻出</span></th><td>ハイパバイザ内部で動く<b>ソフトウェアのL2スイッチ</b>。
+        仮想NICどうし、および物理NICとの間でフレームを転送する。<b>VLANタグにも対応する</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="仮想スイッチと物理スイッチの接続">
+      <rect x="60" y="18" width="580" height="150" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.6"/>
+      <text x="350" y="38" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">物理サーバ（ハイパバイザ）</text>
+
+      <g fill="#FFFFFF" stroke="#16232B" stroke-width="1.3">
+        <rect x="90" y="50" width="150" height="44"/><rect x="275" y="50" width="150" height="44"/><rect x="460" y="50" width="150" height="44"/>
+      </g>
+      <g font-size="11.5" text-anchor="middle" fill="#16232B">
+        <text x="165" y="70">VM-A</text><text x="350" y="70">VM-B</text><text x="535" y="70">VM-C</text>
+      </g>
+      <g font-size="10" text-anchor="middle" fill="#6C7F88">
+        <text x="165" y="86">VLAN 10</text><text x="350" y="86">VLAN 10</text><text x="535" y="86">VLAN 20</text>
+      </g>
+
+      <rect x="90" y="112" width="520" height="40" fill="#FFFFFF" stroke="#0E7C86" stroke-width="2"/>
+      <text x="350" y="137" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">仮想スイッチ（vSwitch）</text>
+      <g stroke="#16232B" stroke-width="1.3">
+        <line x1="165" y1="94" x2="165" y2="112"/><line x1="350" y1="94" x2="350" y2="112"/><line x1="535" y1="94" x2="535" y2="112"/>
+      </g>
+      <path d="M165,112 C 220,104 300,104 350,112" fill="none" stroke="#0E7C86" stroke-width="2" stroke-dasharray="4 3"/>
+      <text x="258" y="106" font-size="10" text-anchor="middle" fill="#0E7C86">同一VLAN内の通信は物理NICを出ない</text>
+
+      <line x1="350" y1="152" x2="350" y2="196" stroke="#A61E4D" stroke-width="2.6"/>
+      <text x="365" y="176" font-size="11" fill="#A61E4D" font-weight="700">物理NIC（複数VLANが流れる）</text>
+      <rect x="230" y="196" width="240" height="42" fill="#FFFFFF" stroke="#A61E4D" stroke-width="2"/>
+      <text x="350" y="216" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">物理スイッチ</text>
+      <text x="350" y="232" font-size="10.5" text-anchor="middle" fill="#A61E4D">→ このポートは<tspan font-weight="700">トランクポート</tspan>に設定する</text>
+    </svg>
+    <figcaption>設計上の要点は2つ。<b>①同一VLAN・同一ホスト内のVM間通信は物理スイッチを経由しない</b>（＝物理側のミラーポートでは監視できない）。<b>②複数VLANのフレームが1本の物理NICを通るため、接続先の物理スイッチはトランクポートにする</b>。</figcaption>
+  </figure>
+
+  <h3>ライブマイグレーション ― この章の出発点 <span class="star">最重要</span></h3>
+  <p>
+    <span class="kw">ライブマイグレーション</span>は、<b>仮想マシンを稼働させたまま別の物理サーバへ移動させる</b>技術。
+    メモリ内容を移動先へ転送し、最後に一瞬だけ停止して切り替える。
+    ハードウェア保守や負荷平準化を、業務を止めずに行えるようになる。
+  </p>
+  <div class="card">
+    <h4 style="margin-top:0">成立の条件</h4>
+    <ul style="margin-bottom:0">
+      <li><b>移動先が同一のL2セグメント（同じVLAN）に属していること</b> ←<b>最重要</b><br>
+        VMは<b>IPアドレスを保ったまま</b>移動する。移動先が別サブネットだと、そのIPアドレスは通用しない</li>
+      <li>移動元・移動先から同じ<b>共有ストレージ</b>にアクセスできること</li>
+      <li>移動完了後、VMは <b>GARP</b> を送出して、
+        <b>周辺のスイッチのMACアドレステーブルを新しい接続位置に更新させる</b>（第3章・第9章と同じ仕組み）</li>
+    </ul>
+  </div>
+  <div class="note">
+    <b>ここに矛盾が生じる。</b>移動範囲を広げたければL2セグメントを大きく広げる必要があるが、
+    L2を広げると<b>STPによる収束の遅さ、ブロードキャストの増大、VLAN IDが4094しかないという上限</b>にぶつかる。
+    <b>この「L2を広げたいがL2は広げたくない」という矛盾を解くのが VXLAN である</b>——
+    という筋道が、10.3節の記述問題の核心になる。
+  </div>
+
+  <h3>コンテナ</h3>
+  <p>
+    <span class="kw">コンテナ</span>は、<b>ゲストOSを持たず、ホストOSのカーネルを共有して</b>アプリケーションを隔離実行する方式。
+    OSを丸ごと動かす仮想マシンに比べて<b>軽量で起動が速く、同一ハードウェア上により多くを詰め込める</b>。
+    <b>Docker</b> が代表的な実行基盤、<b>Kubernetes</b> が多数のコンテナを管理するオーケストレーション基盤。
+  </p>
+  <div class="tbl-scroll">
+  <table>
+    <caption>仮想マシンとコンテナ</caption>
+    <thead><tr><th></th><th>仮想マシン</th><th>コンテナ</th></tr></thead>
+    <tbody>
+      <tr><th>OS</th><td>ゲストOSを個別に持つ</td><td><b>ホストOSのカーネルを共有</b></td></tr>
+      <tr><th>起動時間</th><td>分単位</td><td><b>秒以下</b></td></tr>
+      <tr><th>資源消費</th><td>大きい</td><td>小さい</td></tr>
+      <tr><th>分離の強さ</th><td><b>強い</b>（OSごと分離）</td><td>相対的に弱い（カーネルを共有するため）</td></tr>
+      <tr><th>OSの選択</th><td>異なるOSを混在できる</td><td>ホストと同系統のOSに限られる</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">10.2</span>DCのトラフィックと Leaf-Spine <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>North-South から East-West へ</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>トラフィックの向き</caption>
+    <thead><tr><th>種別</th><th>内容</th><th>増加要因</th></tr></thead>
+    <tbody>
+      <tr><th>North-South<br>（南北）</th><td><b>外部（利用者）とサーバの間</b>の通信。構成図では上下に流れる</td><td>従来型のWebシステム</td></tr>
+      <tr><th>East-West<br>（東西）</th><td><b>データセンタ内のサーバどうし</b>の通信。構成図では横方向に流れる</td><td><b>Web／AP／DBの多層化、分散処理、仮想マシン間通信、
+        ライブマイグレーションによるデータ転送</b>で急増した</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 700 320" role="img" aria-label="3階層構成とLeaf-Spine構成の比較">
+      <!-- 3-tier -->
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#A61E4D">従来の3階層構成</text>
+      <g fill="#FFFFFF" stroke="#16232B" stroke-width="1.3">
+        <rect x="110" y="28" width="120" height="26"/>
+        <rect x="40" y="76" width="100" height="26"/><rect x="200" y="76" width="100" height="26"/>
+        <rect x="10" y="124" width="70" height="26"/><rect x="95" y="124" width="70" height="26"/>
+        <rect x="180" y="124" width="70" height="26"/><rect x="265" y="124" width="70" height="26"/>
+      </g>
+      <g font-size="10" text-anchor="middle" fill="#16232B">
+        <text x="170" y="45">コア</text>
+        <text x="90" y="93">ディストリ</text><text x="250" y="93">ディストリ</text>
+        <text x="45" y="141">アクセス</text><text x="130" y="141">アクセス</text><text x="215" y="141">アクセス</text><text x="300" y="141">アクセス</text>
+      </g>
+      <g stroke="#16232B" stroke-width="1.1">
+        <line x1="150" y1="54" x2="90" y2="76"/><line x1="190" y1="54" x2="250" y2="76"/>
+        <line x1="70" y1="102" x2="45" y2="124"/><line x1="110" y1="102" x2="130" y2="124"/>
+        <line x1="230" y1="102" x2="215" y2="124"/><line x1="270" y1="102" x2="300" y2="124"/>
+      </g>
+      <path d="M45,152 L45,168 L300,168 L300,152" fill="none" stroke="#A61E4D" stroke-width="2" stroke-dasharray="5 4"/>
+      <text x="172" y="186" font-size="10.5" text-anchor="middle" fill="#A61E4D">左端↔右端の通信はコアまで上って下りる</text>
+      <text x="172" y="202" font-size="10.5" text-anchor="middle" fill="#A61E4D" font-weight="700">＝ホップ数が多く、経路によって遅延が変わる</text>
+      <text x="0" y="228" font-size="11" fill="#A61E4D">・上位への帯域が集中する（オーバーサブスクリプション）</text>
+      <text x="0" y="246" font-size="11" fill="#A61E4D">・冗長リンクは<tspan font-weight="700">STPでブロック</tspan>され、半分が遊休になる</text>
+
+      <!-- leaf-spine -->
+      <text x="380" y="16" font-size="12.5" font-weight="700" fill="#0E7C86">Leaf-Spine（CLOSネットワーク）</text>
+      <g fill="#FFFFFF" stroke="#0E7C86" stroke-width="1.6">
+        <rect x="420" y="42" width="90" height="26"/><rect x="560" y="42" width="90" height="26"/>
+      </g>
+      <g fill="#FFFFFF" stroke="#16232B" stroke-width="1.3">
+        <rect x="390" y="130" width="70" height="26"/><rect x="480" y="130" width="70" height="26"/>
+        <rect x="570" y="130" width="70" height="26"/>
+      </g>
+      <g font-size="10" text-anchor="middle">
+        <text x="465" y="59" fill="#0E7C86">Spine</text><text x="605" y="59" fill="#0E7C86">Spine</text>
+        <text x="425" y="147" fill="#16232B">Leaf</text><text x="515" y="147" fill="#16232B">Leaf</text><text x="605" y="147" fill="#16232B">Leaf</text>
+      </g>
+      <g stroke="#0E7C86" stroke-width="1.4">
+        <line x1="450" y1="68" x2="420" y2="130"/><line x1="470" y1="68" x2="510" y2="130"/><line x1="490" y1="68" x2="600" y2="130"/>
+        <line x1="580" y1="68" x2="430" y2="130"/><line x1="595" y1="68" x2="520" y2="130"/><line x1="615" y1="68" x2="610" y2="130"/>
+      </g>
+      <text x="515" y="180" font-size="10.5" text-anchor="middle" fill="#0E7C86" font-weight="700">すべてのLeafがすべてのSpineに接続</text>
+      <text x="380" y="204" font-size="11" fill="#0E7C86">・<tspan font-weight="700">どのLeaf間も必ず2ホップ＝遅延が均一</tspan></text>
+      <text x="380" y="222" font-size="11" fill="#0E7C86">・L3で構成し<tspan font-weight="700">ECMPで全リンクを同時に使う（STP不要）</tspan></text>
+      <text x="380" y="240" font-size="11" fill="#0E7C86">・<tspan font-weight="700">Spine追加で帯域増、Leaf追加でポート増</tspan>と拡張が単純</text>
+
+      <rect x="0" y="270" width="700" height="46" fill="#E7EDEE"/>
+      <text x="14" y="290" font-size="12" fill="#16232B"><tspan font-weight="700">なぜL3で組むのか。</tspan>L2で組むとSTPが必要になり冗長リンクの半分が使えない。L3にすればECMP（第3章）で</text>
+      <text x="14" y="308" font-size="12" fill="#16232B">全リンクを同時利用でき、障害時の収束も速い。<tspan font-weight="700">ではL2セグメントはどう提供するのか → VXLAN</tspan>。</text>
+    </svg>
+    <figcaption>Leaf-Spine は<b>CLOSネットワーク</b>という古典的な構成理論に基づく。「どの入口からどの出口へも均等な経路がある」という性質が、予測可能な遅延（<b>Predictable Latency</b>）を生む。</figcaption>
+  </figure>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>Leaf-Spineを採用する理由 → <b>「サーバ間（East-West）通信が増加しており、
+        どのサーバ間でもホップ数が等しく遅延が均一になるため」</b>＋<b>「L3とECMPにより全リンクを
+        同時利用でき、STPのように帯域が遊休にならないため」</b></li>
+      <li>Spineスイッチを増やすと何が改善するか → <b>Leaf間の総帯域が増える</b>（ポート数ではない）</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">10.3</span>VXLAN <span class="star">最重要</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">VXLAN</span><span class="en">（Virtual eXtensible LAN）</span>は、
+    <b>イーサネットフレームをUDPパケットで包んで、L3のIP網の上を運ぶ</b>技術（<b>MAC in UDP</b>）。
+    これにより、<b>物理的にはルーティングされたL3網でありながら、
+    その上に論理的なL2セグメントを自由に作れる</b>ようになる。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 300" role="img" aria-label="VXLANのカプセル化と構成">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#16232B">パケット構造</text>
+      <g font-size="10" text-anchor="middle">
+        <rect x="0" y="26" width="90" height="34" fill="#F2F5F6" stroke="#D3DBDF"/><text x="45" y="47" fill="#6C7F88">外側Ether 14</text>
+        <rect x="90" y="26" width="90" height="34" fill="#E6E7F2" stroke="#3B3E86"/><text x="135" y="47" fill="#3B3E86">外側IP 20</text>
+        <rect x="180" y="26" width="80" height="34" fill="#E4F0F1" stroke="#0E7C86"/><text x="220" y="47" fill="#0E7C86">UDP 8</text>
+        <rect x="260" y="26" width="100" height="34" fill="#F7E6EC" stroke="#A61E4D" stroke-width="2"/><text x="310" y="42" fill="#A61E4D" font-weight="700">VXLAN 8</text><text x="310" y="55" fill="#A61E4D" font-size="9">VNI 24bit</text>
+        <rect x="360" y="26" width="340" height="34" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/><text x="530" y="47" fill="#16232B">元のイーサネットフレーム（そのまま）</text>
+      </g>
+      <text x="0" y="78" font-size="11.5" fill="#A61E4D">追加されるヘッダは合計 <tspan font-family="monospace" font-weight="700">50バイト</tspan> → アンダーレイのMTUを大きくする必要がある</text>
+      <text x="0" y="96" font-size="11.5" fill="#6C7F88">宛先UDPポートは <tspan font-family="monospace" font-weight="700">4789</tspan>。送信元ポートは内側のフローから計算し、<tspan font-weight="700">ECMPで分散されるようにしている</tspan>。</text>
+
+      <!-- topology -->
+      <rect x="0" y="118" width="700" height="180" fill="#F2F5F6" stroke="#D3DBDF"/>
+      <text x="350" y="140" font-size="12" text-anchor="middle" fill="#6C7F88">アンダーレイ：IPルーティングされたL3網（OSPF／BGP ＋ ECMP）</text>
+
+      <rect x="30" y="158" width="160" height="46" fill="#FFFFFF" stroke="#A61E4D" stroke-width="2"/>
+      <text x="110" y="178" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">VTEP（Leaf-1）</text>
+      <text x="110" y="195" font-size="10" text-anchor="middle" fill="#A61E4D">カプセル化する</text>
+      <rect x="510" y="158" width="160" height="46" fill="#FFFFFF" stroke="#A61E4D" stroke-width="2"/>
+      <text x="590" y="178" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">VTEP（Leaf-2）</text>
+      <text x="590" y="195" font-size="10" text-anchor="middle" fill="#A61E4D">元に戻す</text>
+
+      <path d="M190,180 C 300,140 400,140 510,180" fill="none" stroke="#0E7C86" stroke-width="2.6" stroke-dasharray="7 4"/>
+      <text x="350" y="160" font-size="11.5" text-anchor="middle" font-weight="700" fill="#0E7C86">オーバーレイ：VXLANトンネル（VNI 10010）</text>
+
+      <rect x="30" y="234" width="160" height="40" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="110" y="252" font-size="11.5" text-anchor="middle" fill="#0E7C86">VM-A</text>
+      <text x="110" y="267" font-size="10" text-anchor="middle" font-family="monospace" fill="#0E7C86">192.168.1.10</text>
+      <rect x="510" y="234" width="160" height="40" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="590" y="252" font-size="11.5" text-anchor="middle" fill="#0E7C86">VM-B</text>
+      <text x="590" y="267" font-size="10" text-anchor="middle" font-family="monospace" fill="#0E7C86">192.168.1.20</text>
+      <line x1="110" y1="204" x2="110" y2="234" stroke="#16232B" stroke-width="1.4"/>
+      <line x1="590" y1="204" x2="590" y2="234" stroke="#16232B" stroke-width="1.4"/>
+      <text x="350" y="290" font-size="11" text-anchor="middle" fill="#16232B">物理的には離れたラックにあるが、<tspan font-weight="700">VM同士は同一セグメントとして通信できる</tspan></text>
+    </svg>
+    <figcaption><b>VTEP</b>（VXLAN Tunnel End Point）がカプセル化とデカプセル化を担う。物理スイッチ（ハードウェアVTEP）に置く場合と、ハイパバイザの仮想スイッチ（ソフトウェアVTEP）に置く場合がある。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>VXLAN が解決したこと <span class="star">頻出</span></caption>
+    <thead><tr><th>従来の課題</th><th>VXLANによる解決</th></tr></thead>
+    <tbody>
+      <tr><th>VLAN IDが12ビット＝<b>4094</b>しか使えない</th><td><b>VNI は24ビット＝約1,677万</b>。
+        マルチテナント環境でもテナントごとにセグメントを払い出せる</td></tr>
+      <tr><th>L2セグメントを広げると<b>STPで冗長リンクの半分が遊休</b>になり、収束も遅い</th><td>アンダーレイをL3にできるため、
+        <b>ECMPで全リンクを使え、STPが不要</b>になる</td></tr>
+      <tr><th>ライブマイグレーションの範囲が<b>L2セグメント内に限られる</b></th><td><b>L3網をまたいで同一セグメントを構成できる</b>ため、
+        <b>ラックやデータセンタをまたぐ移動が可能</b>になる</td></tr>
+      <tr><th>物理スイッチのMACアドレステーブルが<b>全VMのMACで溢れる</b></th><td>中継スイッチは外側のIPだけを見るため、
+        <b>コアの機器は個々のVMのMACアドレスを学習しなくてよい</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <b>MTU の扱いが必ず設計論点になる。</b>
+    VXLANは50バイトのヘッダを追加するため、VMが1500バイトのフレームを送ると
+    アンダーレイでは1550バイトになる。そのままではフラグメントか破棄が起きるため、
+    <b>アンダーレイ側のMTUを 1600〜9000バイト（ジャンボフレーム）に設定する</b>のが定石。
+    第1章・第4章と直結する。
+  </div>
+
+  <p style="font-size:14px;color:#6C7F88">
+    参考：同種のオーバーレイ技術に <b>NVGRE</b>（GREでカプセル化）、
+    <b>GENEVE</b>（拡張性の高いヘッダを持つ後継規格）がある。考え方は同じで、包み方が違うだけ。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">10.4</span>BUMトラフィックと EVPN <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>BUMトラフィックとは</h3>
+  <p>
+    <span class="kw">BUM</span>は <b>B</b>roadcast（ブロードキャスト）、
+    <b>U</b>nknown unicast（宛先未学習のユニキャスト）、<b>M</b>ulticast（マルチキャスト）の頭文字。
+    <b>L2では「同一セグメント内の全員に配らなければならない」トラフィック</b>を指す。
+  </p>
+  <p>
+    問題は、<b>VXLANのアンダーレイはL3（ユニキャストのIP網）である</b>こと。
+    L2なら単にフラッディングすれば済んだものを、<b>L3網の上でどう「全員に配る」かを別途決める必要がある</b>。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="BUMトラフィックの2つの転送方式">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#3B3E86">① IPマルチキャスト転送</text>
+      <rect x="0" y="26" width="700" height="86" fill="#E6E7F2" stroke="#3B3E86"/>
+      <rect x="20" y="50" width="110" height="40" fill="#FFFFFF" stroke="#3B3E86" stroke-width="1.6"/>
+      <text x="75" y="75" font-size="11.5" text-anchor="middle" fill="#3B3E86">送信元VTEP</text>
+      <g fill="#FFFFFF" stroke="#16232B" stroke-width="1.2">
+        <rect x="520" y="34" width="150" height="24"/><rect x="520" y="60" width="150" height="24"/><rect x="520" y="86" width="150" height="24"/>
+      </g>
+      <g font-size="10" text-anchor="middle" fill="#16232B">
+        <text x="595" y="50">VTEP-2</text><text x="595" y="76">VTEP-3</text><text x="595" y="102">VTEP-4</text>
+      </g>
+      <line x1="130" y1="70" x2="330" y2="70" stroke="#3B3E86" stroke-width="2.6"/>
+      <text x="230" y="62" font-size="10.5" text-anchor="middle" fill="#3B3E86" font-weight="700">1回だけ送信</text>
+      <g stroke="#3B3E86" stroke-width="1.6">
+        <line x1="330" y1="70" x2="516" y2="46"/><line x1="330" y1="70" x2="516" y2="72"/><line x1="330" y1="70" x2="516" y2="98"/>
+      </g>
+      <text x="420" y="106" font-size="10" text-anchor="middle" fill="#3B3E86">アンダーレイのルータが複製</text>
+      <text x="140" y="90" font-size="10.5" fill="#16232B">VNIごとにマルチキャストグループを割り当てる</text>
+      <text x="140" y="104" font-size="10.5" fill="#A61E4D">→ <tspan font-weight="700">アンダーレイ側でPIMなどのマルチキャストルーティングが必要</tspan></text>
+
+      <text x="0" y="140" font-size="12.5" font-weight="700" fill="#0E7C86">② ヘッドエンドレプリケーション（Ingress Replication）</text>
+      <rect x="0" y="150" width="700" height="86" fill="#E4F0F1" stroke="#0E7C86"/>
+      <rect x="20" y="174" width="110" height="40" fill="#FFFFFF" stroke="#0E7C86" stroke-width="1.6"/>
+      <text x="75" y="199" font-size="11.5" text-anchor="middle" fill="#0E7C86">送信元VTEP</text>
+      <g fill="#FFFFFF" stroke="#16232B" stroke-width="1.2">
+        <rect x="520" y="158" width="150" height="24"/><rect x="520" y="184" width="150" height="24"/><rect x="520" y="210" width="150" height="24"/>
+      </g>
+      <g font-size="10" text-anchor="middle" fill="#16232B">
+        <text x="595" y="174">VTEP-2</text><text x="595" y="200">VTEP-3</text><text x="595" y="226">VTEP-4</text>
+      </g>
+      <g stroke="#0E7C86" stroke-width="1.8">
+        <line x1="130" y1="188" x2="516" y2="170"/><line x1="130" y1="194" x2="516" y2="196"/><line x1="130" y1="200" x2="516" y2="222"/>
+      </g>
+      <text x="320" y="164" font-size="10.5" text-anchor="middle" fill="#0E7C86" font-weight="700">送信元が宛先VTEPの数だけユニキャストで複製して送る</text>
+      <text x="140" y="226" font-size="10.5" fill="#A61E4D">→ マルチキャスト不要で導入は簡単だが、<tspan font-weight="700">VTEP数に比例して送信元の負荷と帯域消費が増える</tspan></text>
+    </svg>
+    <figcaption>どちらの方式にも欠点がある。<b>そもそもBUMを流さずに済ませられないか</b>——という発想から生まれたのが EVPN である。</figcaption>
+  </figure>
+
+  <h3>EVPN <span class="star">頻出</span></h3>
+  <p>
+    <span class="kw">EVPN</span><span class="en">（Ethernet VPN）</span>は、
+    <b>MP-BGP を用いて、VTEP どうしが「どのMACアドレス・IPアドレスがどのVTEPの配下にあるか」を
+    あらかじめ交換し合う</b>仕組み。VXLAN に<b>コントロールプレーンを与える</b>ものである。
+  </p>
+  <div class="card">
+    <h4 style="margin-top:0">EVPN が持ち込んだ変化</h4>
+    <ul style="margin-bottom:0">
+      <li><b>フラッディングによる学習からの脱却</b>：従来のL2は「知らない宛先はとりあえず全員に送り、
+        返事が来た方向を覚える」という方式だった。EVPNは<b>BGPで事前に配布する</b>ため、
+        <b>Unknown unicast のフラッディングが大幅に減る</b></li>
+      <li><b>ARP抑制</b>：VTEPがMACとIPの対応をあらかじめ知っているため、
+        <b>配下のVMからのARP要求に自分で代理応答でき、ARPブロードキャストを網に流さずに済む</b></li>
+      <li><b>マルチホーム対応</b>：1台のサーバを2台のLeafに接続する構成を、標準的な仕組みで扱える</li>
+    </ul>
+  </div>
+  <div class="note">
+    <b>構図として押さえる。</b>
+    VXLAN ＝ <b>データプレーン</b>（どう包んで運ぶか）、
+    EVPN ＝ <b>コントロールプレーン</b>（どこに誰がいるかをどう知るか）。
+    「VXLAN/EVPN」とセットで呼ばれるのはこのためである。
+    <b>MP-BGP は第3章のBGPを拡張し、IPアドレス以外の情報（MACアドレスなど）も運べるようにしたもの。</b>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>VXLANを導入する理由 → <b>「L3網の上に論理的なL2セグメントを構成でき、
+        ラックやデータセンタをまたいでも同一セグメントを維持できるため、仮想サーバの移動範囲が広がる」</b>
+        ＋<b>「VNIが24ビットのため、VLANの4094という上限を超えるセグメント数を確保できる」</b></li>
+      <li>VXLAN導入時にMTU設計が必要な理由 → <b>「カプセル化により約50バイトのヘッダが付加されるため」</b></li>
+      <li>EVPNを併用する理由 → <b>「MACアドレスの所在をBGPで交換することで、
+        不要なフラッディングやARPブロードキャストを抑制できるため」</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">10.5</span>SDN と OpenFlow <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>2つのプレーンの分離</h3>
+  <p>
+    ネットワーク機器の機能は、次の2つに分けて考えられる。
+  </p>
+  <ul>
+    <li><span class="kw">コントロールプレーン</span>：<b>「どこへ送るべきか」を決める頭脳</b>。
+      ルーティングプロトコルの処理、経路表の計算、STPの計算など</li>
+    <li><span class="kw">データプレーン</span>（フォワーディングプレーン）：<b>決められたとおりに実際に転送する手足</b>。
+      ASICによる高速処理</li>
+  </ul>
+  <p>
+    従来はこの2つが<b>1台の機器の中に一体で入っていた</b>ため、
+    設定は機器ごとに個別に行う必要があり、ネットワーク全体を俯瞰した制御が難しかった。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 260" role="img" aria-label="従来型とSDNのプレーン構成の比較">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#A61E4D">従来：各機器が頭脳と手足の両方を持つ</text>
+      <g>
+        <rect x="20" y="30" width="120" height="60" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+        <rect x="170" y="30" width="120" height="60" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      </g>
+      <g font-size="10.5" text-anchor="middle">
+        <rect x="26" y="36" width="108" height="24" fill="#E6E7F2" stroke="#3B3E86"/><text x="80" y="52" fill="#3B3E86">コントロール</text>
+        <rect x="26" y="62" width="108" height="22" fill="#E4F0F1" stroke="#0E7C86"/><text x="80" y="77" fill="#0E7C86">データ</text>
+        <rect x="176" y="36" width="108" height="24" fill="#E6E7F2" stroke="#3B3E86"/><text x="230" y="52" fill="#3B3E86">コントロール</text>
+        <rect x="176" y="62" width="108" height="22" fill="#E4F0F1" stroke="#0E7C86"/><text x="230" y="77" fill="#0E7C86">データ</text>
+      </g>
+      <text x="20" y="112" font-size="11" fill="#A61E4D">→ 機器ごとに個別設定が必要。全体最適な経路制御が難しい</text>
+
+      <text x="380" y="16" font-size="12.5" font-weight="700" fill="#0E7C86">SDN：頭脳を1か所に集める</text>
+      <rect x="440" y="26" width="200" height="38" fill="#E6E7F2" stroke="#3B3E86" stroke-width="2"/>
+      <text x="540" y="50" font-size="12" text-anchor="middle" font-weight="700" fill="#3B3E86">SDNコントローラ</text>
+      <g fill="#FFFFFF" stroke="#0E7C86" stroke-width="1.4">
+        <rect x="400" y="96" width="110" height="30"/><rect x="570" y="96" width="110" height="30"/>
+      </g>
+      <g font-size="10.5" text-anchor="middle" fill="#0E7C86">
+        <text x="455" y="116">データのみ</text><text x="625" y="116">データのみ</text>
+      </g>
+      <g stroke="#3B3E86" stroke-width="1.8" stroke-dasharray="5 3">
+        <line x1="490" y1="64" x2="455" y2="96"/><line x1="590" y1="64" x2="625" y2="96"/>
+      </g>
+      <text x="540" y="146" font-size="10.5" text-anchor="middle" fill="#3B3E86">OpenFlow などのプロトコルで制御</text>
+      <text x="380" y="168" font-size="11" fill="#0E7C86">→ <tspan font-weight="700">全体を俯瞰した経路制御・自動化・一括設定が可能</tspan></text>
+
+      <rect x="0" y="188" width="700" height="70" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="14" y="208" font-size="12.5" font-weight="700" fill="#A61E4D">SDNの課題 ― 記述で必ず併記する</text>
+      <text x="14" y="228" font-size="12" fill="#16232B">・<tspan font-weight="700">コントローラが単一障害点（SPOF）になる</tspan> → 冗長化が必須</text>
+      <text x="14" y="248" font-size="12" fill="#16232B">・コントローラとの通信が途絶えた場合の動作（既存のフローで動き続けるか、停止するか）を設計しておく必要がある</text>
+    </svg>
+    <figcaption>SDNは「集中管理により柔軟になる」と同時に「集中したものが壊れたときの影響が大きい」という、集中と分散の古典的なトレードオフをそのまま抱えている。</figcaption>
+  </figure>
+
+  <h3>OpenFlow の動作</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>OpenFlow の用語</caption>
+    <thead><tr><th>用語</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>フローテーブル</th><td>スイッチが持つ転送ルールの表。従来のMACアドレステーブルやルーティングテーブルに相当するが、
+        <b>L1〜L4の情報を自由に組み合わせて条件を書ける</b></td></tr>
+      <tr><th>フローエントリ</th><td>1行分のルール。<b>マッチ条件（ポート・MAC・IP・ポート番号など）＋
+        アクション（転送・書換え・破棄）＋カウンタ（統計）</b>で構成される</td></tr>
+      <tr><th>Packet-In</th><td>フローテーブルに<b>合致するエントリがないパケット</b>を受信したとき、
+        スイッチが<b>コントローラへ問い合わせる</b>メッセージ</td></tr>
+      <tr><th>Packet-Out</th><td>コントローラがスイッチに<b>特定のパケットを指定ポートから送出させる</b>メッセージ</td></tr>
+      <tr><th>Flow-Mod</th><td>コントローラがフローエントリを追加・変更・削除する指示</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>従来のスイッチとの決定的な違い。</b>
+    L2スイッチは宛先が未知なら<b>自分の判断でフラッディング</b>した。
+    OpenFlowスイッチは未知のパケットを<b>コントローラに問い合わせる（Packet-In）</b>。
+    <b>判断の主体がスイッチからコントローラへ移った</b>——これがプレーン分離の実際の姿である。
+  </div>
+
+  <p>
+    <span class="kw">NFV</span><span class="en">（Network Functions Virtualization）</span>
+    <span class="star b">差がつく</span>は、ファイアウォール・負荷分散装置・ルータといった
+    <b>専用ハードウェアで実現していた機能を、汎用サーバ上のソフトウェアとして動かす</b>考え方。
+    <b>機器調達を待たずに機能を追加でき、需要に応じて増減させられる</b>のが利点。
+    SDNが「制御の仮想化」なら、NFVは「機能そのものの仮想化」と整理できる。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">10.6</span>VDI・シンクライアント <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">VDI</span><span class="en">（Virtual Desktop Infrastructure）</span>は、
+    <b>利用者のデスクトップ環境をデータセンタ上の仮想マシンとして動かし、
+    手元の端末には画面情報だけを転送する</b>方式。
+    手元の端末を <span class="kw">シンクライアント</span>と呼ぶ。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 200" role="img" aria-label="VDIの構成と流れるデータ">
+      <rect x="20" y="60" width="130" height="60" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="85" y="84" font-size="12" text-anchor="middle" fill="#16232B">シンクライアント</text>
+      <text x="85" y="102" font-size="10" text-anchor="middle" fill="#6C7F88">データを持たない</text>
+
+      <rect x="480" y="40" width="200" height="100" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.6"/>
+      <text x="580" y="62" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">データセンタ</text>
+      <g fill="#FFFFFF" stroke="#0E7C86" stroke-width="1.2">
+        <rect x="500" y="72" width="160" height="20"/><rect x="500" y="96" width="160" height="20"/>
+      </g>
+      <g font-size="10" text-anchor="middle" fill="#0E7C86">
+        <text x="580" y="86">仮想デスクトップ</text><text x="580" y="110">仮想デスクトップ</text>
+      </g>
+
+      <path d="M150,78 L476,78" stroke="#3B3E86" stroke-width="2.4" marker-end="url(#d1)"/>
+      <text x="313" y="70" font-size="11" text-anchor="middle" font-weight="700" fill="#3B3E86">キーボード・マウス操作（上り・小容量）</text>
+      <path d="M476,106 L154,106" stroke="#A61E4D" stroke-width="2.4" marker-end="url(#d2)"/>
+      <text x="313" y="126" font-size="11" text-anchor="middle" font-weight="700" fill="#A61E4D">画面の描画情報（下り・帯域を消費）</text>
+
+      <rect x="0" y="156" width="700" height="42" fill="#E7EDEE"/>
+      <text x="14" y="176" font-size="12" fill="#16232B">流れるのは<tspan font-weight="700">画面の情報だけで、業務データそのものは端末に到達しない</tspan>。</text>
+      <text x="14" y="192" font-size="12" fill="#16232B">画面転送プロトコル：<tspan font-family="monospace">RDP、ICA、PCoIP</tspan> など。</text>
+      <defs>
+        <marker id="d1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#3B3E86"/></marker>
+        <marker id="d2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker>
+      </defs>
+    </svg>
+    <figcaption>VDIの本質は<b>「データを端末に置かない」</b>こと。この一点からセキュリティ上の利点がすべて導かれる。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>VDIの利点と課題</caption>
+    <thead><tr><th></th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>セキュリティ<br>（利点）</th><td><b>端末にデータが残らないため、紛失・盗難時の情報漏えいを防げる</b>。
+        USBメモリへの持ち出しもサーバ側で制御できる。テレワーク導入時の定番の理由</td></tr>
+      <tr><th>運用<br>（利点）</th><td>OSの更新やソフトウェア配布を<b>データセンタ側で一括して行える</b>。
+        端末故障時は別の端末からログインすればすぐ業務を再開できる</td></tr>
+      <tr><th>ネットワーク<br>（課題）</th><td><b>画面転送のための帯域が常時必要</b>。1利用者あたり数百kbps〜が目安で、
+        <b>動画再生やCADなど画面の変化が大きい業務では大幅に増える</b>。
+        <b>遅延が大きいと操作の追従性が悪化し、体感品質が著しく落ちる</b></td></tr>
+      <tr><th>可用性<br>（課題）</th><td><b>ネットワークが切れると一切の業務ができなくなる</b>。
+        回線とデータセンタ側の冗長化が前提になる</td></tr>
+      <tr><th>負荷<br>（課題）</th><td><b>始業時の一斉ログイン（ブートストーム）</b>でサーバとストレージに負荷が集中する。
+        起動時刻の分散などの対策が要る</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>VDIを採用する理由 → <b>「業務データを端末に保存しないため、端末の紛失・盗難による情報漏えいを防止できるから」</b></li>
+      <li>必要帯域の計算 → <b>1利用者あたりの帯域 × 同時利用者数</b>。
+        <b>ピーク時（始業時刻）を想定する</b>ことと、<b>他の業務通信との合計で回線を設計する</b>ことを忘れない</li>
+      <li>VDI導入時のネットワーク要件 → <b>帯域だけでなく遅延も重要</b>。
+        遅延が大きいとキー入力から画面反映までの応答が遅れ、業務効率が落ちる</li>
+      <li>QoSとの組合せ → <b>画面転送のトラフィックを優先制御する</b>（第16章）</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第10章 データセンタ・仮想化・オーバーレイ ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">10 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>

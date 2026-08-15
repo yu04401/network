@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第14章 メール ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: delivery chain */
+  .chain{margin-top:30px}
+  .chain .bar{display:flex; height:28px; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .chain .bar span{
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; white-space:nowrap; color:#fff;
+  }
+  .c1{background:#3B3E86; flex:1 1 auto}
+  .c2{background:#0E7C86; flex:1 1 auto}
+  .c3{background:#A61E4D; flex:1 1 auto}
+  .c4{background:#7C8F97; flex:1 1 auto}
+  .c5{background:#3B3E86; flex:1 1 auto}
+  .chain .ticks{
+    display:flex; justify-content:space-between;
+    font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:7px;
+  }
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  .code{
+    background:#F2F5F6; border:1px dashed var(--muted); border-radius:4px;
+    padding:14px 18px; margin:0 0 20px; font-family:var(--mono); font-size:12.5px;
+    line-height:1.95; overflow-x:auto; white-space:pre;
+  }
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .chain .bar span{font-size:9px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第14章　メール
+      <span class="en">Mail Systems</span>
+    </h1>
+    <p class="lede">
+      SMTP は<b>「送信者を検証する仕組みを持たないまま普及してしまった」</b>プロトコルである。
+      誰でも任意の差出人を名乗れるという設計上の欠陥が、迷惑メールとなりすましを生み、
+      その後付けの対策として <b>SPF・DKIM・DMARC</b> が積み上げられてきた。
+      この章は<b>「なぜ後付けの認証が必要になったのか」</b>という因果で読むと、すべてが一本につながる。
+    </p>
+    <div class="chain" aria-hidden="true">
+      <div class="bar">
+        <span class="c1">MUA</span><span class="c2">MTA（送信）</span><span class="c3">MTA（受信）</span><span class="c4">MDA</span><span class="c5">MUA</span>
+      </div>
+      <div class="ticks"><span>SMTP で押し出す</span><span>← DNSのMXで宛先を探す →</span><span>POP3／IMAP4 で取りに行く</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 配送の流れ</a>
+    <a href="#s2">2 SMTPとエンベロープ</a>
+    <a href="#s3">3 受信プロトコルと暗号化</a>
+    <a href="#s4">4 迷惑メール対策の基礎</a>
+    <a href="#s5">5 送信ドメイン認証</a>
+    <a href="#s6">6 転送問題とS/MIME</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">14.1</span>配送の流れ <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>登場人物</caption>
+    <thead><tr><th>略称</th><th>正式名称</th><th>役割</th></tr></thead>
+    <tbody>
+      <tr><th>MUA</th><td>Mail User Agent</td><td>利用者が操作するメールソフト。作成・送信・受信を行う</td></tr>
+      <tr><th>MTA</th><td>Mail Transfer Agent</td><td><b>サーバ間でメールを転送する</b>。SMTPを話す主体</td></tr>
+      <tr><th>MDA</th><td>Mail Delivery Agent</td><td>受信したメールを<b>利用者のメールボックスへ格納する</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 700 310" role="img" aria-label="メール配送の全体フロー">
+      <rect x="20" y="60" width="110" height="46" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.5"/>
+      <text x="75" y="82" font-size="12" text-anchor="middle" font-weight="700" fill="#3B3E86">送信者MUA</text>
+      <text x="75" y="99" font-size="10" text-anchor="middle" fill="#3B3E86">メールソフト</text>
+
+      <rect x="200" y="60" width="130" height="46" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.8"/>
+      <text x="265" y="82" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">送信MTA</text>
+      <text x="265" y="99" font-size="10" text-anchor="middle" fill="#0E7C86">自社メールサーバ</text>
+
+      <rect x="430" y="60" width="130" height="46" fill="#F7E6EC" stroke="#A61E4D" stroke-width="1.8"/>
+      <text x="495" y="82" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">受信MTA</text>
+      <text x="495" y="99" font-size="10" text-anchor="middle" fill="#A61E4D">宛先ドメインのサーバ</text>
+
+      <rect x="430" y="180" width="130" height="46" fill="#E7EDEE" stroke="#6C7F88" stroke-width="1.5"/>
+      <text x="495" y="202" font-size="12" text-anchor="middle" font-weight="700" fill="#16232B">MDA</text>
+      <text x="495" y="219" font-size="10" text-anchor="middle" fill="#6C7F88">メールボックスへ格納</text>
+
+      <rect x="620" y="180" width="70" height="46" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.5"/>
+      <text x="655" y="208" font-size="11" text-anchor="middle" font-weight="700" fill="#3B3E86">受信MUA</text>
+
+      <line x1="130" y1="83" x2="196" y2="83" stroke="#3B3E86" stroke-width="2.2" marker-end="url(#m1)"/>
+      <text x="163" y="46" font-size="10.5" text-anchor="middle" font-weight="700" fill="#3B3E86">SMTP</text>
+      <text x="163" y="34" font-size="9.5" text-anchor="middle" fill="#3B3E86">587（Submission）</text>
+
+      <line x1="330" y1="83" x2="426" y2="83" stroke="#0E7C86" stroke-width="2.2" marker-end="url(#m2)"/>
+      <text x="378" y="46" font-size="10.5" text-anchor="middle" font-weight="700" fill="#0E7C86">SMTP</text>
+      <text x="378" y="34" font-size="9.5" text-anchor="middle" fill="#0E7C86">TCP 25</text>
+
+      <line x1="495" y1="106" x2="495" y2="176" stroke="#6C7F88" stroke-width="2" marker-end="url(#m3)"/>
+      <line x1="620" y1="203" x2="564" y2="203" stroke="#3B3E86" stroke-width="2.2" marker-end="url(#m1)"/>
+      <text x="592" y="240" font-size="10.5" text-anchor="middle" font-weight="700" fill="#3B3E86">POP3／IMAP4</text>
+      <text x="592" y="254" font-size="9.5" text-anchor="middle" fill="#3B3E86">取りに行く</text>
+
+      <rect x="150" y="150" width="230" height="60" fill="#FFFFFF" stroke="#0E7C86" stroke-width="1.5"/>
+      <text x="265" y="172" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">DNS</text>
+      <text x="265" y="192" font-size="10.5" text-anchor="middle" fill="#0E7C86">宛先ドメインの<tspan font-weight="700">MXレコード</tspan>を引く</text>
+      <line x1="265" y1="106" x2="265" y2="146" stroke="#0E7C86" stroke-width="1.6" stroke-dasharray="4 3"/>
+      <path d="M380,180 C 420,180 430,140 448,110" fill="none" stroke="#0E7C86" stroke-width="1.6" stroke-dasharray="4 3"/>
+      <text x="265" y="230" font-size="11" text-anchor="middle" fill="#16232B">「どのサーバへ送ればよいか」を知るのはDNS</text>
+
+      <rect x="0" y="264" width="700" height="46" fill="#E7EDEE"/>
+      <text x="14" y="284" font-size="12" fill="#16232B"><tspan font-weight="700">送信は「押し出す（プッシュ）」、受信は「取りに行く（プル）」</tspan> ── この非対称性が要点。</text>
+      <text x="14" y="302" font-size="12" fill="#16232B">SMTPは相手サーバまでメールを届けるが、<tspan font-weight="700">利用者の手元へは届けない</tspan>。そこはPOP3／IMAP4が担う。</text>
+      <defs>
+        <marker id="m1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#3B3E86"/></marker>
+        <marker id="m2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+        <marker id="m3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#6C7F88"/></marker>
+      </defs>
+    </svg>
+    <figcaption><b>MXレコード</b>（第5章）は「このドメイン宛のメールはこのサーバへ」を示す。<b>優先度は小さい値が優先</b>で、複数書けば冗長化できる。値が指すのは<b>IPアドレスではなくホスト名</b>である点に注意。</figcaption>
+  </figure>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">14.2</span>SMTP とエンベロープ <span class="star">最重要</span></h2>
+  <div class="rule"></div>
+
+  <h3>SMTPの対話</h3>
+  <div class="code">S: 220 mail.example.co.jp ESMTP ready
+C: EHLO mail.sender.co.jp          ← 挨拶（拡張SMTPなら EHLO、旧来は HELO）
+S: 250-mail.example.co.jp
+S: 250 STARTTLS                    ← サーバが対応している拡張機能を返す
+C: MAIL FROM:&lt;taro@sender.co.jp&gt;   ← エンベロープFrom（＝返送先）
+S: 250 OK
+C: RCPT TO:&lt;hanako@example.co.jp&gt;  ← エンベロープTo（＝実際の配送先）
+S: 250 OK
+C: DATA                            ← ここから先が「便箋」
+S: 354 Start mail input
+C: From: 営業部 &lt;eigyo@sender.co.jp&gt;   ← ヘッダFrom（＝利用者に表示される差出人）
+C: To: hanako@example.co.jp
+C: Subject: お見積りの件
+C: （本文）
+C: .                               ← 「.」だけの行で本文終了
+S: 250 OK
+C: QUIT</div>
+
+  <h3>エンベロープとヘッダ ― この章の核心 <span class="star">最重要</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 260" role="img" aria-label="エンベロープとヘッダの違い">
+      <rect x="20" y="30" width="300" height="180" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/>
+      <text x="170" y="56" font-size="13" text-anchor="middle" font-weight="700" fill="#0E7C86">エンベロープ（封筒）</text>
+      <text x="170" y="76" font-size="10.5" text-anchor="middle" fill="#0E7C86">SMTPコマンドで指定する</text>
+      <rect x="44" y="92" width="252" height="46" fill="#FFFFFF" stroke="#0E7C86"/>
+      <text x="56" y="112" font-size="11" font-family="monospace" fill="#16232B">MAIL FROM: taro@sender.co.jp</text>
+      <text x="56" y="130" font-size="11" font-family="monospace" fill="#16232B">RCPT TO: hanako@example.co.jp</text>
+      <text x="170" y="162" font-size="11.5" text-anchor="middle" font-weight="700" fill="#0E7C86">→ 実際の配送に使われる</text>
+      <text x="170" y="180" font-size="10.5" text-anchor="middle" fill="#0E7C86">配送に失敗したときの返送先でもある</text>
+      <text x="170" y="198" font-size="10.5" text-anchor="middle" fill="#0E7C86">（Return-Path）</text>
+
+      <rect x="380" y="30" width="300" height="180" fill="#E6E7F2" stroke="#3B3E86" stroke-width="2"/>
+      <text x="530" y="56" font-size="13" text-anchor="middle" font-weight="700" fill="#3B3E86">ヘッダ（便箋の宛名書き）</text>
+      <text x="530" y="76" font-size="10.5" text-anchor="middle" fill="#3B3E86">DATA の中に書かれる</text>
+      <rect x="404" y="92" width="252" height="46" fill="#FFFFFF" stroke="#3B3E86"/>
+      <text x="416" y="112" font-size="11" font-family="monospace" fill="#16232B">From: eigyo@sender.co.jp</text>
+      <text x="416" y="130" font-size="11" font-family="monospace" fill="#16232B">To: hanako@example.co.jp</text>
+      <text x="530" y="162" font-size="11.5" text-anchor="middle" font-weight="700" fill="#3B3E86">→ 利用者の画面に表示される</text>
+      <text x="530" y="180" font-size="10.5" text-anchor="middle" fill="#3B3E86">配送には一切使われない</text>
+
+      <rect x="0" y="222" width="700" height="38" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="12" y="242" font-size="12.5" font-weight="700" fill="#A61E4D">両者は一致しなくてよい ── これがなりすましの温床であり、送信ドメイン認証が必要になった理由。</text>
+      <text x="12" y="256" font-size="11" fill="#16232B">正当な用途もある：Bcc（ヘッダには書かず、RCPT TO にだけ指定する）、メーリングリストの配送など。</text>
+    </svg>
+    <figcaption>郵便に例えると、<b>エンベロープ＝封筒に書かれた宛名（配達員が見る）</b>、<b>ヘッダ＝便箋に書かれた宛名（受取人が読む）</b>。配達員は封筒しか見ないし、受取人は便箋しか見ない。<b>この2つが食い違っていても誰も気づかない</b>のがSMTPの構造である。</figcaption>
+  </figure>
+
+  <div class="note">
+    <b>この区別が SPF と DMARC の関係を決める。</b>
+    <b>SPFが検証するのはエンベロープFrom</b>、
+    <b>利用者が目にするのはヘッダFrom</b>。
+    つまり<b>SPFに合格していても、ヘッダFromは自由に偽装できる</b>。
+    この隙間を埋めるために DMARC が作られた——14.5節の核心はここにある。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">14.3</span>受信プロトコルと暗号化 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>POP3 と IMAP4</caption>
+    <thead><tr><th></th><th>POP3</th><th>IMAP4</th></tr></thead>
+    <tbody>
+      <tr><th>ポート</th><td class="c m">110（SSL/TLSは995）</td><td class="c m">143（SSL/TLSは993）</td></tr>
+      <tr><th>メールの所在</th><td><b>端末へダウンロードし、サーバからは削除する</b>のが基本動作</td><td>
+        <b>サーバ上に置いたまま操作する</b></td></tr>
+      <tr><th>複数端末</th><td>既読・削除の状態が<b>端末ごとにばらばらになる</b></td><td>
+        <b>フォルダ構成・既読状態がすべての端末で同期される</b></td></tr>
+      <tr><th>サーバ容量</th><td>消費しない</td><td>すべて保持するため<b>大容量が必要</b></td></tr>
+      <tr><th>オフライン</th><td>ダウンロード済みなら閲覧可能</td><td>キャッシュがなければ閲覧できない</td></tr>
+      <tr><th>向く用途</th><td>1台の端末だけで使う場合</td><td><b>PC・スマートフォンなど複数端末で使う現在の標準</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>暗号化の方式</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>2つの暗号化アプローチ</caption>
+    <thead><tr><th>方式</th><th>動作</th><th>ポート例</th></tr></thead>
+    <tbody>
+      <tr><th>SMTP over TLS<br>（暗黙的TLS）</th><td><b>接続した瞬間からTLSで暗号化</b>する。専用のポートを使う</td><td class="m">SMTPS 465<br>POP3S 995／IMAPS 993</td></tr>
+      <tr><th>STARTTLS <span class="star">頻出</span></th><td><b>いったん平文で接続し、STARTTLSコマンドで暗号化へ切り替える</b>。
+        同じポートで平文と暗号化の両方に対応できる</td><td class="m">25／587／110／143</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>STARTTLSの弱点。</b>最初の接続が平文であるため、
+    <b>経路上の攻撃者が「STARTTLSに対応している」という応答を削除すると、
+    平文のまま通信が続いてしまう</b>（ダウングレード攻撃）。
+    対策として、<b>クライアント側でTLSを必須に設定する</b>、あるいは
+    <b>MTA間の通信で相手の対応状況を事前に宣言しておく仕組み（MTA-STS）</b>を使う。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">14.4</span>迷惑メール対策の基礎 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>第三者中継（オープンリレー）</h3>
+  <p>
+    <span class="kw">第三者中継</span>とは、
+    <b>自組織とは無関係な送信者から、無関係な宛先へのメールを、何の制限もなく中継してしまう状態</b>。
+    こうしたサーバは<b>迷惑メールの踏み台にされ、自組織のサーバが送信元として記録される</b>。
+    結果としてブラックリストに登録され、<b>正規のメールまで届かなくなる</b>。
+  </p>
+  <div class="card">
+    <h4 style="margin-top:0">中継を許可してよい条件</h4>
+    <ul style="margin-bottom:0">
+      <li><b>宛先が自組織のドメイン</b>である（外から中への配送＝正常な受信）</li>
+      <li><b>送信元が自組織のネットワーク内、または SMTP-AUTH で認証済みの利用者</b>である（中から外への送信）</li>
+      <li>それ以外——<b>外から外への中継は拒否する</b></li>
+    </ul>
+  </div>
+  <div class="note">
+    第13章の<b>オープンプロキシ</b>、第5章の<b>オープンリゾルバ</b>と<b>まったく同じ構図</b>。
+    「誰からでも使える状態のサーバを外部に晒すと、踏み台にされて自組織が加害者になる」——
+    <b>対策も共通して「利用できる接続元を限定する」</b>。
+  </div>
+
+  <h3>OP25B と Submission ポート <span class="star">頻出</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 280" role="img" aria-label="OP25BとSubmissionポートの関係">
+      <rect x="0" y="24" width="700" height="112" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="14" y="46" font-size="12.5" font-weight="700" fill="#A61E4D">OP25B（Outbound Port 25 Blocking）以前 ― ボット感染PCが直接送信できてしまう</text>
+      <rect x="30" y="62" width="110" height="40" fill="#FFFFFF" stroke="#A61E4D" stroke-width="1.6"/>
+      <text x="85" y="80" font-size="11" text-anchor="middle" fill="#A61E4D">感染PC</text>
+      <text x="85" y="95" font-size="9.5" text-anchor="middle" fill="#A61E4D">（家庭・社内）</text>
+      <rect x="520" y="62" width="150" height="40" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="595" y="87" font-size="11" text-anchor="middle" fill="#16232B">外部のメールサーバ</text>
+      <line x1="140" y1="82" x2="516" y2="82" stroke="#A61E4D" stroke-width="2.4" marker-end="url(#o1)"/>
+      <text x="330" y="74" font-size="10.5" text-anchor="middle" font-family="monospace" font-weight="700" fill="#A61E4D">TCP 25 へ直接送信</text>
+      <text x="14" y="126" font-size="11.5" fill="#16232B">→ 自社／ISPのメールサーバを経由しないため、<tspan font-weight="700">送信者を特定できず、制御もできない</tspan></text>
+
+      <rect x="0" y="152" width="700" height="128" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="14" y="174" font-size="12.5" font-weight="700" fill="#0E7C86">OP25B 導入後 ― 25番の直接送信を遮断し、正規利用者は 587 へ誘導する</text>
+      <rect x="30" y="190" width="110" height="40" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="85" y="215" font-size="11" text-anchor="middle" fill="#16232B">利用者PC</text>
+      <rect x="270" y="190" width="150" height="40" fill="#FFFFFF" stroke="#0E7C86" stroke-width="1.8"/>
+      <text x="345" y="208" font-size="11" text-anchor="middle" font-weight="700" fill="#0E7C86">自社／ISPのMTA</text>
+      <text x="345" y="223" font-size="9.5" text-anchor="middle" fill="#0E7C86">SMTP-AUTH で認証</text>
+      <rect x="540" y="190" width="130" height="40" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="605" y="215" font-size="11" text-anchor="middle" fill="#16232B">外部のMTA</text>
+      <line x1="140" y1="210" x2="266" y2="210" stroke="#0E7C86" stroke-width="2.4" marker-end="url(#o2)"/>
+      <text x="203" y="202" font-size="10" text-anchor="middle" font-family="monospace" font-weight="700" fill="#0E7C86">587</text>
+      <line x1="420" y1="210" x2="536" y2="210" stroke="#0E7C86" stroke-width="2.4" marker-end="url(#o2)"/>
+      <text x="478" y="202" font-size="10" text-anchor="middle" font-family="monospace" fill="#0E7C86">25</text>
+      <line x1="140" y1="248" x2="536" y2="248" stroke="#A61E4D" stroke-width="2" stroke-dasharray="6 5"/>
+      <text x="338" y="266" font-size="11" text-anchor="middle" font-weight="700" fill="#A61E4D">✕ 25番への直接送信はISPが遮断する</text>
+      <defs>
+        <marker id="o1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker>
+        <marker id="o2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+      </defs>
+    </svg>
+    <figcaption><b>Submission ポート（587番）</b>は「利用者がメールを投函するための専用ポート」。<b>SMTP-AUTH による認証が前提</b>であり、認証を通った利用者だけが送信できる。MTA間の転送に使う25番と役割を分離したのが要点。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>送信者を認証する仕組み</caption>
+    <thead><tr><th>方式</th><th>内容</th><th>評価</th></tr></thead>
+    <tbody>
+      <tr><th>SMTP-AUTH</th><td>SMTP接続時に<b>ID／パスワードで利用者を認証</b>する</td><td><b>現在の標準</b>。
+        587番とセットで使う</td></tr>
+      <tr><th>POP before SMTP</th><td>先にPOP認証を行い、<b>その送信元IPアドレスから一定時間だけSMTP送信を許可</b>する</td><td>
+        <b>同じIPアドレスを共有する他者も送信できてしまう</b>ため、現在は非推奨</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>OP25Bの目的 → <b>「マルウェアに感染した端末が、メールサーバを経由せず直接外部へ迷惑メールを
+        送信するのを防ぐため」</b></li>
+      <li>587番を使う理由 → <b>「OP25Bにより25番での直接送信ができないため。
+        587番ではSMTP-AUTHで利用者を認証したうえで送信を受け付ける」</b></li>
+      <li>第三者中継を許してはいけない理由 → <b>「迷惑メールの踏み台にされ、
+        自社のメールサーバが送信元として拒否リストに登録され、正規のメールが届かなくなるため」</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">14.5</span>送信ドメイン認証 <span class="star">最重要</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <b>「そのメールは、名乗っているドメインの正当な送信者から送られたものか」</b>を受信側が検証する仕組み。
+    <b>DNS を使って送信側が情報を公開し、受信側がそれを引いて確認する</b>という構造は3方式に共通している。
+  </p>
+
+  <h3>SPF ― 送信元IPアドレスを検証する</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>SPF の仕組み</caption>
+    <thead><tr><th>役割</th><th>やること</th></tr></thead>
+    <tbody>
+      <tr><th>送信側</th><td>自ドメインのDNSに、<b>「このドメインのメールを送ってよいサーバのIPアドレス」を
+        TXTレコードで公開</b>する<br>
+        例：<code>v=spf1 ip4:203.0.113.10 include:_spf.example.net -all</code></td></tr>
+      <tr><th>受信側</th><td><b>エンベロープFrom（MAIL FROM）のドメイン</b>のSPFレコードを引き、
+        <b>実際に接続してきたIPアドレスが許可リストに含まれるか</b>を照合する</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>SPFの弱点は2つ。</b>
+    <b>①転送に弱い</b>——メールが転送されると送信元IPアドレスが転送サーバのものに変わるため、
+    <b>正当なメールでも検証に失敗する</b>（14.6節）。
+    <b>②ヘッダFromは検証しない</b>——SPFが見るのはエンベロープFromなので、
+    <b>利用者に表示されるヘッダFromを偽装されても検知できない</b>。
+  </div>
+
+  <h3>DKIM ― 電子署名で検証する</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>DKIM の仕組み</caption>
+    <thead><tr><th>役割</th><th>やること</th></tr></thead>
+    <tbody>
+      <tr><th>送信側</th><td>メールのヘッダと本文から<b>秘密鍵でディジタル署名を作り、
+        DKIM-Signature ヘッダとして付加</b>する。<br>
+        対応する<b>公開鍵は <code>セレクタ._domainkey.ドメイン名</code> のTXTレコード</b>で公開する</td></tr>
+      <tr><th>受信側</th><td>署名内のドメインとセレクタからDNSを引いて公開鍵を取得し、<b>署名を検証</b>する</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <span class="kw">セレクタ</span>は、<b>1つのドメインで複数の鍵を使い分けるための識別子</b>。
+    部署ごと・サービスごとに鍵を分けたり、<b>鍵を更新する際に新旧を並行運用したりできる</b>。
+  </p>
+  <div class="card">
+    <h4 style="margin-top:0">SPF と DKIM の決定的な違い <span class="star">頻出</span></h4>
+    <ul style="margin-bottom:0">
+      <li><b>SPFは「どこから送られたか」を見る</b> → <b>転送で経路が変わると失敗する</b></li>
+      <li><b>DKIMは「中身が改ざんされていないか」を見る</b> →
+        <b>経路が変わっても、署名対象の内容が変わっていなければ有効なまま</b></li>
+      <li>逆にDKIMは、<b>メーリングリストが件名に「[ML:001]」を付けたり本文にフッタを追加したりすると
+        署名が壊れて失敗する</b></li>
+    </ul>
+  </div>
+
+  <h3>DMARC ― 2つを束ね、ヘッダFromを守る <span class="star">最重要</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 330" role="img" aria-label="SPF・DKIM・DMARCの関係">
+      <rect x="0" y="20" width="330" height="120" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.8"/>
+      <text x="165" y="44" font-size="13" text-anchor="middle" font-weight="700" fill="#0E7C86">SPF</text>
+      <text x="165" y="66" font-size="11.5" text-anchor="middle" fill="#16232B">検証対象：<tspan font-weight="700">エンベロープFrom</tspan> のドメイン</text>
+      <text x="165" y="86" font-size="11.5" text-anchor="middle" fill="#16232B">確認方法：送信元IPアドレスの照合</text>
+      <text x="165" y="110" font-size="11" text-anchor="middle" fill="#A61E4D">弱点：転送されると失敗する</text>
+      <text x="165" y="128" font-size="11" text-anchor="middle" fill="#A61E4D">弱点：ヘッダFromは見ていない</text>
+
+      <rect x="370" y="20" width="330" height="120" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.8"/>
+      <text x="535" y="44" font-size="13" text-anchor="middle" font-weight="700" fill="#3B3E86">DKIM</text>
+      <text x="535" y="66" font-size="11.5" text-anchor="middle" fill="#16232B">検証対象：<tspan font-weight="700">署名に記されたドメイン</tspan></text>
+      <text x="535" y="86" font-size="11.5" text-anchor="middle" fill="#16232B">確認方法：電子署名の検証</text>
+      <text x="535" y="110" font-size="11" text-anchor="middle" fill="#A61E4D">弱点：本文や件名が書き換わると失敗</text>
+      <text x="535" y="128" font-size="11" text-anchor="middle" fill="#A61E4D">弱点：ヘッダFromとの関係は問わない</text>
+
+      <path d="M165,140 L300,168 M535,140 L400,168" fill="none" stroke="#16232B" stroke-width="1.6"/>
+
+      <rect x="120" y="172" width="460" height="106" fill="#F7E6EC" stroke="#A61E4D" stroke-width="2"/>
+      <text x="350" y="196" font-size="13.5" text-anchor="middle" font-weight="700" fill="#A61E4D">DMARC</text>
+      <text x="350" y="218" font-size="11.5" text-anchor="middle" fill="#16232B">① SPF または DKIM のいずれかに合格しており、かつ</text>
+      <text x="350" y="238" font-size="11.5" text-anchor="middle" fill="#16232B">② その合格したドメインが <tspan font-weight="700">ヘッダFrom のドメインと一致（アライメント）</tspan>しているか</text>
+      <text x="350" y="262" font-size="11.5" text-anchor="middle" font-weight="700" fill="#A61E4D">→ 利用者が実際に目にする「差出人」を守る</text>
+
+      <rect x="0" y="292" width="700" height="38" fill="#E7EDEE"/>
+      <text x="14" y="312" font-size="12" fill="#16232B">DMARC は失敗時の扱いをドメイン所有者が宣言できる：
+        <tspan font-family="monospace" font-weight="700">p=none</tspan>（何もしない・監視のみ）／
+        <tspan font-family="monospace" font-weight="700">p=quarantine</tspan>（隔離）／
+        <tspan font-family="monospace" font-weight="700">p=reject</tspan>（拒否）</text>
+      <text x="14" y="326" font-size="11" fill="#6C7F88">さらに <tspan font-family="monospace">rua</tspan>（集約レポート）／<tspan font-family="monospace">ruf</tspan>（失敗詳細レポート）で、認証結果の報告を受け取れる。</text>
+    </svg>
+    <figcaption><b>DMARCが埋めた隙間はここ</b>——SPFもDKIMも、それ単体では<b>「利用者に表示されるヘッダFrom」との関係を問わない</b>。SPFに合格しつつヘッダFromだけ偽装する、という攻撃が成立してしまう。DMARCはその一致（アライメント）を必須要件にすることで、なりすましを封じる。</figcaption>
+  </figure>
+
+  <div class="card">
+    <h4 style="margin-top:0">DMARC 導入の進め方 <span class="star">頻出</span></h4>
+    <ol style="margin-bottom:0">
+      <li><b><code>p=none</code> から始める</b>。まず<b>集約レポート（rua）を受け取り、
+        自組織のドメインで誰がどこからメールを送っているかを把握する</b>。
+        委託先や業務システムからの送信が漏れていないかを確認する</li>
+      <li>すべての正規送信元をSPF／DKIMに対応させたうえで、<code>p=quarantine</code> へ移行</li>
+      <li>問題がないことを確認して <code>p=reject</code> へ</li>
+    </ol>
+  </div>
+  <div class="note">
+    <b>いきなり <code>p=reject</code> にしてはいけない理由</b>を問われることがある。
+    <b>「SPF／DKIMに対応していない正規の送信経路（クラウドサービス、業務システム、
+    委託先からの送信など）が残っていると、正規のメールまで拒否されてしまうため」</b>。
+    段階的な移行とレポートによる実態把握が必要になる。
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>SPFが検証するのはどのFromか → <b>エンベロープFrom（MAIL FROMコマンドで指定されるアドレス）</b></li>
+      <li>SPFだけでは防げないなりすまし → <b>ヘッダFromの偽装。利用者が見るのはヘッダFromであるため</b></li>
+      <li>DKIMがSPFより転送に強い理由 → <b>「送信元IPアドレスではなく電子署名で検証するため、
+        経路が変わっても内容が改ざんされていなければ検証に成功するから」</b></li>
+      <li>DMARCの役割 → <b>「SPF／DKIMの結果とヘッダFromのドメインの一致を確認し、
+        認証に失敗したメールの取扱い方針を送信ドメイン側が指定できるようにするもの」</b></li>
+      <li>DNSに登録するレコード種別 → <b>SPF・DKIM・DMARC いずれも TXTレコード</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">14.6</span>転送問題と S/MIME <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>転送で認証が壊れる問題</h3>
+  <figure>
+    <svg viewBox="0 0 700 220" role="img" aria-label="メール転送によるSPF検証失敗">
+      <rect x="10" y="60" width="120" height="46" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="70" y="80" font-size="11.5" text-anchor="middle" fill="#16232B">送信元</text>
+      <text x="70" y="97" font-size="9.5" text-anchor="middle" font-family="monospace" fill="#6C7F88">203.0.113.10</text>
+
+      <rect x="270" y="60" width="150" height="46" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.6"/>
+      <text x="345" y="80" font-size="11.5" text-anchor="middle" font-weight="700" fill="#3B3E86">転送サーバ</text>
+      <text x="345" y="97" font-size="9.5" text-anchor="middle" font-family="monospace" fill="#3B3E86">198.51.100.5</text>
+
+      <rect x="560" y="60" width="130" height="46" fill="#F7E6EC" stroke="#A61E4D" stroke-width="1.6"/>
+      <text x="625" y="88" font-size="11.5" text-anchor="middle" font-weight="700" fill="#A61E4D">最終受信サーバ</text>
+
+      <line x1="130" y1="83" x2="266" y2="83" stroke="#0E7C86" stroke-width="2.2" marker-end="url(#f1)"/>
+      <text x="198" y="46" font-size="10.5" text-anchor="middle" fill="#0E7C86">SPF 合格</text>
+      <line x1="420" y1="83" x2="556" y2="83" stroke="#A61E4D" stroke-width="2.2" marker-end="url(#f2)"/>
+      <text x="488" y="46" font-size="10.5" text-anchor="middle" font-weight="700" fill="#A61E4D">SPF 失敗</text>
+
+      <rect x="0" y="130" width="700" height="86" fill="#E7EDEE"/>
+      <text x="14" y="152" font-size="12" fill="#16232B">最終受信サーバから見ると、<tspan font-weight="700">接続元は転送サーバのIPアドレス（198.51.100.5）</tspan>。</text>
+      <text x="14" y="172" font-size="12" fill="#16232B">しかし<tspan font-weight="700">エンベロープFromは元の送信者のドメインのまま</tspan>なので、SPFレコードと一致せず失敗する。</text>
+      <text x="14" y="196" font-size="12" fill="#0E7C86">対策① <tspan font-weight="700">SRS（Sender Rewriting Scheme）</tspan>：転送時にエンベロープFromを<tspan font-weight="700">転送者のドメインに書き換える</tspan>。</text>
+      <text x="14" y="212" font-size="12" fill="#0E7C86">対策② <tspan font-weight="700">DKIM を併用する</tspan>：署名は経路に依存しないため、転送されても検証に成功する。</text>
+      <defs>
+        <marker id="f1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+        <marker id="f2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker>
+      </defs>
+    </svg>
+    <figcaption>DMARCが<b>「SPF <i>または</i> DKIM のいずれかに合格すればよい」</b>という設計になっているのは、まさにこの補完関係のため。<b>両方を設定しておけば、転送でSPFが落ちてもDKIMで救われる</b>。</figcaption>
+  </figure>
+
+  <div class="card">
+    <h4 style="margin-top:0">メーリングリストの問題</h4>
+    <p style="margin-bottom:0">
+      メーリングリストは<b>件名への通し番号の付加や本文末尾へのフッタ追加</b>を行うことが多い。
+      これは<b>DKIMの署名対象を書き換える</b>ことになるため、<b>署名検証が失敗する</b>。
+      SPFも転送により失敗するため、<b>DMARCで <code>p=reject</code> を宣言していると
+      メーリングリスト経由のメールが拒否されてしまう</b>。
+      この問題に対応するため、<b>中継の各段階での認証結果を引き継ぐ ARC</b> という仕組みが作られている。
+    </p>
+  </div>
+
+  <h3>S/MIME</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>送信ドメイン認証と S/MIME の違い <span class="star">頻出</span></caption>
+    <thead><tr><th></th><th>SPF／DKIM／DMARC</th><th>S/MIME</th></tr></thead>
+    <tbody>
+      <tr><th>認証する対象</th><td><b>ドメイン</b>（組織）</td><td><b>個人</b>（差出人本人）</td></tr>
+      <tr><th>必要なもの</th><td>DNSへのレコード登録とサーバ側の設定。<b>利用者の操作は不要</b></td><td>
+        <b>利用者ごとの電子証明書</b>（第12章のPKI）</td></tr>
+      <tr><th>できること</th><td>なりすまし送信の検出</td><td><b>電子署名による本人確認・改ざん検知</b>と、
+        <b>本文の暗号化（エンドツーエンドの秘匿）</b></td></tr>
+      <tr><th>検証する場所</th><td>受信メールサーバ</td><td><b>受信者のメールソフト</b></td></tr>
+      <tr><th>課題</th><td>—</td><td>証明書の発行・配布・失効管理の運用負荷。<b>相手も対応している必要がある</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>暗号化の範囲が違う。</b>
+    STARTTLS は<b>サーバ間の経路を暗号化する</b>だけで、<b>各サーバ上ではメールは平文</b>である。
+    S/MIME は<b>送信者の手元で暗号化し、受信者の手元で復号する</b>ため、
+    <b>経路上のサーバでも中身が読めない</b>。機密性の要求が高い場合はS/MIMEを使う。
+  </div>
+
+  <h3>その他の迷惑メール対策</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>受信側で行う対策</caption>
+    <thead><tr><th>対策</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>スパムフィルタ</th><td>本文や件名の特徴を統計的に判定する（ベイジアンフィルタなど）。
+        <b>誤判定で正規メールを隔離してしまう可能性があるため、隔離フォルダの確認手段が必要</b></td></tr>
+      <tr><th>ブラックリスト<br>（DNSBL）</th><td>迷惑メール送信元として登録されたIPアドレスの一覧をDNSで照会する。
+        <b>自組織が登録されると正規メールも届かなくなる</b>ため、踏み台化の防止が重要になる</td></tr>
+      <tr><th>グレイリスト</th><td>初回の受信を一時的に拒否し、<b>再送してきた場合のみ受け付ける</b>。
+        正規のMTAは再送するが、迷惑メール送信ツールは再送しないことが多いという性質を利用する。
+        <b>正規メールの受信も遅延する</b>のが欠点</td></tr>
+      <tr><th>添付ファイル対策</th><td>実行形式ファイルの遮断、サンドボックスでの検査（第13章）</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>転送設定でSPFが失敗する理由と対策 → <b>「転送により接続元IPアドレスが変わるため。
+        対策はSRSによるエンベロープFromの書換え、またはDKIMの併用」</b></li>
+      <li>S/MIMEを採用する理由 → <b>「経路上のメールサーバにおいても内容を読まれないよう、
+        送信者から受信者まで一貫して暗号化するため」</b></li>
+      <li>自社ドメインを騙るメールへの対策 → <b>SPF・DKIMを設定したうえでDMARCを宣言し、
+        受信側に拒否させる</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第14章 メール ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">14 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>

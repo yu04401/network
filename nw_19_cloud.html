@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第19章 クラウド ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: service models */
+  .svc{margin-top:30px; display:flex; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .svc div{
+    flex:1 1 0; padding:9px 12px; color:#fff;
+    font-family:var(--mono); font-size:10.5px; line-height:1.55;
+  }
+  .svc div b{display:block; font-size:13.5px; letter-spacing:.04em}
+  .v1{background:#A61E4D}
+  .v2{background:#3B3E86}
+  .v3{background:#0E7C86}
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .svc{flex-direction:column}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第19章　クラウド
+      <span class="en">Cloud Networking</span>
+    </h1>
+    <p class="lede">
+      名称は違っても、<b>やっていることはこれまでの章とほとんど同じ</b>である。
+      VPCは拠点、サブネットはVLAN、ルートテーブルはルーティングテーブル、
+      セキュリティグループはファイアウォールに対応する。
+      <b>オンプレミスの設計の何に相当するかを対応づけて読む</b>のが最短の理解の道であり、
+      それができれば新しく覚えることは驚くほど少ない。
+    </p>
+    <div class="svc" aria-hidden="true">
+      <div class="v1">IaaS<b>基盤だけ借りる／利用者の責任が広い</b></div>
+      <div class="v2">PaaS<b>実行環境まで借りる</b></div>
+      <div class="v3">SaaS<b>アプリまで借りる／責任は最小</b></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 分類と責任共有モデル</a>
+    <a href="#s2">2 リージョンとAZ</a>
+    <a href="#s3">3 VPCの構成要素</a>
+    <a href="#s4">4 SGとネットワークACL</a>
+    <a href="#s5">5 オンプレミスとの接続</a>
+    <a href="#s6">6 CDNとオートスケール</a>
+    <a href="#s7">7 設計上の論点</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">19.1</span>分類と責任共有モデル <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>サービスモデル</caption>
+    <thead><tr><th>種別</th><th>事業者が提供する範囲</th><th>利用者が担う範囲</th><th>例</th></tr></thead>
+    <tbody>
+      <tr><th>IaaS</th><td>物理設備・仮想化基盤・仮想サーバ・仮想ネットワーク</td><td>
+        <b>OS、ミドルウェア、アプリケーション、データ</b></td><td>仮想マシン、仮想ストレージ</td></tr>
+      <tr><th>PaaS</th><td>上記＋<b>OSとミドルウェア（実行環境）</b></td><td>アプリケーション、データ</td><td>
+        データベースサービス、アプリ実行基盤</td></tr>
+      <tr><th>SaaS</th><td>アプリケーションまで一式</td><td><b>設定とデータ、利用者の管理</b></td><td>
+        メール、グループウェア、業務アプリ</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>配置モデル</caption>
+    <thead><tr><th>種別</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>パブリック<br>クラウド</th><td>不特定多数が共用する。<b>初期投資が不要で、必要な分だけ使える</b></td></tr>
+      <tr><th>プライベート<br>クラウド</th><td>自社専用に構築する。<b>統制しやすいが、設備投資と運用体制が必要</b></td></tr>
+      <tr><th>ハイブリッド<br>クラウド</th><td><b>オンプレミスとパブリッククラウドを組み合わせる</b>。
+        機密性の高いデータは自社に置き、負荷変動の大きい処理をクラウドへ、といった使い分けをする</td></tr>
+      <tr><th>マルチクラウド</th><td><b>複数の事業者を併用する</b>。特定事業者への依存を避けられるが、
+        <b>運用と設計が複雑になり、事業者ごとの差異を吸収する必要がある</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>責任共有モデル <span class="star">頻出</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 300" role="img" aria-label="IaaS・PaaS・SaaSにおける責任分界の違い">
+      <text x="0" y="16" font-size="11.5" fill="#6C7F88">上に行くほど利用者の責任　／　下に行くほど事業者の責任</text>
+      <g font-size="10.5" text-anchor="middle">
+        <!-- headers -->
+        <text x="140" y="42" font-size="12.5" font-weight="700" fill="#A61E4D">IaaS</text>
+        <text x="350" y="42" font-size="12.5" font-weight="700" fill="#3B3E86">PaaS</text>
+        <text x="560" y="42" font-size="12.5" font-weight="700" fill="#0E7C86">SaaS</text>
+
+        <!-- rows: data -->
+        <rect x="30" y="52" width="220" height="26" fill="#F7E6EC" stroke="#A61E4D"/><text x="140" y="69" fill="#A61E4D">データ</text>
+        <rect x="240" y="52" width="220" height="26" fill="#F7E6EC" stroke="#A61E4D"/><text x="350" y="69" fill="#A61E4D">データ</text>
+        <rect x="450" y="52" width="220" height="26" fill="#F7E6EC" stroke="#A61E4D"/><text x="560" y="69" fill="#A61E4D">データ</text>
+
+        <rect x="30" y="80" width="220" height="26" fill="#F7E6EC" stroke="#A61E4D"/><text x="140" y="97" fill="#A61E4D">アクセス制御・設定</text>
+        <rect x="240" y="80" width="220" height="26" fill="#F7E6EC" stroke="#A61E4D"/><text x="350" y="97" fill="#A61E4D">アクセス制御・設定</text>
+        <rect x="450" y="80" width="220" height="26" fill="#F7E6EC" stroke="#A61E4D"/><text x="560" y="97" fill="#A61E4D">アクセス制御・設定</text>
+
+        <rect x="30" y="108" width="220" height="26" fill="#F7E6EC" stroke="#A61E4D"/><text x="140" y="125" fill="#A61E4D">アプリケーション</text>
+        <rect x="240" y="108" width="220" height="26" fill="#F7E6EC" stroke="#A61E4D"/><text x="350" y="125" fill="#A61E4D">アプリケーション</text>
+        <rect x="450" y="108" width="220" height="26" fill="#E4F0F1" stroke="#0E7C86"/><text x="560" y="125" fill="#0E7C86">アプリケーション</text>
+
+        <rect x="30" y="136" width="220" height="26" fill="#F7E6EC" stroke="#A61E4D"/><text x="140" y="153" fill="#A61E4D">ミドルウェア</text>
+        <rect x="240" y="136" width="220" height="26" fill="#E4F0F1" stroke="#0E7C86"/><text x="350" y="153" fill="#0E7C86">ミドルウェア</text>
+        <rect x="450" y="136" width="220" height="26" fill="#E4F0F1" stroke="#0E7C86"/><text x="560" y="153" fill="#0E7C86">ミドルウェア</text>
+
+        <rect x="30" y="164" width="220" height="26" fill="#F7E6EC" stroke="#A61E4D" stroke-width="1.8"/><text x="140" y="181" fill="#A61E4D" font-weight="700">OS・更新プログラム</text>
+        <rect x="240" y="164" width="220" height="26" fill="#E4F0F1" stroke="#0E7C86"/><text x="350" y="181" fill="#0E7C86">OS</text>
+        <rect x="450" y="164" width="220" height="26" fill="#E4F0F1" stroke="#0E7C86"/><text x="560" y="181" fill="#0E7C86">OS</text>
+
+        <rect x="30" y="192" width="220" height="26" fill="#E4F0F1" stroke="#0E7C86"/><text x="140" y="209" fill="#0E7C86">仮想化基盤</text>
+        <rect x="240" y="192" width="220" height="26" fill="#E4F0F1" stroke="#0E7C86"/><text x="350" y="209" fill="#0E7C86">仮想化基盤</text>
+        <rect x="450" y="192" width="220" height="26" fill="#E4F0F1" stroke="#0E7C86"/><text x="560" y="209" fill="#0E7C86">仮想化基盤</text>
+
+        <rect x="30" y="220" width="220" height="26" fill="#E4F0F1" stroke="#0E7C86"/><text x="140" y="237" fill="#0E7C86">物理設備・電源・回線</text>
+        <rect x="240" y="220" width="220" height="26" fill="#E4F0F1" stroke="#0E7C86"/><text x="350" y="237" fill="#0E7C86">物理設備・電源・回線</text>
+        <rect x="450" y="220" width="220" height="26" fill="#E4F0F1" stroke="#0E7C86"/><text x="560" y="237" fill="#0E7C86">物理設備・電源・回線</text>
+      </g>
+      <rect x="0" y="258" width="700" height="42" fill="#E7EDEE"/>
+      <text x="14" y="278" font-size="12" fill="#A61E4D">赤 ＝ <tspan font-weight="700">利用者の責任</tspan>　　青 ＝ 事業者の責任</text>
+      <text x="14" y="294" font-size="12" fill="#16232B"><tspan font-weight="700">どのモデルでも「データ」と「アクセス制御・設定」は常に利用者の責任</tspan>である点が最重要。</text>
+    </svg>
+    <figcaption>クラウド利用時の情報漏えいの多くは、事業者側の障害ではなく<b>利用者の設定ミス</b>（公開設定のまま放置されたストレージ、過剰な権限付与）に起因する。<b>「クラウドだから安全」は成り立たない</b>という整理が問われる。</figcaption>
+  </figure>
+
+  <div class="note">
+    <b>IaaSほど利用者の責任範囲が広い。</b>
+    IaaSでは<b>OSの脆弱性対応（更新プログラムの適用）は利用者の責任</b>である。
+    「クラウドに移行したから運用が楽になる」と単純に書くと不正確で、
+    <b>SaaSに近づくほど運用負荷は減るが、その分だけ自由度と制御権も減る</b>——というトレードオフとして書く。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">19.2</span>リージョンとアベイラビリティゾーン <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="リージョンとアベイラビリティゾーンの構成">
+      <rect x="10" y="30" width="330" height="180" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/>
+      <text x="175" y="54" font-size="13" text-anchor="middle" font-weight="700" fill="#0E7C86">リージョン A（例：東京）</text>
+      <rect x="34" y="70" width="130" height="60" fill="#FFFFFF" stroke="#3B3E86" stroke-width="1.6"/>
+      <text x="99" y="94" font-size="11.5" text-anchor="middle" font-weight="700" fill="#3B3E86">AZ-1</text>
+      <text x="99" y="112" font-size="9.5" text-anchor="middle" fill="#3B3E86">独立したDC</text>
+      <rect x="186" y="70" width="130" height="60" fill="#FFFFFF" stroke="#3B3E86" stroke-width="1.6"/>
+      <text x="251" y="94" font-size="11.5" text-anchor="middle" font-weight="700" fill="#3B3E86">AZ-2</text>
+      <text x="251" y="112" font-size="9.5" text-anchor="middle" fill="#3B3E86">独立したDC</text>
+      <line x1="164" y1="100" x2="186" y2="100" stroke="#0E7C86" stroke-width="2.6"/>
+      <text x="175" y="152" font-size="10.5" text-anchor="middle" fill="#0E7C86">AZ間は<tspan font-weight="700">低遅延の専用回線</tspan>で接続</text>
+      <text x="175" y="172" font-size="10.5" text-anchor="middle" fill="#16232B">電源・空調・ネットワークが<tspan font-weight="700">それぞれ独立</tspan></text>
+      <text x="175" y="192" font-size="10.5" text-anchor="middle" fill="#16232B">→ <tspan font-weight="700">片方のDCが停止しても継続できる</tspan></text>
+
+      <rect x="380" y="30" width="310" height="180" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.6"/>
+      <text x="535" y="54" font-size="13" text-anchor="middle" font-weight="700" fill="#3B3E86">リージョン B（例：大阪）</text>
+      <rect x="404" y="70" width="120" height="60" fill="#FFFFFF" stroke="#3B3E86"/>
+      <text x="464" y="104" font-size="11.5" text-anchor="middle" fill="#3B3E86">AZ-1</text>
+      <rect x="546" y="70" width="120" height="60" fill="#FFFFFF" stroke="#3B3E86"/>
+      <text x="606" y="104" font-size="11.5" text-anchor="middle" fill="#3B3E86">AZ-2</text>
+      <text x="535" y="158" font-size="10.5" text-anchor="middle" fill="#3B3E86">地理的に離れている → <tspan font-weight="700">広域災害への備え（DR）</tspan></text>
+      <text x="535" y="178" font-size="10.5" text-anchor="middle" fill="#A61E4D">ただし<tspan font-weight="700">遅延が大きく、リージョン間のデータ転送は課金対象</tspan></text>
+      <text x="535" y="198" font-size="10.5" text-anchor="middle" fill="#16232B">データの<tspan font-weight="700">所在地（法令・監査要件）</tspan>もリージョンで決まる</text>
+
+      <line x1="340" y1="120" x2="380" y2="120" stroke="#6C7F88" stroke-width="2" stroke-dasharray="5 4"/>
+
+      <rect x="0" y="222" width="700" height="28" fill="#E7EDEE"/>
+      <text x="12" y="241" font-size="11.5" fill="#16232B">可用性設計の基本 ── <tspan font-weight="700">複数AZにまたがって配置し、負荷分散装置で振り分ける</tspan>（第9章の並列構成そのもの）。</text>
+    </svg>
+    <figcaption><b>AZは「同一リージョン内の、独立したデータセンタ」</b>。第9章の可用性計算でいう<b>並列構成</b>をクラウド事業者が提供している、と捉えるとよい。<b>単一AZに全部置く構成はSPOF</b>になる。</figcaption>
+  </figure>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>複数AZに配置する理由 → <b>「単一のデータセンタで障害が発生してもサービスを継続できるようにするため」</b></li>
+      <li>リージョンを分ける理由 → <b>「地震などの広域災害に備えるため」</b>。
+        ただし<b>遅延とデータ転送費用の増加</b>を併記する</li>
+      <li>リージョン選択の観点 → <b>利用者からの距離（遅延）、データの所在地に関する要件、利用できるサービス、費用</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">19.3</span>VPC の構成要素 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>オンプレミスとの対応で覚える</caption>
+    <thead><tr><th>クラウドの用語</th><th>オンプレミスでの相当物</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>VPC</th><td>自社ネットワーク全体／拠点</td><td><b>利用者ごとに論理的に分離された仮想ネットワーク</b>。
+        使用するアドレス範囲（CIDR）を指定して作る</td></tr>
+      <tr><th>サブネット</th><td><b>VLAN／セグメント</b></td><td>VPC内をさらに分割したもの。
+        <b>アベイラビリティゾーンごとに作る</b>のが基本</td></tr>
+      <tr><th>ルートテーブル</th><td>ルーティングテーブル</td><td><b>サブネットごとに割り当てる</b>。
+        どの宛先をどこへ転送するかを定義する</td></tr>
+      <tr><th>インターネット<br>ゲートウェイ</th><td>インターネット接続ルータ</td><td>VPCとインターネットの出入口</td></tr>
+      <tr><th>NATゲートウェイ</th><td><b>NAPTを行うルータ</b>（第6章）</td><td>
+        <b>プライベートサブネットの機器が外部へ出るため</b>の出口。
+        <b>外部から内部へ通信を開始することはできない</b></td></tr>
+      <tr><th>VPCピアリング</th><td>拠点間接続</td><td>VPC間を接続する</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 700 300" role="img" aria-label="VPCにおけるパブリックサブネットとプライベートサブネット">
+      <rect x="10" y="26" width="680" height="230" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/>
+      <text x="30" y="48" font-size="12.5" font-weight="700" fill="#0E7C86">VPC　10.0.0.0/16</text>
+
+      <rect x="40" y="62" width="290" height="86" fill="#FFFFFF" stroke="#3B3E86" stroke-width="1.6"/>
+      <text x="185" y="84" font-size="12" text-anchor="middle" font-weight="700" fill="#3B3E86">パブリックサブネット 10.0.1.0/24</text>
+      <text x="185" y="104" font-size="10.5" text-anchor="middle" fill="#3B3E86">ルートテーブルに<tspan font-family="monospace">0.0.0.0/0 → IGW</tspan> がある</text>
+      <rect x="80" y="112" width="90" height="26" fill="#E6E7F2" stroke="#3B3E86"/>
+      <text x="125" y="129" font-size="10" text-anchor="middle" fill="#3B3E86">負荷分散装置</text>
+      <rect x="200" y="112" width="90" height="26" fill="#E6E7F2" stroke="#3B3E86"/>
+      <text x="245" y="129" font-size="10" text-anchor="middle" fill="#3B3E86">NATゲートウェイ</text>
+
+      <rect x="40" y="164" width="290" height="76" fill="#FFFFFF" stroke="#A61E4D" stroke-width="1.6"/>
+      <text x="185" y="186" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">プライベートサブネット 10.0.2.0/24</text>
+      <text x="185" y="204" font-size="10.5" text-anchor="middle" fill="#A61E4D">IGWへの経路を持たない</text>
+      <rect x="80" y="210" width="90" height="24" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="125" y="226" font-size="10" text-anchor="middle" fill="#A61E4D">APサーバ</text>
+      <rect x="200" y="210" width="90" height="24" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="245" y="226" font-size="10" text-anchor="middle" fill="#A61E4D">DBサーバ</text>
+
+      <rect x="400" y="90" width="120" height="40" fill="#FFFFFF" stroke="#0E7C86" stroke-width="2"/>
+      <text x="460" y="115" font-size="11.5" text-anchor="middle" font-weight="700" fill="#0E7C86">IGW</text>
+      <rect x="570" y="90" width="100" height="40" fill="#E7EDEE" stroke="#6C7F88"/>
+      <text x="620" y="115" font-size="11" text-anchor="middle" fill="#16232B">インターネット</text>
+      <line x1="330" y1="110" x2="396" y2="110" stroke="#0E7C86" stroke-width="2.2"/>
+      <line x1="520" y1="110" x2="566" y2="110" stroke="#0E7C86" stroke-width="2.2"/>
+
+      <path d="M245,210 C 245,180 245,160 245,142" fill="none" stroke="#A61E4D" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#cg)"/>
+      <text x="352" y="168" font-size="10.5" fill="#A61E4D">更新プログラムの取得などのため、</text>
+      <text x="352" y="184" font-size="10.5" fill="#A61E4D"><tspan font-weight="700">NATゲートウェイ経由で外へ出る</tspan></text>
+      <text x="352" y="204" font-size="10.5" fill="#A61E4D">（外からは入れない）</text>
+
+      <rect x="0" y="266" width="700" height="34" fill="#E7EDEE"/>
+      <text x="12" y="286" font-size="12" fill="#16232B">サブネットの区別は「名前」ではなく<tspan font-weight="700">ルートテーブルの内容で決まる</tspan> —— IGWへの経路があればパブリック、なければプライベート。</text>
+      <defs><marker id="cg" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker></defs>
+    </svg>
+    <figcaption><b>第13章のDMZ構成と同じ発想</b>。外部からアクセスされるものだけをパブリックサブネットに置き、DBなどの重要なサーバはプライベートサブネットに隔離して、外部から直接到達できないようにする。</figcaption>
+  </figure>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">19.4</span>セキュリティグループとネットワークACL <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>クラウドには<b>2層のアクセス制御</b>があり、その違いが頻出の論点になる。</p>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>2つのアクセス制御の比較 ― この表が核心</caption>
+    <thead><tr><th></th><th>セキュリティグループ</th><th>ネットワークACL</th></tr></thead>
+    <tbody>
+      <tr><th>適用単位</th><td><b>インスタンス（仮想NIC）単位</b></td><td><b>サブネット単位</b></td></tr>
+      <tr><th>状態の保持</th><td><b>ステートフル</b>。
+        <b>許可した通信の戻りは自動的に通る</b></td><td><b>ステートレス</b>。
+        <b>行きと戻りの両方にルールが必要</b></td></tr>
+      <tr><th>ルールの種類</th><td><b>許可のみ</b>（書かれていないものは拒否）</td><td>
+        <b>許可と拒否の両方を書ける</b></td></tr>
+      <tr><th>評価方法</th><td>すべてのルールを評価し、いずれかに合致すれば許可</td><td>
+        <b>番号順に評価し、最初に合致したルールで確定</b>（第13章のACLと同じ）</td></tr>
+      <tr><th>既定値</th><td>インバウンドはすべて拒否／アウトバウンドはすべて許可</td><td>すべて許可</td></tr>
+      <tr><th>相当するもの</th><td>各サーバ上のパーソナルファイアウォール</td><td>セグメント境界のルータACL</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">使い分けの考え方</h4>
+    <ul style="margin-bottom:0">
+      <li><b>セキュリティグループを主に使う</b>。ステートフルで扱いやすく、
+        <b>「このサーバ群は、あのサーバ群からの通信だけ受ける」といった論理的な指定ができる</b></li>
+      <li><b>ネットワークACLは補助として使う</b>。
+        <b>特定のIPアドレスからの通信をサブネット全体で拒否する</b>など、
+        セキュリティグループでは書けない「明示的な拒否」に用いる</li>
+      <li>両方を通過して初めて通信が成立するため、<b>疎通しない場合は両方を確認する</b></li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <b>「ステートレス」の意味を取り違えない。</b>
+    ネットワークACLでインバウンドのHTTPS（443）を許可しただけでは、
+    <b>サーバからの応答（送信元443、宛先はクライアントのエフェメラルポート）が
+    アウトバウンドのルールで許可されていないと戻れない</b>。
+    <b>エフェメラルポート（1024〜65535）の範囲を戻り用に許可する</b>必要がある——
+    第4章のポート番号の知識がそのまま問われる。
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>セキュリティグループとネットワークACLの違い → <b>「適用単位（インスタンスかサブネットか）」と
+        「ステートフルかステートレスか」</b>の2点を必ず書く</li>
+      <li>ネットワークACLで戻り通信の許可が必要な理由 → <b>「ステートレスであり、
+        行きの通信を許可しても戻りの通信は別途評価されるため」</b></li>
+      <li>DBサーバへのアクセス制限 → <b>「DBサーバのセキュリティグループで、
+        APサーバのセキュリティグループからの特定ポートのみを許可する」</b>
+        （IPアドレスではなくグループ単位で指定できるのがクラウドの特徴）</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">19.5</span>オンプレミスとの接続 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <figure>
+    <svg viewBox="0 0 700 280" role="img" aria-label="オンプレミスとクラウドを接続する3つの方式">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#6C7F88">① インターネット経由（VPNなし）</text>
+      <rect x="0" y="26" width="700" height="56" fill="#F2F5F6" stroke="#D3DBDF"/>
+      <rect x="24" y="40" width="110" height="30" fill="#FFFFFF" stroke="#16232B"/>
+      <text x="79" y="60" font-size="10.5" text-anchor="middle" fill="#16232B">オンプレミス</text>
+      <rect x="290" y="40" width="120" height="30" fill="#E7EDEE" stroke="#6C7F88"/>
+      <text x="350" y="60" font-size="10.5" text-anchor="middle" fill="#6C7F88">インターネット</text>
+      <rect x="560" y="40" width="110" height="30" fill="#FFFFFF" stroke="#0E7C86"/>
+      <text x="615" y="60" font-size="10.5" text-anchor="middle" fill="#0E7C86">クラウド</text>
+      <line x1="134" y1="55" x2="286" y2="55" stroke="#6C7F88" stroke-width="2"/>
+      <line x1="410" y1="55" x2="556" y2="55" stroke="#6C7F88" stroke-width="2"/>
+      <text x="440" y="36" font-size="10" fill="#A61E4D">SaaS利用など。通信はTLSで保護するが、経路は公衆網</text>
+
+      <text x="0" y="106" font-size="12.5" font-weight="700" fill="#3B3E86">② インターネットVPN（IPsec）</text>
+      <rect x="0" y="116" width="700" height="66" fill="#E6E7F2" stroke="#3B3E86"/>
+      <rect x="24" y="134" width="110" height="30" fill="#FFFFFF" stroke="#16232B"/>
+      <text x="79" y="154" font-size="10.5" text-anchor="middle" fill="#16232B">オンプレミス</text>
+      <rect x="290" y="134" width="120" height="30" fill="#FFFFFF" stroke="#6C7F88"/>
+      <text x="350" y="154" font-size="10.5" text-anchor="middle" fill="#6C7F88">インターネット</text>
+      <rect x="560" y="134" width="110" height="30" fill="#FFFFFF" stroke="#0E7C86"/>
+      <text x="615" y="154" font-size="10.5" text-anchor="middle" fill="#0E7C86">クラウド（VPCのGW）</text>
+      <path d="M134,149 C 220,132 260,132 290,149 M410,149 C 470,132 510,132 556,149" fill="none" stroke="#3B3E86" stroke-width="2.6"/>
+      <text x="350" y="126" font-size="10" text-anchor="middle" fill="#3B3E86" font-weight="700">IPsecトンネル</text>
+      <text x="24" y="176" font-size="10.5" fill="#3B3E86"><tspan font-weight="700">短期間で開通でき安価</tspan>／<tspan font-weight="700">帯域と遅延は保証されない（ベストエフォート）</tspan>・暗号化処理の負荷がかかる</text>
+
+      <text x="0" y="206" font-size="12.5" font-weight="700" fill="#0E7C86">③ 専用線接続（閉域接続）</text>
+      <rect x="0" y="216" width="700" height="64" fill="#E4F0F1" stroke="#0E7C86"/>
+      <rect x="24" y="232" width="110" height="30" fill="#FFFFFF" stroke="#16232B"/>
+      <text x="79" y="252" font-size="10.5" text-anchor="middle" fill="#16232B">オンプレミス</text>
+      <rect x="280" y="232" width="140" height="30" fill="#FFFFFF" stroke="#0E7C86" stroke-width="1.8"/>
+      <text x="350" y="252" font-size="10.5" text-anchor="middle" font-weight="700" fill="#0E7C86">接続拠点（閉域網）</text>
+      <rect x="560" y="232" width="110" height="30" fill="#FFFFFF" stroke="#0E7C86"/>
+      <text x="615" y="252" font-size="10.5" text-anchor="middle" fill="#0E7C86">クラウド</text>
+      <line x1="134" y1="247" x2="276" y2="247" stroke="#0E7C86" stroke-width="3"/>
+      <line x1="420" y1="247" x2="556" y2="247" stroke="#0E7C86" stroke-width="3"/>
+      <text x="24" y="274" font-size="10.5" fill="#0E7C86"><tspan font-weight="700">帯域が保証され遅延も安定、インターネットを経由しない</tspan>／<tspan font-weight="700">開通に時間がかかり費用も高い</tspan></text>
+    </svg>
+    <figcaption>第7章のWAN選択とまったく同じ構図——<b>インターネットVPNは安価だがベストエフォート、専用線は高価だが品質が保証される</b>。<b>実務では「専用線を主、インターネットVPNをバックアップ」</b>という組み合わせが多い。</figcaption>
+  </figure>
+
+  <div class="card">
+    <h4 style="margin-top:0">接続設計で検討すること</h4>
+    <ul style="margin-bottom:0">
+      <li><b>アドレス設計</b>：<b>オンプレミスとVPCのアドレス範囲が重複していると接続できない</b>。
+        事前に重複しないCIDRを割り当てる。既存環境との統合では最初に確認すべき点</li>
+      <li><b>経路交換</b>：<b>BGPで動的に交換する</b>のが一般的。
+        経路広告のフィルタリングにより、必要な範囲だけを見せる</li>
+      <li><b>冗長化</b>：<b>接続拠点を分ける、または専用線とVPNを併用する</b>。
+        第7章と同様、<b>「契約が別でも同じ経路を通っていれば同時に切れる」</b>点に注意</li>
+      <li><b>名前解決</b>：オンプレミスとクラウドの双方向で名前を引けるよう、
+        <b>DNSの条件付き転送やフォワーダを設計する</b>（第5章）</li>
+      <li><b>帯域</b>：オンプレミスとクラウドの間はボトルネックになりやすい。
+        <b>バックアップやデータ同期の量を見積もる</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">19.6</span>CDN とオートスケール <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>CDN（コンテンツ配信ネットワーク）</h3>
+  <figure>
+    <svg viewBox="0 0 700 230" role="img" aria-label="CDNによるコンテンツ配信">
+      <rect x="270" y="24" width="160" height="46" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/>
+      <text x="350" y="44" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">オリジンサーバ</text>
+      <text x="350" y="60" font-size="9.5" text-anchor="middle" fill="#0E7C86">元のコンテンツを持つ</text>
+
+      <g fill="#FFFFFF" stroke="#3B3E86" stroke-width="1.5">
+        <rect x="40" y="106" width="140" height="38"/><rect x="280" y="106" width="140" height="38"/><rect x="520" y="106" width="140" height="38"/>
+      </g>
+      <g font-size="11" text-anchor="middle" fill="#3B3E86">
+        <text x="110" y="123">エッジロケーション</text><text x="350" y="123">エッジロケーション</text><text x="590" y="123">エッジロケーション</text>
+      </g>
+      <g font-size="9.5" text-anchor="middle" fill="#6C7F88">
+        <text x="110" y="137">（東京）</text><text x="350" y="137">（大阪）</text><text x="590" y="137">（海外）</text>
+      </g>
+      <g stroke="#0E7C86" stroke-width="1.6" stroke-dasharray="5 4">
+        <line x1="300" y1="70" x2="130" y2="106"/><line x1="350" y1="70" x2="350" y2="106"/><line x1="400" y1="70" x2="570" y2="106"/>
+      </g>
+      <text x="200" y="92" font-size="10" fill="#0E7C86">キャッシュを取得（初回のみ）</text>
+
+      <g fill="#FFFFFF" stroke="#16232B" stroke-width="1.2">
+        <rect x="60" y="176" width="100" height="28"/><rect x="300" y="176" width="100" height="28"/><rect x="540" y="176" width="100" height="28"/>
+      </g>
+      <g font-size="10" text-anchor="middle" fill="#16232B">
+        <text x="110" y="194">利用者</text><text x="350" y="194">利用者</text><text x="590" y="194">利用者</text>
+      </g>
+      <g stroke="#3B3E86" stroke-width="2.4">
+        <line x1="110" y1="144" x2="110" y2="176"/><line x1="350" y1="144" x2="350" y2="176"/><line x1="590" y1="144" x2="590" y2="176"/>
+      </g>
+      <rect x="0" y="212" width="700" height="18" fill="#E7EDEE"/>
+      <text x="12" y="225" font-size="11" fill="#16232B">利用者は<tspan font-weight="700">最も近いエッジから受け取る</tspan> —— どのエッジへ誘導するかは <tspan font-weight="700">DNS（GSLB）</tspan>が決める（第5章）。</text>
+    </svg>
+    <figcaption>効果は3つ。<b>①オリジンサーバの負荷とその上流の帯域を大幅に削減　②利用者に近い場所から配信するため遅延が減る　③大量のアクセスをエッジで吸収でき、DDoSへの耐性も上がる</b>。</figcaption>
+  </figure>
+  <div class="note">
+    <b>CDNの限界。</b>キャッシュできるのは<b>画像・動画・スクリプトなどの静的コンテンツ</b>が中心で、
+    <b>利用者ごとに内容が変わる動的コンテンツはオリジンまで到達する</b>。
+    また<b>更新してもキャッシュのTTLが切れるまで古い内容が配信され続ける</b>ため、
+    <b>更新時にはキャッシュの削除（パージ）</b>が必要になる——第5章のDNSのTTLとまったく同じ構図である。
+  </div>
+
+  <h3>オートスケール <span class="star">頻出</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>スケールの2方向</caption>
+    <thead><tr><th>方式</th><th>内容</th><th>特徴</th></tr></thead>
+    <tbody>
+      <tr><th>スケールアウト／イン</th><td><b>サーバの台数を増減させる</b></td><td>
+        <b>負荷分散装置と組み合わせて使う</b>。上限が高く、クラウドの主流</td></tr>
+      <tr><th>スケールアップ／ダウン</th><td>サーバ1台の性能（CPU・メモリ）を変更する</td><td>
+        <b>変更時に停止・再起動を伴うことが多い</b>。単体性能に上限がある</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="card">
+    <h4 style="margin-top:0">オートスケールの前提条件 <span class="star">頻出</span></h4>
+    <ul style="margin-bottom:0">
+      <li><b>アプリケーションがステートレスであること</b>——
+        <b>セッション情報をサーバのメモリではなく外部の共有ストアに置く</b>。
+        そうでないと、増減のたびに利用者のセッションが失われる。
+        <b>第9章のパーシステンスを不要にする設計と、まったく同じ論理</b></li>
+      <li><b>起動には時間がかかる</b>——数分を要するため、
+        <b>急激な負荷の立ち上がりには追随できない</b>。
+        あらかじめ余裕を持たせておく、または予測に基づいて事前に増やす対応が要る</li>
+      <li><b>縮退時の考慮</b>——処理中のリクエストを終えてから停止させる仕組みが必要</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 7 ===================== -->
+<section id="s7">
+<div class="wrap">
+  <h2><span class="num">19.7</span>設計上の論点</h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>検討すべき事項</caption>
+    <thead><tr><th>論点</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>データ転送の費用</th><td><b>クラウドから外部へ出る通信（下り）が課金対象になる</b>のが一般的。
+        <b>大量のデータを頻繁に取り出す設計は費用が膨らむ</b>ため、
+        CDNの活用や、処理をクラウド側で完結させる設計が検討される</td></tr>
+      <tr><th>ベンダロックイン</th><td>特定事業者固有のサービスを深く使うほど移行が難しくなる。
+        <b>マルチクラウドは依存を減らせるが、設計・運用の複雑さと必要な技術の幅が増す</b></td></tr>
+      <tr><th>ネットワークの<br>ボトルネック</th><td><b>オンプレミスとクラウドの接続回線</b>が最も細くなりやすい。
+        <b>移行後にどのデータがこの回線を通るのかを洗い出す</b>ことが設計の要点</td></tr>
+      <tr><th>可視性の低下</th><td><b>事業者の基盤内部はパケットキャプチャできない</b>。
+        フローログなど、事業者が提供する監視手段に依存することになる（第18章）</td></tr>
+      <tr><th>SaaS利用時の<br>経路設計</th><td><b>すべてを本社経由にすると回線が逼迫する</b>ため、
+        <b>ローカルブレイクアウト</b>で拠点から直接出す（第7章）。
+        その場合は<b>クラウド型のSWG／SASE</b>でセキュリティを担保する（第13章）</td></tr>
+      <tr><th>マネージド<br>サービス</th><td>事業者が運用まで担うサービス（DB、負荷分散、DNSなど）。
+        <b>運用負荷が減り可用性も確保しやすいが、細かい制御はできず、仕様は事業者に依存する</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">クラウド移行の記述で外してはいけない観点</h4>
+    <ul style="margin-bottom:0">
+      <li><b>可用性</b>：複数AZ配置、負荷分散、リージョン間DR</li>
+      <li><b>接続</b>：専用線かVPNか、その冗長化、アドレス重複の回避</li>
+      <li><b>セキュリティ</b>：責任共有モデルにおける自社の担当範囲、設定ミスの防止、
+        セキュリティグループによる最小権限</li>
+      <li><b>費用</b>：データ転送量、稼働時間に応じた課金</li>
+      <li><b>運用</b>：監視の手段、ログの取得と保管、時刻同期</li>
+    </ul>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>クラウド移行の利点 → <b>「需要の変動に応じて資源を増減でき、
+        設備の先行投資が不要になる」</b>＋<b>「複数のデータセンタにまたがる可用性の高い構成を、
+        自社で設備を用意せずに実現できる」</b></li>
+      <li>移行後も残る自社の責任 → <b>「OSやミドルウェアの更新（IaaSの場合）、
+        アクセス制御の設定、データの保護」</b></li>
+      <li>専用線接続を選ぶ理由 → <b>「インターネットを経由せず、帯域と遅延が保証されるため、
+        基幹業務の通信品質を確保できる」</b></li>
+      <li>オートスケールを機能させるための設計 → <b>セッション情報を外部の共有ストアに保持し、
+        サーバをステートレスにする</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第19章 クラウド ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">19 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第15章 アプリケーション層・その他プロトコル ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(27px,5.2vw,40px); line-height:1.3;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: http generations */
+  .gen{margin-top:30px; display:flex; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .gen div{
+    flex:1 1 0; padding:9px 12px; color:#fff;
+    font-family:var(--mono); font-size:10.5px; line-height:1.55;
+  }
+  .gen div b{display:block; font-size:13.5px; letter-spacing:.04em}
+  .g1{background:#7C8F97}
+  .g2{background:#3B3E86}
+  .g3{background:#0E7C86}
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  .calc{
+    background:#F2F5F6; border:1px dashed var(--muted); border-radius:4px;
+    padding:14px 18px; margin:0 0 20px; font-family:var(--mono); font-size:13px;
+    line-height:2; overflow-x:auto;
+  }
+  .calc > :last-child{margin-bottom:0}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .gen{flex-direction:column}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第15章　アプリケーション層・<br>その他プロトコル
+      <span class="en">Application Protocols</span>
+    </h1>
+    <p class="lede">
+      個々のプロトコルの知識を問う章に見えるが、実際に問われるのは
+      <b>「そのプロトコルは何本のコネクションを、どのポートで、どちら向きに張るか」</b>である。
+      ファイアウォールの通過設計、NATとの相性、帯域計算——
+      いずれもこの一点から導ける。とくに <b>VoIP（SIP と RTP が別経路である）</b>は
+      構成図の読み取りで確実に問われる。
+    </p>
+    <div class="gen" aria-hidden="true">
+      <div class="g1">HTTP/1.1<b>1接続に1つずつ／並列接続で回避</b></div>
+      <div class="g2">HTTP/2<b>1接続内で多重化／TCPのHoLは残る</b></div>
+      <div class="g3">HTTP/3<b>QUIC上／ストリームが独立</b></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 HTTPの進化</a>
+    <a href="#s2">2 HTTPの構成要素</a>
+    <a href="#s3">3 ファイル転送とリモート操作</a>
+    <a href="#s4">4 NTPとSyslog</a>
+    <a href="#s5">5 VoIP（SIP・RTP）</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">15.1</span>HTTP の進化 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <figure>
+    <svg viewBox="0 0 700 330" role="img" aria-label="HTTP/1.1・HTTP/2・HTTP/3の通信の違い">
+      <!-- 1.1 -->
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#7C8F97">HTTP/1.1 ― 1つのコネクションで1件ずつ順番に</text>
+      <rect x="0" y="26" width="700" height="72" fill="#F2F5F6" stroke="#D3DBDF"/>
+      <g font-size="10" text-anchor="middle">
+        <rect x="20" y="42" width="90" height="22" fill="#FFFFFF" stroke="#6C7F88"/><text x="65" y="57" fill="#16232B">要求A</text>
+        <rect x="120" y="42" width="120" height="22" fill="#E7EDEE" stroke="#6C7F88"/><text x="180" y="57" fill="#6C7F88">応答A（待つ）</text>
+        <rect x="250" y="42" width="90" height="22" fill="#FFFFFF" stroke="#6C7F88"/><text x="295" y="57" fill="#16232B">要求B</text>
+        <rect x="350" y="42" width="120" height="22" fill="#E7EDEE" stroke="#6C7F88"/><text x="410" y="57" fill="#6C7F88">応答B（待つ）</text>
+        <rect x="480" y="42" width="90" height="22" fill="#FFFFFF" stroke="#6C7F88"/><text x="525" y="57" fill="#16232B">要求C</text>
+      </g>
+      <text x="20" y="86" font-size="11" fill="#16232B">持続的接続（<tspan font-weight="700">キープアライブ</tspan>）でTCP接続の再確立は省けるが、<tspan font-weight="700">1件ずつしか処理できない</tspan>。</text>
+      <text x="20" y="94" font-size="0" fill="#fff">.</text>
+
+      <!-- 2 -->
+      <text x="0" y="126" font-size="12.5" font-weight="700" fill="#3B3E86">HTTP/2 ― 1つのコネクション内で複数ストリームを多重化</text>
+      <rect x="0" y="136" width="700" height="86" fill="#E6E7F2" stroke="#3B3E86"/>
+      <g font-size="10" text-anchor="middle">
+        <rect x="20" y="150" width="60" height="18" fill="#FFFFFF" stroke="#3B3E86"/><text x="50" y="163" fill="#3B3E86">A-1</text>
+        <rect x="86" y="150" width="60" height="18" fill="#FFFFFF" stroke="#3B3E86"/><text x="116" y="163" fill="#3B3E86">B-1</text>
+        <rect x="152" y="150" width="60" height="18" fill="#FFFFFF" stroke="#3B3E86"/><text x="182" y="163" fill="#3B3E86">C-1</text>
+        <rect x="218" y="150" width="60" height="18" fill="#FFFFFF" stroke="#3B3E86"/><text x="248" y="163" fill="#3B3E86">A-2</text>
+        <rect x="284" y="150" width="60" height="18" fill="#F7E6EC" stroke="#A61E4D" stroke-width="1.6"/><text x="314" y="163" fill="#A61E4D">B-2</text>
+        <rect x="350" y="150" width="60" height="18" fill="#FFFFFF" stroke="#3B3E86"/><text x="380" y="163" fill="#3B3E86">C-2</text>
+        <rect x="416" y="150" width="60" height="18" fill="#FFFFFF" stroke="#3B3E86"/><text x="446" y="163" fill="#3B3E86">A-3</text>
+      </g>
+      <text x="490" y="164" font-size="10.5" fill="#A61E4D" font-weight="700">← B-2 が失われると…</text>
+      <text x="20" y="188" font-size="11" fill="#16232B">ストリームごとに並行して要求・応答でき、順序も自由。<tspan font-weight="700">HPACK</tspan> によりヘッダも圧縮される。</text>
+      <text x="20" y="208" font-size="11" fill="#A61E4D"><tspan font-weight="700">残る問題：TCPは順序を保証するため、1つのパケットの損失で後続すべてが待たされる（TCPレベルのHoLブロッキング）。</tspan></text>
+
+      <!-- 3 -->
+      <text x="0" y="250" font-size="12.5" font-weight="700" fill="#0E7C86">HTTP/3 ― QUIC（UDP）上でストリームを独立させる</text>
+      <rect x="0" y="260" width="700" height="70" fill="#E4F0F1" stroke="#0E7C86"/>
+      <g font-size="10" text-anchor="middle">
+        <rect x="20" y="274" width="200" height="18" fill="#FFFFFF" stroke="#0E7C86"/><text x="120" y="287" fill="#0E7C86">ストリームA（独立して再送）</text>
+        <rect x="240" y="274" width="200" height="18" fill="#F7E6EC" stroke="#A61E4D"/><text x="340" y="287" fill="#A61E4D">ストリームB（損失 → Bだけ待つ）</text>
+        <rect x="460" y="274" width="200" height="18" fill="#FFFFFF" stroke="#0E7C86"/><text x="560" y="287" fill="#0E7C86">ストリームC（影響を受けない）</text>
+      </g>
+      <text x="20" y="316" font-size="11" fill="#0E7C86"><tspan font-weight="700">損失の影響がそのストリーム内に閉じる</tspan>ため、他のストリームは止まらない（第4章のQUIC）。</text>
+    </svg>
+    <figcaption>HTTP/1.1 の <b>パイプライン</b>（応答を待たずに次を送る）は仕様上存在したが、<b>応答を要求と同じ順序で返す必要があった</b>ため HoL ブロッキングが解消されず、実際にはほとんど使われなかった。HTTP/2 はこれを<b>ストリームという概念で根本的に解決</b>している。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>世代ごとの要点</caption>
+    <thead><tr><th></th><th>HTTP/1.1</th><th>HTTP/2</th><th>HTTP/3</th></tr></thead>
+    <tbody>
+      <tr><th>下位層</th><td class="c">TCP</td><td class="c">TCP</td><td class="c"><b>QUIC（UDP 443）</b></td></tr>
+      <tr><th>形式</th><td class="c">テキスト</td><td class="c">バイナリフレーム</td><td class="c">バイナリフレーム</td></tr>
+      <tr><th>多重化</th><td>なし（並列接続で回避）</td><td><b>ストリームで多重化</b></td><td>ストリームで多重化</td></tr>
+      <tr><th>ヘッダ圧縮</th><td>なし</td><td><b>HPACK</b></td><td>QPACK</td></tr>
+      <tr><th>HoLブロッキング</th><td>アプリ層で発生</td><td><b>TCP層で残る</b></td><td><b>解消</b></td></tr>
+      <tr><th>暗号化</th><td>任意</td><td>事実上必須</td><td><b>必須（組込み）</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>ネットワーク設計への影響。</b>
+    HTTP/1.1 ではブラウザが<b>1サイトあたり6本程度のTCP接続を並列に張る</b>ため、
+    <b>ファイアウォールや負荷分散装置のセッション数が膨らむ</b>。
+    HTTP/2 では<b>1本のコネクションに集約される</b>ため、セッション数は減るが
+    <b>1本あたりの帯域とパーシステンスの考え方が変わる</b>。
+    HTTP/3 では<b>UDP 443 の許可が必要</b>になる（第4章・第13章）。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">15.2</span>HTTP の構成要素 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>メソッドとステータスコード</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>主なメソッド</caption>
+    <thead><tr><th>メソッド</th><th>用途</th><th>ポイント</th></tr></thead>
+    <tbody>
+      <tr><th>GET</th><td>リソースの取得</td><td><b>パラメータがURLに含まれる</b>ため、
+        <b>アクセスログ・ブラウザ履歴・Refererヘッダに残る</b>。機密情報を載せてはいけない</td></tr>
+      <tr><th>POST</th><td>データの送信</td><td>パラメータは<b>ボディに入る</b>ためURLには現れない。
+        ログイン情報などはこちらを使う</td></tr>
+      <tr><th>PUT／DELETE</th><td>作成・更新／削除</td><td>REST API で用いる</td></tr>
+      <tr><th>HEAD</th><td>ヘッダのみ取得</td><td>更新確認や死活監視に使える</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>ステータスコード ― 障害切り分けで使う</caption>
+    <thead><tr><th>系統</th><th>コード</th><th>意味と切り分けの手がかり</th></tr></thead>
+    <tbody>
+      <tr><th>2xx 成功</th><td class="m">200 / 204</td><td>正常</td></tr>
+      <tr><th rowspan="2">3xx リダイレクト</th><td class="m">301 / 302</td><td>恒久的／一時的な移動。<b>HTTPからHTTPSへの誘導</b>にも使う</td></tr>
+      <tr><td class="m">304</td><td>未更新。キャッシュをそのまま使ってよい</td></tr>
+      <tr><th rowspan="3">4xx クライアント<br>エラー</th><td class="m">401 / 403</td><td>認証が必要／権限がない</td></tr>
+      <tr><td class="m">404</td><td>リソースが存在しない</td></tr>
+      <tr><td class="m">407</td><td><b>プロキシ認証が必要</b>。プロキシ経由の構成で登場する</td></tr>
+      <tr><th rowspan="3">5xx サーバ<br>エラー</th><td class="m">500</td><td>サーバ内部エラー。<b>アプリケーション側の問題</b></td></tr>
+      <tr><td class="m">502 <span class="star">頻出</span></td><td><b>Bad Gateway</b>：プロキシや負荷分散装置が<b>背後のサーバから不正な応答を受けた</b>。
+        <b>バックエンドの障害</b>を示す</td></tr>
+      <tr><td class="m">503 / 504 <span class="star">頻出</span></td><td><b>503</b>＝サービス利用不可（過負荷・メンテナンス）／
+        <b>504 Gateway Timeout</b>＝<b>背後のサーバから時間内に応答が返らなかった</b>。処理遅延やバックエンド停止の疑い</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>502・504 は「手前の機器が返している」</b>という点が要点。
+    利用者にエラーを返しているのは負荷分散装置やリバースプロキシであり、
+    <b>本当の障害はその背後にある</b>。構成図でどこが返したエラーかを特定させる設問につながる。
+  </div>
+
+  <h3>Cookie とセッション管理 <span class="star">頻出</span></h3>
+  <p>
+    HTTPは<b>ステートレス</b>——1つのリクエストが終われば、次のリクエストとの関係を覚えていない。
+    ログイン状態を保つには、<b>サーバが発行したセッションIDをCookieに保存し、
+    毎回のリクエストに付けて送る</b>必要がある。
+  </p>
+  <div class="tbl-scroll">
+  <table>
+    <caption>Cookie の主な属性 ― セキュリティ設問で頻出</caption>
+    <thead><tr><th>属性</th><th>効果</th></tr></thead>
+    <tbody>
+      <tr><th>Secure</th><td><b>HTTPS通信のときだけCookieを送信する</b>。平文での漏えいを防ぐ</td></tr>
+      <tr><th>HttpOnly</th><td><b>JavaScriptからCookieを読めなくする</b>。
+        <b>クロスサイトスクリプティングによるセッションIDの盗難を防ぐ</b></td></tr>
+      <tr><th>SameSite</th><td>他サイトからのリクエストにCookieを付けない。
+        <b>クロスサイトリクエストフォージェリ（CSRF）対策</b></td></tr>
+      <tr><th>Domain／Path</th><td>Cookieを送信する範囲を限定する</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    負荷分散装置が挿入する<b>Cookieパーシステンス用のCookie</b>（第9章）も、この仕組みを利用したもの。
+  </p>
+
+  <h3>REST API と WebSocket</h3>
+  <ul>
+    <li><b>REST API</b>：<b>URLでリソースを表し、HTTPメソッドで操作を表す</b>設計様式。
+      <b>ステートレス</b>であることが原則で、サーバ側にセッション状態を持たないため
+      <b>負荷分散しやすくスケールさせやすい</b></li>
+    <li><span class="kw">WebSocket</span><span class="star b">差がつく</span>：
+      HTTPで接続したあと <b>Upgrade により双方向の常時接続へ切り替える</b>。
+      <b>サーバから任意のタイミングでデータを送れる</b>ため、
+      <b>定期的な問い合わせ（ポーリング）が不要になり、通知の遅延とトラフィックを削減できる</b>。
+      チャット、リアルタイム監視画面などで使う。
+      <b>ポートは80／443のままなので、既存のファイアウォールを通しやすい</b></li>
+  </ul>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">15.3</span>ファイル転送とリモート操作 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>FTP ― 2本のコネクションを使う</h3>
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="FTPのアクティブモードとパッシブモード">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#A61E4D">アクティブモード ― サーバからクライアントへデータ接続を張る</text>
+      <rect x="0" y="26" width="700" height="86" fill="#F7E6EC" stroke="#A61E4D"/>
+      <rect x="30" y="46" width="120" height="46" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="90" y="74" font-size="11.5" text-anchor="middle" fill="#16232B">クライアント</text>
+      <rect x="530" y="46" width="140" height="46" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="600" y="74" font-size="11.5" text-anchor="middle" fill="#16232B">FTPサーバ</text>
+      <line x1="150" y1="58" x2="526" y2="58" stroke="#16232B" stroke-width="2" marker-end="url(#a1)"/>
+      <text x="338" y="52" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#16232B">制御：クライアント → 21番</text>
+      <line x1="530" y1="84" x2="154" y2="84" stroke="#A61E4D" stroke-width="2.4" marker-end="url(#a2)"/>
+      <text x="338" y="102" font-size="10.5" text-anchor="middle" font-family="monospace" font-weight="700" fill="#A61E4D">データ：サーバ(20番) → クライアント　← 逆向きの接続</text>
+      <text x="0" y="128" font-size="11.5" fill="#A61E4D">→ <tspan font-weight="700">クライアント側のFWやNATが、外部から入ってくる接続として遮断してしまう</tspan></text>
+
+      <text x="0" y="160" font-size="12.5" font-weight="700" fill="#0E7C86">パッシブモード ― データ接続もクライアントから張る</text>
+      <rect x="0" y="170" width="700" height="80" fill="#E4F0F1" stroke="#0E7C86"/>
+      <rect x="30" y="188" width="120" height="44" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="90" y="215" font-size="11.5" text-anchor="middle" fill="#16232B">クライアント</text>
+      <rect x="530" y="188" width="140" height="44" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="600" y="215" font-size="11.5" text-anchor="middle" fill="#16232B">FTPサーバ</text>
+      <line x1="150" y1="200" x2="526" y2="200" stroke="#16232B" stroke-width="2" marker-end="url(#a1)"/>
+      <text x="338" y="194" font-size="10.5" text-anchor="middle" font-family="monospace" fill="#16232B">制御：クライアント → 21番</text>
+      <line x1="150" y1="222" x2="526" y2="222" stroke="#0E7C86" stroke-width="2.4" marker-end="url(#a3)"/>
+      <text x="338" y="242" font-size="10.5" text-anchor="middle" font-family="monospace" font-weight="700" fill="#0E7C86">データ：クライアント → サーバが指定したポート　← 同じ向き</text>
+      <defs>
+        <marker id="a1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#16232B"/></marker>
+        <marker id="a2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker>
+        <marker id="a3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+      </defs>
+    </svg>
+    <figcaption>「アクティブ」「パッシブ」は<b>サーバ側から見た呼び方</b>。サーバが能動的に接続しに行くのがアクティブ、受け身で待つのがパッシブ。<b>NAPT環境ではパッシブモードを使う</b>——これが第6章と直結する定番の解答。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>ファイル転送・リモート操作のプロトコル</caption>
+    <thead><tr><th>プロトコル</th><th>ポート</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>FTP</th><td class="c m">21（制御）<br>20（データ）</td><td><b>平文</b>。ID・パスワードも平文で流れるため、現在は非推奨</td></tr>
+      <tr><th>TFTP</th><td class="c m">UDP 69</td><td><b>認証機能を持たない簡易な転送</b>。
+        <b>ネットワーク機器のファームウェアや設定ファイルの転送</b>、機器の起動時のイメージ取得に使う。
+        <b>認証がないため、利用範囲を限定する必要がある</b></td></tr>
+      <tr><th>Telnet</th><td class="c m">23</td><td><b>平文でのリモートログイン</b>。使用しない</td></tr>
+      <tr><th>SSH <span class="star">頻出</span></th><td class="c m">22</td><td>
+        <b>暗号化されたリモートログイン</b>。公開鍵認証に対応し、<b>ポートフォワーディング（トンネリング）</b>もできる</td></tr>
+      <tr><th>SFTP／SCP</th><td class="c m">22</td><td><b>SSHの上で動くファイル転送</b>。
+        <b>SSHと同じ22番だけを開ければよい</b>ため、FTPよりファイアウォール設計が単純になる</td></tr>
+      <tr><th>FTPS</th><td class="c m">21 ほか</td><td>FTPをTLSで保護したもの。データ用のポートが動的なため、FW設計はやや複雑</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>NAT環境でFTPが失敗する → <b>アクティブモードのため。パッシブモードに変更する</b></li>
+      <li>FTPからSFTPへ移行する理由 → <b>「通信内容と認証情報が暗号化されること」</b>＋
+        <b>「制御・データとも22番のみで完結し、ファイアウォールで開放するポートを限定できること」</b></li>
+      <li>ネットワーク機器の設定バックアップ → <b>TFTPまたはSCP</b>。TFTPは認証がないため
+        管理セグメントに限定する（第18章）</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">15.4</span>NTP と Syslog <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>NTP ― 時刻同期</h3>
+  <p>
+    <span class="kw">NTP</span><span class="en">（Network Time Protocol、UDP 123）</span>は、
+    ネットワーク経由で機器の時刻を合わせるプロトコル。
+    <span class="kw">Stratum</span>という階層で構成され、<b>値が小さいほど上位＝正確</b>である。
+  </p>
+  <figure>
+    <svg viewBox="0 0 700 220" role="img" aria-label="NTPのStratum階層">
+      <rect x="250" y="16" width="200" height="34" fill="#A61E4D" stroke="#A61E4D"/>
+      <text x="350" y="38" font-size="12" text-anchor="middle" fill="#FFFFFF" font-weight="700">Stratum 0：原子時計・GPS</text>
+      <line x1="350" y1="50" x2="350" y2="70" stroke="#16232B"/>
+      <rect x="250" y="70" width="200" height="34" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.6"/>
+      <text x="350" y="92" font-size="12" text-anchor="middle" fill="#3B3E86" font-weight="700">Stratum 1：直結したサーバ</text>
+      <line x1="300" y1="104" x2="200" y2="124" stroke="#16232B"/>
+      <line x1="400" y1="104" x2="500" y2="124" stroke="#16232B"/>
+      <rect x="110" y="124" width="180" height="34" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.6"/>
+      <text x="200" y="146" font-size="12" text-anchor="middle" fill="#0E7C86" font-weight="700">Stratum 2：社内NTPサーバ</text>
+      <rect x="410" y="124" width="180" height="34" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.6"/>
+      <text x="500" y="146" font-size="12" text-anchor="middle" fill="#0E7C86" font-weight="700">Stratum 2</text>
+      <line x1="200" y1="158" x2="200" y2="178" stroke="#16232B"/>
+      <rect x="110" y="178" width="180" height="30" fill="#FFFFFF" stroke="#16232B"/>
+      <text x="200" y="198" font-size="11.5" text-anchor="middle" fill="#16232B">Stratum 3：各機器・端末</text>
+      <text x="610" y="192" font-size="11" fill="#6C7F88">Stratum 16＝未同期</text>
+      <text x="610" y="176" font-size="11" fill="#6C7F88">階層化で負荷分散</text>
+    </svg>
+    <figcaption>組織内では<b>「上位のNTPサーバに同期する社内NTPサーバを立て、全機器はそこを参照する」</b>のが定石。外部への問い合わせを1か所に集約でき、ファイアウォールの穴も最小化できる。</figcaption>
+  </figure>
+
+  <div class="card">
+    <h4 style="margin-top:0">時刻同期が必要な理由 ― 他章との接続 <span class="star">頻出</span></h4>
+    <ul style="margin-bottom:0">
+      <li><b>ログの突合</b>：複数機器のログを時系列で並べて事象を追跡するため（第13章・第18章）</li>
+      <li><b>NAT変換ログからの追跡</b>：時刻が合っていないと発信者を特定できない（第6章）</li>
+      <li><b>Kerberos認証</b>：チケットの有効期限判定に使うため、数分ずれると認証に失敗する（第12章）</li>
+      <li><b>電子証明書</b>：有効期限の判定（第12章）</li>
+      <li><b>ワンタイムパスワード（TOTP）</b>：時刻を種に生成するため</li>
+    </ul>
+  </div>
+  <div class="note">
+    <b>NTPサーバも踏み台になりうる。</b>外部からの問い合わせに応答する設定のままだと、
+    <b>NTPリフレクション攻撃の増幅器</b>として悪用される（第13章）。
+    <b>応答する範囲を自組織内に限定する</b>——オープンリゾルバ・オープンリレーと同じ対策の型である。
+  </div>
+
+  <h3>Syslog ― ログの集約</h3>
+  <p>
+    <span class="kw">Syslog</span><span class="en">（UDP 514）</span>は、
+    機器が出力するログを<b>ログサーバへ転送する</b>ための仕組み。
+    メッセージには<b>ファシリティ（どの機能が出したか）</b>と<b>重要度（Severity）</b>が付く。
+  </p>
+  <div class="tbl-scroll">
+  <table>
+    <caption>Severity（重要度）― 値が小さいほど重大 <span class="star">頻出</span></caption>
+    <thead><tr><th class="c">値</th><th>名称</th><th>意味</th></tr></thead>
+    <tbody>
+      <tr><th class="c">0</th><td>Emergency</td><td>システムが使用不能</td></tr>
+      <tr><th class="c">1</th><td>Alert</td><td>直ちに対処が必要</td></tr>
+      <tr><th class="c">2</th><td>Critical</td><td>危機的な状態</td></tr>
+      <tr><th class="c">3</th><td>Error</td><td>エラー</td></tr>
+      <tr><th class="c">4</th><td>Warning</td><td>警告</td></tr>
+      <tr><th class="c">5</th><td>Notice</td><td>正常だが注意すべき事象</td></tr>
+      <tr><th class="c">6</th><td>Informational</td><td>情報</td></tr>
+      <tr><th class="c">7</th><td>Debug</td><td>デバッグ用の詳細情報</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>設計上の要点。</b>
+    <b>①UDPのため到達保証がない</b>——重要なログを確実に届けるなら TCP や TLS 対応の実装を使う。
+    <b>②収集レベルの設定</b>——Debug まで送ると膨大になり、必要なログが埋もれる。
+    <b>③ログサーバへの転送そのものが目的</b>——機器のローカルに残すだけでは、
+    その機器が壊れた／侵入者に消されたときに失われる（第13章）。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">15.5</span>VoIP ― SIP と RTP <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="card">
+    <h4 style="margin-top:0">この節の最重要事項</h4>
+    <p style="margin-bottom:0">
+      <b>呼制御（SIP）と音声そのもの（RTP）は、別のプロトコル・別のポート・場合によっては別の経路を通る。</b>
+      SIPサーバは「電話をつなぐ交換手」であって、<b>音声はそこを通らず端末どうしで直接やり取りする</b>のが基本。
+      構成図でこの2本の線を区別できるかが、VoIP設問の出発点になる。
+    </p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 700 360" role="img" aria-label="SIPによる呼制御とRTPによる音声の流れ">
+      <line x1="110" y1="46" x2="110" y2="290" stroke="#D3DBDF" stroke-width="1.5"/>
+      <line x1="350" y1="46" x2="350" y2="290" stroke="#D3DBDF" stroke-width="1.5"/>
+      <line x1="600" y1="46" x2="600" y2="290" stroke="#D3DBDF" stroke-width="1.5"/>
+      <text x="110" y="22" font-size="12" text-anchor="middle" font-weight="700" fill="#16232B">発信側IP電話</text>
+      <text x="350" y="22" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">SIPサーバ</text>
+      <text x="350" y="38" font-size="10" text-anchor="middle" fill="#0E7C86">（IP-PBX）</text>
+      <text x="600" y="22" font-size="12" text-anchor="middle" font-weight="700" fill="#16232B">着信側IP電話</text>
+
+      <line x1="110" y1="70" x2="346" y2="70" stroke="#3B3E86" stroke-width="2" marker-end="url(#v1)"/>
+      <text x="228" y="63" font-size="11" text-anchor="middle" font-weight="700" fill="#3B3E86">INVITE（SDPを含む）</text>
+      <line x1="350" y1="70" x2="596" y2="70" stroke="#3B3E86" stroke-width="2" marker-end="url(#v1)"/>
+      <text x="473" y="63" font-size="11" text-anchor="middle" font-weight="700" fill="#3B3E86">INVITE</text>
+
+      <line x1="346" y1="98" x2="114" y2="98" stroke="#6C7F88" stroke-width="1.6" marker-end="url(#v2)"/>
+      <text x="228" y="92" font-size="10.5" text-anchor="middle" fill="#6C7F88">100 Trying（処理中）</text>
+
+      <line x1="596" y1="126" x2="354" y2="126" stroke="#6C7F88" stroke-width="1.6" marker-end="url(#v2)"/>
+      <line x1="346" y1="126" x2="114" y2="126" stroke="#6C7F88" stroke-width="1.6" marker-end="url(#v2)"/>
+      <text x="355" y="120" font-size="10.5" text-anchor="middle" fill="#6C7F88">180 Ringing（呼出中）＝発信側で呼出音が鳴る</text>
+
+      <line x1="596" y1="158" x2="354" y2="158" stroke="#0E7C86" stroke-width="2.2" marker-end="url(#v3)"/>
+      <line x1="346" y1="158" x2="114" y2="158" stroke="#0E7C86" stroke-width="2.2" marker-end="url(#v3)"/>
+      <text x="355" y="152" font-size="11" text-anchor="middle" font-weight="700" fill="#0E7C86">200 OK（応答／SDPを含む）＝受話器を取った</text>
+
+      <line x1="110" y1="186" x2="596" y2="186" stroke="#0E7C86" stroke-width="1.6" marker-end="url(#v3)"/>
+      <text x="355" y="180" font-size="10.5" text-anchor="middle" fill="#0E7C86">ACK</text>
+
+      <rect x="110" y="204" width="490" height="44" fill="#F7E6EC" stroke="#A61E4D" stroke-width="2"/>
+      <text x="355" y="224" font-size="12.5" text-anchor="middle" font-weight="700" fill="#A61E4D">RTP：音声データ（端末どうしで直接／UDP）</text>
+      <text x="355" y="241" font-size="10.5" text-anchor="middle" fill="#A61E4D">SIPサーバを経由しない　＋　RTCP で品質情報をやり取り</text>
+
+      <line x1="110" y1="270" x2="596" y2="270" stroke="#3B3E86" stroke-width="2" marker-end="url(#v1)"/>
+      <text x="355" y="264" font-size="11" text-anchor="middle" font-weight="700" fill="#3B3E86">BYE → 200 OK（切断）</text>
+
+      <rect x="0" y="300" width="700" height="60" fill="#E7EDEE"/>
+      <text x="14" y="320" font-size="12" fill="#16232B"><tspan font-weight="700">SDP</tspan>（Session Description Protocol）は INVITE や 200 OK の中に入る「セッションの仕様書」。</text>
+      <text x="14" y="338" font-size="12" fill="#16232B">音声を受け取る<tspan font-weight="700">IPアドレス・ポート番号・使用するコーデック</tspan>を記述する。</text>
+      <text x="14" y="354" font-size="12" fill="#A61E4D">→ <tspan font-weight="700">ここにIPアドレスが書かれているため、NAT越しでは書き換えが必要になる（第6章）</tspan></text>
+      <defs>
+        <marker id="v1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#3B3E86"/></marker>
+        <marker id="v2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#6C7F88"/></marker>
+        <marker id="v3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+      </defs>
+    </svg>
+    <figcaption><b>「呼制御は成立するのに音声が聞こえない（無音）」</b>という障害は、<b>SIPは通っているがRTPが通っていない</b>ことを意味する。原因はSDP内アドレスの未変換、またはFWでRTP用のUDPポート範囲が閉じていること。これがVoIP障害の定番パターン。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>SIP の主なメソッドとレスポンス</caption>
+    <thead><tr><th>種別</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>REGISTER</th><td>IP電話が起動時に<b>「自分はこのIPアドレスにいる」とSIPサーバへ登録</b>する。
+        これがないと着信できない</td></tr>
+      <tr><th>INVITE</th><td>セッションの確立要求＝発呼</td></tr>
+      <tr><th>ACK</th><td>200 OK に対する確認</td></tr>
+      <tr><th>BYE</th><td>セッションの切断＝通話終了</td></tr>
+      <tr><th>CANCEL</th><td>確立前の要求の取消し＝相手が出る前に切った</td></tr>
+      <tr><th>re-INVITE <span class="star b">差がつく</span></th><td>
+        <b>通話中にセッションの内容を変更する</b>。保留、転送、コーデックの変更などで使う</td></tr>
+      <tr><th class="m">100 Trying</th><td>要求を受け付けて処理中</td></tr>
+      <tr><th class="m">180 Ringing</th><td>着信側で呼出中。<b>発信者に呼出音が聞こえるのはこの応答による</b></td></tr>
+      <tr><th class="m">200 OK</th><td>要求が成功＝相手が応答した</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>RTP・RTCP とコーデック</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>音声を運ぶプロトコル</caption>
+    <thead><tr><th></th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>RTP</th><td><b>音声・映像の実データをUDPで運ぶ</b>。
+        <b>シーケンス番号</b>（順序の判定と損失の検出）と<b>タイムスタンプ</b>（再生タイミングの復元）を持つ。
+        <b>UDPを使うのは、再送しても再生時刻に間に合わないため</b>（第4章）</td></tr>
+      <tr><th>RTCP</th><td>RTPと対になり、<b>パケットロス率・ジッタ・遅延といった品質情報を相互に報告する</b>。
+        これをもとに送信側がビットレートを調整することもある</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>代表的なコーデック</caption>
+    <thead><tr><th>方式</th><th>ビットレート</th><th>特徴</th></tr></thead>
+    <tbody>
+      <tr><th>G.711</th><td class="c">64 kbps</td><td><b>圧縮しないため高音質で遅延も小さい</b>。固定電話と同等。帯域を消費する</td></tr>
+      <tr><th>G.729</th><td class="c">8 kbps</td><td><b>高圧縮で帯域を大幅に節約</b>できるが、
+        <b>圧縮・伸張の処理による遅延と音質の劣化</b>がある。<b>帯域の細いWAN区間で採用する</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>必要帯域の計算 <span class="star">計算</span></h3>
+  <div class="card">
+    <h4 style="margin-top:0">1通話あたりの帯域を求める手順</h4>
+    <div class="calc" style="margin-bottom:12px">
+      <p>【条件】G.711（64kbps）、20ミリ秒ごとにパケット化する</p>
+      <p>① 音声ペイロード ＝ 64,000 bps × 0.02 秒 ÷ 8 ＝ <b>160 バイト</b></p>
+      <p>② オーバーヘッド ＝ RTP 12 ＋ UDP 8 ＋ IP 20 ＝ <b>40 バイト</b></p>
+      <p>③ 1パケット ＝ 160 ＋ 40 ＝ <b>200 バイト</b></p>
+      <p>④ パケットレート ＝ 1 秒 ÷ 0.02 秒 ＝ <b>50 パケット／秒</b></p>
+      <p style="margin-bottom:0">⑤ 必要帯域 ＝ 200 × 8 × 50 ＝ <b>80,000 bps ＝ 80 kbps</b>（片方向）</p>
+    </div>
+    <p style="margin-bottom:0">
+      <b>問題文が「イーサネットヘッダを含める」と指定した場合</b>は、
+      ③に18バイトを加えて 218 バイト → <b>約87.2 kbps</b> になる。
+      <b>どこまでを含めるかは必ず問題文の指示に従う</b>。
+      また<b>通話は双方向</b>なので、リンクの片側で見るなら同時通話数×片方向帯域、
+      全二重リンクの容量を問うならその点も確認する。
+    </p>
+  </div>
+  <div class="note">
+    <b>音声品質を左右する3つの指標。</b>
+    <b>遅延</b>（片道150ms程度を超えると会話がしにくくなる）、
+    <b>ジッタ</b>（到着間隔のばらつき。バッファで吸収するが、それ自体が遅延を増やす）、
+    <b>パケットロス</b>（音切れ）。
+    いずれも帯域が足りていても輻輳で悪化するため、
+    <b>QoSによる優先制御（第16章）が必須</b>になる。
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>「発着信はできるが音声が聞こえない」→ <b>SIPは通っているがRTPが通っていない。
+        SDP内のIPアドレスがNATで変換されていない、またはFWでRTP用のUDPポートが許可されていない</b></li>
+      <li>SIPサーバの役割 → <b>「端末の位置登録と呼制御を行う。音声データ（RTP）は経由しない」</b></li>
+      <li>WAN区間でG.729を採用する理由 → <b>「帯域が限られるため、圧縮により1通話あたりの
+        必要帯域を削減する」</b>。併せて<b>「音質の劣化と遅延の増加が生じる」</b>と書く</li>
+      <li>必要帯域の計算（上記の手順）と、<b>同時通話数からWAN回線の必要容量を算出させる</b>問題</li>
+      <li>QoSとの組合せ → <b>音声パケットをDSCPでEFにマーキングし、優先キューで転送する</b>（第16章）</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第15章 アプリケーション層・その他プロトコル ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">15 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>

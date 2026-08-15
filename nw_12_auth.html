@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第12章 認証・アクセス制御 ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: three factors */
+  .factors{margin-top:30px; display:flex; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .factors div{
+    flex:1 1 0; padding:9px 12px; color:#fff;
+    font-family:var(--mono); font-size:10.5px; line-height:1.55;
+  }
+  .factors div b{display:block; font-size:13.5px; letter-spacing:.04em}
+  .f1{background:#3B3E86}
+  .f2{background:#0E7C86}
+  .f3{background:#A61E4D}
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .factors{flex-direction:column}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第12章　認証・アクセス制御
+      <span class="en">Authentication &amp; Access Control</span>
+    </h1>
+    <p class="lede">
+      「誰が」「何を使ってよいか」を決める層。ネットワーク機器が単独で判断するのではなく、
+      <b>認証サーバに問い合わせて、その結果に従って通信を許可する</b>という
+      <b>役割分担の構造</b>が全体を貫いている。
+      とくに <b>802.1X ＋ RADIUS ＋ ダイナミックVLAN</b> の3点セットは、
+      無線LAN・検疫ネットワーク・フリーアドレス化など多様な文脈で繰り返し登場する。
+    </p>
+    <div class="factors" aria-hidden="true">
+      <div class="f1">知識<b>パスワード・PIN</b></div>
+      <div class="f2">所持<b>証明書・トークン・スマホ</b></div>
+      <div class="f3">生体<b>指紋・顔・虹彩</b></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 認証の3要素</a>
+    <a href="#s2">2 IEEE802.1X と EAP</a>
+    <a href="#s3">3 RADIUS</a>
+    <a href="#s4">4 認証結果を使った制御</a>
+    <a href="#s5">5 ディレクトリと Kerberos</a>
+    <a href="#s6">6 シングルサインオン</a>
+    <a href="#s7">7 PKI と証明書</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">12.1</span>認証の3要素と多要素認証</h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>認証の3要素</caption>
+    <thead><tr><th>要素</th><th>例</th><th>弱点</th></tr></thead>
+    <tbody>
+      <tr><th>知識<br>（What you know）</th><td>パスワード、PIN、秘密の質問</td><td>推測・使い回し・漏えい・盗み見</td></tr>
+      <tr><th>所持<br>（What you have）</th><td><b>クライアント証明書</b>、ICカード、ハードウェアトークン、スマートフォン</td><td>紛失・盗難</td></tr>
+      <tr><th>生体<br>（What you are）</th><td>指紋、顔、虹彩、静脈</td><td>変更できない／誤認識率の調整が必要</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <b>「多要素認証」と「二段階認証」は同じではない。</b>
+    多要素認証は<b>異なる要素</b>を組み合わせるもの。
+    パスワードを2回入力させたり、パスワードと秘密の質問を組み合わせたりするのは
+    <b>どちらも「知識」なので多要素ではない</b>。
+    パスワード（知識）＋スマートフォンへのワンタイムパスワード（所持）が正しい多要素認証である。
+  </div>
+
+  <p>
+    <span class="kw">ワンタイムパスワード</span>は、<b>一度しか使えない使い捨てのパスワード</b>。
+    時刻を種にする方式（TOTP）と、カウンタを種にする方式（HOTP）がある。
+    <b>盗聴されても再利用できない</b>ため、リプレイ攻撃に強い。
+    TOTPは<b>サーバと端末の時刻が合っていることが前提</b>になる（第18章のNTPと接続）。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">12.2</span>IEEE802.1X と EAP <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">IEEE802.1X</span>は、<b>認証に成功するまでネットワークへの接続を許可しない</b>ための枠組み。
+    有線スイッチのポート単位でも、無線LANでも同じ仕組みが使われる（<b>ポートベース認証</b>）。
+    登場人物は3者。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="IEEE802.1Xの3者構成とプロトコル">
+      <rect x="10" y="70" width="150" height="70" fill="#FFFFFF" stroke="#16232B" stroke-width="1.5"/>
+      <text x="85" y="96" font-size="12.5" text-anchor="middle" font-weight="700" fill="#16232B">サプリカント</text>
+      <text x="85" y="114" font-size="10.5" text-anchor="middle" fill="#6C7F88">端末上の認証ソフト</text>
+      <text x="85" y="130" font-size="10.5" text-anchor="middle" fill="#6C7F88">（PC・スマホ）</text>
+
+      <rect x="270" y="70" width="170" height="70" fill="#E6E7F2" stroke="#3B3E86" stroke-width="2"/>
+      <text x="355" y="96" font-size="12.5" text-anchor="middle" font-weight="700" fill="#3B3E86">オーセンティケータ</text>
+      <text x="355" y="114" font-size="10.5" text-anchor="middle" fill="#3B3E86">認証スイッチ・AP</text>
+      <text x="355" y="130" font-size="10.5" text-anchor="middle" fill="#3B3E86">（ポートの開閉を担当）</text>
+
+      <rect x="550" y="70" width="140" height="70" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/>
+      <text x="620" y="96" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">認証サーバ</text>
+      <text x="620" y="114" font-size="10.5" text-anchor="middle" fill="#0E7C86">RADIUSサーバ</text>
+      <text x="620" y="130" font-size="10.5" text-anchor="middle" fill="#0E7C86">（合否を判定）</text>
+
+      <line x1="160" y1="105" x2="266" y2="105" stroke="#A61E4D" stroke-width="2.4"/>
+      <text x="213" y="60" font-size="11.5" text-anchor="middle" font-weight="700" fill="#A61E4D">EAPOL</text>
+      <text x="213" y="46" font-size="10" text-anchor="middle" fill="#A61E4D">EAP over LAN</text>
+      <text x="213" y="130" font-size="10" text-anchor="middle" fill="#A61E4D">L2フレームで運ぶ</text>
+
+      <line x1="440" y1="105" x2="546" y2="105" stroke="#0E7C86" stroke-width="2.4"/>
+      <text x="493" y="60" font-size="11.5" text-anchor="middle" font-weight="700" fill="#0E7C86">RADIUS</text>
+      <text x="493" y="46" font-size="10" text-anchor="middle" fill="#0E7C86">UDP 1812</text>
+      <text x="493" y="130" font-size="10" text-anchor="middle" fill="#0E7C86">IPで運ぶ</text>
+
+      <rect x="0" y="170" width="700" height="76" fill="#E7EDEE"/>
+      <text x="14" y="192" font-size="12.5" font-weight="700" fill="#16232B">オーセンティケータは「中継役」に徹する</text>
+      <text x="14" y="212" font-size="12" fill="#16232B">サプリカントと認証サーバの間でやり取りされる <tspan font-family="monospace" font-weight="700">EAP</tspan> の中身を、
+        <tspan font-weight="700">スイッチやAPは解釈しない</tspan>。</text>
+      <text x="14" y="232" font-size="12" fill="#16232B">EAPOL と RADIUS の間で<tspan font-weight="700">入れ物を詰め替えて中継し、最後に届いた合否だけを見てポートを開閉する</tspan>。</text>
+    </svg>
+    <figcaption>この分離のおかげで、<b>認証方式（EAPの種類）を変えてもスイッチ側の設定を変える必要がない</b>。証明書認証に切り替えても、対応するのはサプリカントと認証サーバだけで済む。</figcaption>
+  </figure>
+
+  <div class="card">
+    <h4 style="margin-top:0">認証前のポートで通るもの</h4>
+    <p style="margin-bottom:0">
+      認証が完了するまで、そのポートでは<b>EAPOL（認証のためのフレーム）だけが通り、
+      通常の通信はすべて遮断される</b>。認証が成功した時点でポートが開通し、
+      DHCPによるアドレス取得などが始まる。
+      <b>「認証していない端末はDHCPすら取得できない」</b>という挙動が、障害切り分けの手がかりになる。
+    </p>
+  </div>
+
+  <h3>EAP の方式 <span class="star">頻出</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>主なEAP方式</caption>
+    <thead><tr><th>方式</th><th>サーバの認証</th><th>クライアントの認証</th><th>評価・使いどころ</th></tr></thead>
+    <tbody>
+      <tr><th>EAP-MD5</th><td class="c">なし</td><td>ID／パスワードのハッシュ</td><td><b>サーバを認証しないため偽AP に弱く、無線では使用不可</b>。実質使われない</td></tr>
+      <tr><th>EAP-TLS <span class="star">頻出</span></th><td class="c"><b>サーバ証明書</b></td><td class="c"><b>クライアント証明書</b></td><td>
+        <b>相互に証明書で認証する最も安全な方式</b>。パスワードを使わないので漏えいの心配がない。
+        <b>全端末へのクライアント証明書の配布・更新・失効管理が必要</b>という運用負荷が導入の壁になる</td></tr>
+      <tr><th>PEAP <span class="star">頻出</span></th><td class="c"><b>サーバ証明書</b></td><td>ID／パスワード<br>（MSCHAPv2など）</td><td>
+        <b>サーバ証明書でTLSトンネルを作り、その中でパスワード認証を行う</b>。
+        <b>クライアント証明書が不要なため導入しやすく、既存のADのアカウントをそのまま使える</b></td></tr>
+      <tr><th>EAP-TTLS</th><td class="c">サーバ証明書</td><td>内部方式を柔軟に選択</td><td>PEAPと同様の構造。内部認証方式の選択肢が広い</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <b>PEAPでもサーバ証明書の検証は必須。</b>
+    端末側で「サーバ証明書を検証しない」設定にしてしまうと、
+    <b>攻撃者が用意した偽の認証サーバにIDとパスワードを送ってしまう</b>。
+    <b>「PEAPを安全に運用するには、端末に信頼するCAのルート証明書を配布し、
+    接続先サーバ名の検証を有効にする」</b>——これが記述の要点になる。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">12.3</span>RADIUS <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>RADIUS の基本</caption>
+    <thead><tr><th>項目</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>ポート</th><td><b>UDP 1812（認証・認可）／ UDP 1813（アカウンティング）</b>。古い実装では1645/1646</td></tr>
+      <tr><th>主なメッセージ</th><td><b>Access-Request</b>（認証要求）→ <b>Access-Challenge</b>（追加情報の要求）→
+        <b>Access-Accept</b>（許可）または <b>Access-Reject</b>（拒否）</td></tr>
+      <tr><th>属性（Attribute）</th><td>やり取りする情報の単位。<b>許可と一緒に「割り当てるVLAN ID」などの条件を返せる</b>のが重要</td></tr>
+      <tr><th>アカウンティング</th><td><b>接続の開始・終了時刻、通信量などを記録</b>する。
+        「いつ誰がどこから接続したか」の監査証跡になる</td></tr>
+      <tr><th>共有シークレット</th><td>RADIUSクライアント（スイッチ・AP）とサーバの間で事前に設定する共通の鍵。
+        <b>設定が一致しないと認証が一切通らない</b>ため、障害の原因として頻出</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">AAA という整理 <span class="star">頻出</span></h4>
+    <ul style="margin-bottom:0">
+      <li><b>Authentication（認証）</b>：「あなたは誰か」を確認する</li>
+      <li><b>Authorization（認可）</b>：「何をしてよいか」を決める（どのVLANか、どの範囲にアクセスできるか）</li>
+      <li><b>Accounting（アカウンティング）</b>：「何をしたか」を記録する</li>
+    </ul>
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>RADIUS と TACACS+ <span class="star b">差がつく</span></caption>
+    <thead><tr><th></th><th>RADIUS</th><th>TACACS+</th></tr></thead>
+    <tbody>
+      <tr><th>トランスポート</th><td>UDP</td><td><b>TCP</b>（49番）</td></tr>
+      <tr><th>暗号化の範囲</th><td><b>パスワード部分のみ</b></td><td><b>パケット全体</b></td></tr>
+      <tr><th>AAAの扱い</th><td>認証と認可が一体</td><td><b>認証・認可・アカウンティングを分離できる</b></td></tr>
+      <tr><th>主な用途</th><td><b>利用者の端末をネットワークに接続させる認証</b>（802.1X、VPN）</td><td>
+        <b>ネットワーク機器そのものへの管理者ログインの制御</b>。「このコマンドは実行可、あのコマンドは不可」といった細かい認可ができる</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="font-size:14px;color:#6C7F88">
+    参考：<b>Diameter</b> は RADIUS の後継として設計されたプロトコル。TCP／SCTP を使い、信頼性と拡張性を高めている。
+  </p>
+
+  <div class="note">
+    <b>認証サーバの可用性は必ず論点になる。</b>
+    RADIUSサーバが停止すると<b>誰もネットワークに接続できなくなる</b>ため、
+    <b>複数台を設置して冗長化する</b>のが前提。
+    加えて、<b>認証サーバに到達できない場合の動作（全拒否とするか、限定的なVLANに収容するか）</b>を
+    あらかじめ決めておく必要がある。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">12.4</span>認証結果を使った制御 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>ダイナミックVLAN</h3>
+  <p>
+    認証が成功したとき、RADIUSサーバは <b>Access-Accept と一緒に「この利用者はVLAN 20 に収容せよ」
+    という属性を返す</b>ことができる。スイッチはそれに従って<b>そのポートの所属VLANを動的に変更する</b>。
+  </p>
+  <div class="card">
+    <h4 style="margin-top:0">これによって実現できること</h4>
+    <ul style="margin-bottom:0">
+      <li><b>フリーアドレス／どの席に座っても、その人の所属部署のVLANに接続される</b></li>
+      <li>正社員は業務VLAN、委託先は限定VLAN、といった<b>属性に応じた分離</b></li>
+      <li>私物端末（BYOD）はインターネットのみのVLANへ</li>
+      <li><b>物理的な配線変更を伴わずに、利用者単位でネットワークを切り替えられる</b></li>
+    </ul>
+  </div>
+
+  <h3>検疫ネットワーク <span class="star">頻出</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="検疫ネットワークの流れ">
+      <rect x="10" y="100" width="110" height="50" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="65" y="130" font-size="12" text-anchor="middle" fill="#16232B">接続端末</text>
+
+      <rect x="180" y="96" width="140" height="58" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.8"/>
+      <text x="250" y="118" font-size="12" text-anchor="middle" font-weight="700" fill="#3B3E86">認証＋検査</text>
+      <text x="250" y="136" font-size="10" text-anchor="middle" fill="#3B3E86">OS更新・定義ファイル</text>
+      <text x="250" y="150" font-size="10" text-anchor="middle" fill="#3B3E86">の状態を確認</text>
+
+      <line x1="120" y1="125" x2="176" y2="125" stroke="#16232B" stroke-width="1.8"/>
+
+      <rect x="420" y="30" width="250" height="56" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.8"/>
+      <text x="545" y="52" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">合格 → 業務VLAN</text>
+      <text x="545" y="72" font-size="10.5" text-anchor="middle" fill="#0E7C86">社内システムへアクセス可能</text>
+
+      <rect x="420" y="160" width="250" height="76" fill="#F7E6EC" stroke="#A61E4D" stroke-width="1.8"/>
+      <text x="545" y="182" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">不合格 → 検疫VLAN</text>
+      <text x="545" y="202" font-size="10.5" text-anchor="middle" fill="#A61E4D">修復用サーバにのみアクセス可</text>
+      <text x="545" y="220" font-size="10.5" text-anchor="middle" fill="#A61E4D">更新を適用 → 再検査 → 業務VLANへ</text>
+
+      <line x1="320" y1="112" x2="416" y2="66" stroke="#0E7C86" stroke-width="2" marker-end="url(#q1)"/>
+      <line x1="320" y1="140" x2="416" y2="190" stroke="#A61E4D" stroke-width="2" marker-end="url(#q2)"/>
+      <defs>
+        <marker id="q1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+        <marker id="q2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker>
+      </defs>
+    </svg>
+    <figcaption>認証（誰か）だけでなく<b>端末の状態（安全か）も判定基準に加える</b>のが検疫の考え方。重要なのは<b>「不合格なら遮断」ではなく「修復できる場所へ隔離する」</b>設計にすること。遮断だけでは利用者が自力で復帰できない。</figcaption>
+  </figure>
+
+  <h3>802.1X に対応できない機器への対応 <span class="star">頻出</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>補完的な認証方式</caption>
+    <thead><tr><th>方式</th><th>内容</th><th>注意点</th></tr></thead>
+    <tbody>
+      <tr><th>MAC認証<br>（MAB）</th><td>サプリカントを持たない機器（<b>プリンタ、IP電話、ネットワークカメラ、
+        製造装置</b>）を、<b>MACアドレスを利用者IDとして扱って認証</b>する</td><td>
+        <b>MACアドレスは容易に詐称できるため、単独では強度が低い</b>。
+        <b>802.1Xを試みて応答がない場合の代替として使う</b>という併用が基本</td></tr>
+      <tr><th>Web認証</th><td>接続後にブラウザを開くと認証画面に誘導し、
+        <b>ID／パスワードを入力させる</b></td><td>端末に専用ソフトが不要なため<b>ゲスト用途に適する</b>。
+        ブラウザを使わない通信は認証できない</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>802.1X導入の目的 → <b>「認証されていない端末を社内ネットワークに接続させないため」</b>。
+        私物端末の無断接続や、空きポートからの侵入を防ぐ</li>
+      <li>プリンタなど非対応機器への対応 → <b>MAC認証を併用する</b>。
+        さらに「MACアドレスは詐称可能なため、接続先VLANを限定するなどの対策も併せて行う」と書ければ強い</li>
+      <li>ダイナミックVLANを使う理由 → <b>「利用者の所属に応じて、接続する物理ポートによらず
+        適切なVLANへ収容できるため」</b></li>
+      <li>認証サーバ障害時の設計 → <b>冗長化に加え、到達不能時の挙動をあらかじめ定義しておく</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">12.5</span>ディレクトリサービスと Kerberos <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>LDAP とディレクトリサービス</h3>
+  <p>
+    <span class="kw">ディレクトリサービス</span>は、<b>利用者・端末・組織などの情報を階層構造（ツリー）で管理し、
+    検索できるようにした仕組み</b>。そこへアクセスするためのプロトコルが
+    <span class="kw">LDAP</span><span class="en">（TCP 389／暗号化するLDAPSは636）</span>である。
+  </p>
+  <p>
+    <span class="kw">Active Directory</span>は、<b>LDAP（情報の格納・検索）＋Kerberos（認証）＋DNS（機器の探索）</b>を
+    組み合わせたマイクロソフトのディレクトリサービス。
+  </p>
+  <div class="note">
+    <b>ADはDNSに強く依存する。</b>クライアントは<b>DNSのSRVレコード</b>（第5章）を引いて
+    ドメインコントローラを探す。そのため<b>DNSの設定を誤るとログオンそのものができなくなる</b>。
+    「AD環境の端末は、内部DNSサーバを参照するように設定する必要がある」——という形で問われる。
+  </div>
+
+  <h3>Kerberos <span class="star">頻出</span></h3>
+  <p>
+    <b>パスワードをネットワークに流さずに、複数のサービスへのアクセスを実現する</b>認証方式。
+    中心となるのが <span class="kw">KDC</span><span class="en">（Key Distribution Center：鍵配布センタ）</span>で、
+    <b>AS（認証サーバ）</b>と <b>TGS（チケット発行サーバ）</b>の2つの機能からなる。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 300" role="img" aria-label="Kerberosの認証フロー">
+      <rect x="20" y="120" width="120" height="60" fill="#FFFFFF" stroke="#16232B" stroke-width="1.5"/>
+      <text x="80" y="155" font-size="12.5" text-anchor="middle" font-weight="700" fill="#16232B">利用者</text>
+
+      <rect x="270" y="24" width="180" height="130" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.8"/>
+      <text x="360" y="46" font-size="12.5" text-anchor="middle" font-weight="700" fill="#3B3E86">KDC</text>
+      <rect x="286" y="58" width="148" height="38" fill="#FFFFFF" stroke="#3B3E86"/>
+      <text x="360" y="82" font-size="12" text-anchor="middle" fill="#3B3E86">AS（認証サーバ）</text>
+      <rect x="286" y="104" width="148" height="38" fill="#FFFFFF" stroke="#3B3E86"/>
+      <text x="360" y="128" font-size="12" text-anchor="middle" fill="#3B3E86">TGS（チケット発行）</text>
+
+      <rect x="540" y="190" width="150" height="60" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.8"/>
+      <text x="615" y="225" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">ファイルサーバ等</text>
+
+      <path d="M140,138 L282,84" stroke="#3B3E86" stroke-width="2" marker-end="url(#kb)"/>
+      <text x="196" y="98" font-size="11" font-weight="700" fill="#3B3E86">① 認証要求</text>
+      <path d="M282,96 L142,150" stroke="#3B3E86" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#kb)"/>
+      <text x="150" y="112" font-size="11" font-weight="700" fill="#3B3E86">② TGT を受け取る</text>
+
+      <path d="M140,164 L282,130" stroke="#A61E4D" stroke-width="2" marker-end="url(#kr)"/>
+      <text x="180" y="184" font-size="11" font-weight="700" fill="#A61E4D">③ TGT を提示し、</text>
+      <text x="180" y="198" font-size="11" font-weight="700" fill="#A61E4D">　 目的サービス用のチケットを要求</text>
+      <path d="M282,142 L142,174" stroke="#A61E4D" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#kr)"/>
+      <text x="180" y="216" font-size="11" font-weight="700" fill="#A61E4D">④ サービスチケットを受け取る</text>
+
+      <path d="M140,176 C 300,270 420,250 536,226" stroke="#0E7C86" stroke-width="2.4" marker-end="url(#kg)"/>
+      <text x="360" y="272" font-size="11.5" text-anchor="middle" font-weight="700" fill="#0E7C86">⑤ サービスチケットを提示してアクセス（パスワードは不要）</text>
+
+      <rect x="0" y="282" width="700" height="18" fill="#E7EDEE"/>
+      <text x="12" y="295" font-size="11" fill="#16232B">TGT を一度取得すれば、③④を繰り返すだけで<tspan font-weight="700">複数のサービスに再ログインなしでアクセスできる＝シングルサインオン</tspan>。</text>
+      <defs>
+        <marker id="kb" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#3B3E86"/></marker>
+        <marker id="kr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker>
+        <marker id="kg" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+      </defs>
+    </svg>
+    <figcaption><b>TGT（Ticket Granting Ticket＝チケット認可チケット）</b>は「チケットをもらうためのチケット」。これを持っている限り、パスワードを再入力せずに各サービス用のチケットを取得できる。</figcaption>
+  </figure>
+
+  <div class="card">
+    <h4 style="margin-top:0">Kerberos の2つの要点 <span class="star">頻出</span></h4>
+    <ul style="margin-bottom:0">
+      <li><b>パスワードそのものがネットワークを流れない</b>。
+        パスワードから導いた鍵で暗号化されたチケットをやり取りするため、盗聴されても直接は漏れない</li>
+      <li><b>時刻同期が必須</b>。チケットには有効期限（タイムスタンプ）が含まれ、
+        <b>KDCとクライアントの時刻が数分以上ずれると認証に失敗する</b>。
+        これはリプレイ攻撃を防ぐための仕組みでもある。
+        <b>→ NTPによる時刻同期が前提条件になる</b>（第18章）</li>
+    </ul>
+  </div>
+  <div class="note">
+    <b>障害切り分けの定番。</b>「特定の端末だけADにログオンできない」→
+    <b>①DNSの設定誤り（ドメインコントローラを見つけられない）　②時刻のずれ（Kerberosのチケットが無効）</b>——
+    この2つをまず疑う。どちらも第5章・第18章と結びつく。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">12.6</span>シングルサインオン <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">SSO</span><span class="en">（Single Sign-On）</span>は、
+    <b>一度の認証で複数のシステムを利用できるようにする</b>仕組み。
+    利用者の利便性だけでなく、<b>パスワードの使い回しや管理箇所の分散を防ぎ、
+    退職時に1か所を無効化すれば全システムへのアクセスを止められる</b>という管理上の利点が大きい。
+  </p>
+
+  <h3>SAML <span class="star">頻出</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="SAMLによるシングルサインオンの流れ">
+      <rect x="20" y="100" width="110" height="54" fill="#FFFFFF" stroke="#16232B" stroke-width="1.5"/>
+      <text x="75" y="132" font-size="12" text-anchor="middle" font-weight="700" fill="#16232B">利用者</text>
+
+      <rect x="270" y="26" width="180" height="60" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.8"/>
+      <text x="360" y="50" font-size="12.5" text-anchor="middle" font-weight="700" fill="#3B3E86">IdP</text>
+      <text x="360" y="70" font-size="10.5" text-anchor="middle" fill="#3B3E86">Identity Provider（認証する側）</text>
+
+      <rect x="270" y="168" width="180" height="60" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.8"/>
+      <text x="360" y="192" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">SP</text>
+      <text x="360" y="212" font-size="10.5" text-anchor="middle" fill="#0E7C86">Service Provider（サービス側）</text>
+
+      <path d="M130,140 L268,196" stroke="#0E7C86" stroke-width="2" marker-end="url(#s1)"/>
+      <text x="150" y="180" font-size="11" font-weight="700" fill="#0E7C86">① サービスにアクセス</text>
+      <path d="M268,180 C 200,150 200,110 268,66" stroke="#3B3E86" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#s2)"/>
+      <text x="150" y="118" font-size="11" font-weight="700" fill="#3B3E86">② IdPへリダイレクト</text>
+      <path d="M300,86 L130,120" stroke="#3B3E86" stroke-width="2" marker-end="url(#s2)"/>
+      <text x="150" y="98" font-size="11" fill="#3B3E86">③ 認証（ID/パスワード＋多要素）</text>
+
+      <path d="M130,150 C 480,150 490,140 460,110" stroke="#A61E4D" stroke-width="2.4" marker-end="url(#s3)"/>
+      <text x="500" y="86" font-size="11.5" font-weight="700" fill="#A61E4D">④ アサーションを発行</text>
+      <text x="500" y="102" font-size="10" fill="#A61E4D">XML形式・IdPの署名付き</text>
+      <path d="M460,130 L456,166" stroke="#A61E4D" stroke-width="2.4" marker-end="url(#s3)"/>
+      <text x="475" y="152" font-size="11" font-weight="700" fill="#A61E4D">⑤ SPへ提示</text>
+
+      <text x="470" y="200" font-size="11" fill="#0E7C86">⑥ SPは署名を検証し、</text>
+      <text x="470" y="216" font-size="11" fill="#0E7C86">　 利用を許可する</text>
+
+      <rect x="0" y="238" width="700" height="12" fill="#E7EDEE"/>
+      <defs>
+        <marker id="s1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+        <marker id="s2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#3B3E86"/></marker>
+        <marker id="s3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker>
+      </defs>
+    </svg>
+    <figcaption><b>アサーション</b>は「この利用者は確かに認証済みである」というIdPからの証明書のようなもの。<b>IdPのディジタル署名が付いている</b>ため、SPは改ざんされていないことを確認できる。<b>SPは利用者のパスワードを一切保持しない</b>のが最大の利点。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>SAML／OAuth／OpenID Connect の区別 <span class="star">頻出</span></caption>
+    <thead><tr><th>技術</th><th>目的</th><th>要点</th></tr></thead>
+    <tbody>
+      <tr><th>SAML</th><td><b>認証</b>（この人は誰か）</td><td>XMLベース。<b>企業のSSO、クラウドサービスとの連携</b>で広く使われる。
+        IdP／SP／アサーションの3語で説明できるようにする</td></tr>
+      <tr><th>OAuth 2.0 <span class="star b">差がつく</span></th><td><b>認可</b>（何をしてよいか）</td><td>
+        <b>認証の仕組みではない</b>。「このアプリに、私のカレンダーの読み取りを許可する」といった
+        <b>権限の委譲</b>を行うためのもの。パスワードを渡さずに<b>アクセストークン</b>を発行する</td></tr>
+      <tr><th>OpenID Connect <span class="star b">差がつく</span></th><td><b>認証</b></td><td>
+        <b>OAuth 2.0 の上に認証の層を載せた</b>もの。<b>IDトークン</b>により「誰であるか」を伝える。
+        ソーシャルログインの基盤</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>OAuth を「認証の仕組み」と書くと誤り。</b>
+    OAuth 2.0 は<b>認可（アクセス権限の委譲）</b>のための枠組みであり、
+    <b>「誰であるか」を伝えるために作られたものではない</b>。
+    その用途に対応させたのが OpenID Connect である——この区別が選択肢問題で問われる。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 7 ===================== -->
+<section id="s7">
+<div class="wrap">
+  <h2><span class="num">12.7</span>PKI と証明書 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">PKI</span><span class="en">（Public Key Infrastructure：公開鍵基盤）</span>は、
+    <b>「この公開鍵は確かにこの相手のものである」ことを、信頼できる第三者が保証する</b>仕組み。
+    その第三者が <span class="kw">認証局（CA）</span>であり、保証の証が<b>ディジタル証明書</b>である。
+  </p>
+
+  <h3>証明書が発行されるまで</h3>
+  <figure>
+    <svg viewBox="0 0 700 190" role="img" aria-label="証明書発行の流れ">
+      <rect x="20" y="60" width="150" height="60" fill="#FFFFFF" stroke="#16232B" stroke-width="1.5"/>
+      <text x="95" y="86" font-size="12" text-anchor="middle" font-weight="700" fill="#16232B">申請者</text>
+      <text x="95" y="104" font-size="10.5" text-anchor="middle" fill="#6C7F88">（サーバ管理者など）</text>
+
+      <rect x="480" y="60" width="150" height="60" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.8"/>
+      <text x="555" y="94" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">認証局（CA）</text>
+
+      <path d="M170,80 L476,80" stroke="#3B3E86" stroke-width="2.2" marker-end="url(#c1)"/>
+      <text x="323" y="52" font-size="11.5" text-anchor="middle" font-weight="700" fill="#3B3E86">① CSR（証明書署名要求）を送る</text>
+      <text x="323" y="70" font-size="10" text-anchor="middle" fill="#3B3E86">公開鍵＋組織名・ホスト名などの情報</text>
+
+      <path d="M476,106 L174,106" stroke="#0E7C86" stroke-width="2.2" marker-end="url(#c2)"/>
+      <text x="323" y="126" font-size="11.5" text-anchor="middle" font-weight="700" fill="#0E7C86">② CAが内容を確認し、自らの秘密鍵で署名して証明書を発行</text>
+
+      <rect x="0" y="150" width="700" height="38" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="14" y="172" font-size="12" fill="#A61E4D"><tspan font-weight="700">重要：秘密鍵は申請者の手元から一切出さない。</tspan>CSRに含まれるのは<tspan font-weight="700">公開鍵</tspan>だけである。</text>
+      <defs>
+        <marker id="c1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#3B3E86"/></marker>
+        <marker id="c2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+      </defs>
+    </svg>
+    <figcaption>秘密鍵が外部に出ないからこそ、証明書の持ち主だけが署名・復号できるという前提が成り立つ。<b>「秘密鍵をCAに送る」と書くのは誤り</b>。</figcaption>
+  </figure>
+
+  <h3>証明書チェーン <span class="star">頻出</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 200" role="img" aria-label="証明書チェーンと信頼の起点">
+      <rect x="240" y="16" width="220" height="42" fill="#E6E7F2" stroke="#3B3E86" stroke-width="2"/>
+      <text x="350" y="34" font-size="12.5" text-anchor="middle" font-weight="700" fill="#3B3E86">ルートCA証明書</text>
+      <text x="350" y="50" font-size="10" text-anchor="middle" fill="#3B3E86">OS・ブラウザにあらかじめ組み込まれている＝信頼の起点</text>
+
+      <line x1="350" y1="58" x2="350" y2="80" stroke="#16232B" stroke-width="1.5"/>
+      <text x="368" y="74" font-size="10" fill="#6C7F88">署名</text>
+
+      <rect x="240" y="80" width="220" height="42" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.8"/>
+      <text x="350" y="98" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">中間CA証明書</text>
+      <text x="350" y="114" font-size="10" text-anchor="middle" fill="#0E7C86">サーバ側で一緒に送る必要がある</text>
+
+      <line x1="350" y1="122" x2="350" y2="144" stroke="#16232B" stroke-width="1.5"/>
+      <text x="368" y="138" font-size="10" fill="#6C7F88">署名</text>
+
+      <rect x="240" y="144" width="220" height="42" fill="#FFFFFF" stroke="#16232B" stroke-width="1.5"/>
+      <text x="350" y="162" font-size="12.5" text-anchor="middle" font-weight="700" fill="#16232B">サーバ証明書</text>
+      <text x="350" y="178" font-size="10" text-anchor="middle" fill="#6C7F88">www.example.co.jp</text>
+
+      <rect x="480" y="80" width="220" height="106" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="494" y="102" font-size="12" font-weight="700" fill="#A61E4D">よくある障害</text>
+      <text x="494" y="122" font-size="11" fill="#16232B">サーバに<tspan font-weight="700">中間CA証明書を設定し忘れる</tspan>と、</text>
+      <text x="494" y="140" font-size="11" fill="#16232B">クライアントはルートまで辿れず</text>
+      <text x="494" y="158" font-size="11" fill="#16232B"><tspan font-weight="700">検証に失敗する</tspan>。</text>
+      <text x="494" y="178" font-size="10.5" fill="#6C7F88">端末によって成否が分かれるのが特徴</text>
+    </svg>
+    <figcaption>クライアントは、受け取った証明書の署名を1つずつ辿り、<b>自分が信頼しているルートCAに到達できれば正当と判断する</b>。これを<b>信頼の連鎖</b>という。第5章のDNSSECと同じ構造である。</figcaption>
+  </figure>
+
+  <h3>検証の観点と失効</h3>
+  <div class="card">
+    <h4 style="margin-top:0">証明書の検証で確認すること</h4>
+    <ol style="margin-bottom:0">
+      <li><b>信頼するCAまで証明書チェーンが辿れるか</b></li>
+      <li><b>有効期限内か</b></li>
+      <li><b>接続先のホスト名と、証明書のCN／SANが一致するか</b></li>
+      <li><b>失効していないか</b>（次項）</li>
+    </ol>
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>失効の確認方法</caption>
+    <thead><tr><th>方式</th><th>仕組み</th><th>特徴</th></tr></thead>
+    <tbody>
+      <tr><th>CRL</th><td>CAが<b>失効した証明書の一覧</b>を定期的に公開し、クライアントがそれを取得して照合する</td><td>
+        <b>公開の間隔があるため、失効が反映されるまでタイムラグがある</b>。件数が増えるとファイルが肥大化する</td></tr>
+      <tr><th>OCSP</th><td>クライアントが<b>その証明書1件について、リアルタイムでCAに問い合わせる</b></td><td>
+        即時性が高い。ただし<b>OCSPサーバへの問い合わせが遅延要因になり、
+        またそのサーバが停止すると検証できない</b></td></tr>
+      <tr><th>OCSP<br>ステープリング <span class="star b">差がつく</span></th><td>
+        <b>サーバがあらかじめOCSPの応答を取得しておき、TLSハンドシェイクの中でクライアントに渡す</b></td><td>
+        クライアントがCAへ問い合わせる必要がなくなり、<b>遅延とプライバシーの問題を同時に解決できる</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>証明書の種類と関連用語</caption>
+    <thead><tr><th>用語</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>サーバ証明書</th><td>サーバの正当性を証明する。<b>SAN（Subject Alternative Name）</b>に複数のホスト名を書ける。
+        <code>*.example.co.jp</code> のような<b>ワイルドカード証明書</b>もある</td></tr>
+      <tr><th>クライアント証明書</th><td>利用者・端末を証明する。<b>EAP-TLS、SSL-VPN、IPsecの相手認証</b>に用いる。
+        「所持」の要素として多要素認証にも使える</td></tr>
+      <tr><th>PKCS#12</th><td><b>秘密鍵と証明書を1つのファイルにまとめる形式</b>（<code>.p12</code>／<code>.pfx</code>）。
+        パスワードで保護される。<b>クライアント証明書を端末へ配布するときに使う</b></td></tr>
+      <tr><th>ルート証明書</th><td>信頼の起点。<b>社内CAを立てる場合は、このルート証明書を全端末に配布する必要がある</b>
+        （第8章のSSL可視化と同じ話）</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>CSRに含まれるもの → <b>公開鍵と申請者の情報。秘密鍵は含まれない</b></li>
+      <li>一部の端末だけ証明書エラーになる → <b>中間CA証明書がサーバに設定されていない</b>、
+        または<b>その端末にルート証明書が導入されていない</b></li>
+      <li>CRLとOCSPの違い → <b>CRLは一覧の定期配布で即時性に欠ける／OCSPは個別のリアルタイム問い合わせ</b></li>
+      <li>社内CAでクライアント証明書を発行する構成の利点 → <b>「外部CAの費用が不要で、
+        自組織の方針で発行・失効を管理できる」</b>。課題は<b>「ルート証明書を全端末へ配布する必要がある」</b></li>
+      <li>EAP-TLS を採用する理由 → <b>「パスワードを用いず、相互に証明書で認証するため、
+        パスワードの漏えいや推測による不正接続を防げる」</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第12章 認証・アクセス制御 ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">12 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>

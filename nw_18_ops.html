@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第18章 運用管理・監視 ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: monitoring layers */
+  .mon{margin-top:30px; display:flex; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .mon div{
+    flex:1 1 0; padding:9px 12px; color:#fff;
+    font-family:var(--mono); font-size:10.5px; line-height:1.55;
+  }
+  .mon div b{display:block; font-size:13px; letter-spacing:.03em}
+  .m1{background:#7C8F97}
+  .m2{background:#3B3E86}
+  .m3{background:#0E7C86}
+  .m4{background:#A61E4D}
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .mon{flex-wrap:wrap}
+    .mon div{flex:1 1 45%}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第18章　運用管理・監視
+      <span class="en">Network Management</span>
+    </h1>
+    <p class="lede">
+      構築よりも長い時間を占めるのが運用である。試験でも
+      <b>「どこまで監視できているか」「障害時にどう切り分けるか」「変更をどう安全に実施するか」</b>が
+      繰り返し問われる。押さえるべき原則は一つ——
+      <b>監視は「見えている範囲」でしか異常を検知できない</b>。
+      pingが通ることと、業務が使えることは別である。
+    </p>
+    <div class="mon" aria-hidden="true">
+      <div class="m1">L3 死活<b>機器は生きているか</b></div>
+      <div class="m2">L4 ポート<b>待ち受けているか</b></div>
+      <div class="m3">L7 サービス<b>正しく応答するか</b></div>
+      <div class="m4">閾値・傾向<b>悪化していないか</b></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 SNMP</a>
+    <a href="#s2">2 監視の種類</a>
+    <a href="#s3">3 フロー監視とキャプチャ</a>
+    <a href="#s4">4 トポロジ発見</a>
+    <a href="#s5">5 管理ネットワークと運用基盤</a>
+    <a href="#s6">6 障害対応と切り分け</a>
+    <a href="#s7">7 移行と変更管理</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">18.1</span>SNMP <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>登場人物とポート</caption>
+    <thead><tr><th>用語</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>マネージャ</th><td>監視サーバ。情報を収集し、閾値判定・グラフ化・通知を行う</td></tr>
+      <tr><th>エージェント</th><td>監視される側の機器に組み込まれたソフトウェア</td></tr>
+      <tr><th>MIB</th><td><b>管理できる情報の定義</b>。ツリー構造をしており、各項目を <b>OID</b>（数字を <code>.</code> で連ねた識別子）で指定する。
+        標準の <b>MIB-II</b> のほか、ベンダ独自の拡張MIBがある</td></tr>
+      <tr><th>ポート</th><td><b>UDP 161</b>＝マネージャからの問い合わせ／<b>UDP 162</b>＝トラップ・インフォームの受信</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>ポーリングとトラップ <span class="star">頻出</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 270" role="img" aria-label="SNMPのポーリングとトラップ">
+      <rect x="30" y="90" width="150" height="60" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/>
+      <text x="105" y="118" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">マネージャ</text>
+      <text x="105" y="136" font-size="10" text-anchor="middle" fill="#0E7C86">監視サーバ</text>
+
+      <rect x="520" y="90" width="150" height="60" fill="#FFFFFF" stroke="#16232B" stroke-width="1.5"/>
+      <text x="595" y="118" font-size="12.5" text-anchor="middle" font-weight="700" fill="#16232B">エージェント</text>
+      <text x="595" y="136" font-size="10" text-anchor="middle" fill="#6C7F88">スイッチ・ルータ</text>
+
+      <line x1="180" y1="60" x2="516" y2="60" stroke="#3B3E86" stroke-width="2.2" marker-end="url(#s1a)"/>
+      <text x="348" y="52" font-size="11.5" text-anchor="middle" font-weight="700" fill="#3B3E86">ポーリング（GetRequest）　UDP 161</text>
+      <line x1="520" y1="84" x2="184" y2="84" stroke="#3B3E86" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#s1a)"/>
+      <text x="348" y="78" font-size="10.5" text-anchor="middle" fill="#3B3E86">GetResponse（値を返す）</text>
+      <text x="348" y="30" font-size="10.5" text-anchor="middle" fill="#6C7F88">マネージャが<tspan font-weight="700">定期的に</tspan>取りに行く → 傾向の把握・グラフ化に向く</text>
+      <text x="348" y="14" font-size="10.5" text-anchor="middle" fill="#A61E4D">短所：<tspan font-weight="700">ポーリング間隔の分だけ検知が遅れる</tspan>／機器数×項目数で負荷が増える</text>
+
+      <line x1="520" y1="180" x2="184" y2="180" stroke="#A61E4D" stroke-width="2.6" marker-end="url(#s1b)"/>
+      <text x="348" y="172" font-size="11.5" text-anchor="middle" font-weight="700" fill="#A61E4D">トラップ　UDP 162</text>
+      <text x="348" y="200" font-size="10.5" text-anchor="middle" fill="#6C7F88">エージェントが<tspan font-weight="700">異常発生時に自発的に</tspan>通知する → 即時性がある</text>
+      <text x="348" y="216" font-size="10.5" text-anchor="middle" fill="#A61E4D">短所：<tspan font-weight="700">UDPのため届かなくても送信側は気づかない</tspan></text>
+
+      <rect x="0" y="232" width="700" height="38" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="12" y="252" font-size="12" fill="#0E7C86"><tspan font-weight="700">インフォーム</tspan>：トラップに<tspan font-weight="700">確認応答を加えた</tspan>もの。応答が返らなければ再送するため、<tspan font-weight="700">到達を確認できる</tspan>。</text>
+      <text x="12" y="266" font-size="11.5" fill="#16232B">設計は<tspan font-weight="700">両方を併用する</tspan>のが定石 —— トラップで即座に気づき、ポーリングで状態と傾向を確認する。</text>
+      <defs>
+        <marker id="s1a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#3B3E86"/></marker>
+        <marker id="s1b" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker>
+      </defs>
+    </svg>
+    <figcaption><b>トラップだけに頼らない理由</b>——機器が完全に停止すればトラップを送ることすらできない。<b>「トラップが来ないこと」は正常を意味しない</b>ので、ポーリングによる能動的な確認が必要になる。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>SNMPの主な操作</caption>
+    <thead><tr><th>操作</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>GetRequest</th><td>指定したOIDの値を取得する</td></tr>
+      <tr><th>GetNextRequest</th><td><b>次のOIDの値を取得する</b>。これを繰り返してMIBツリーを順に辿る（ウォーク）</td></tr>
+      <tr><th>SetRequest</th><td><b>機器の設定値を変更する</b>。
+        <b>悪用されると設定を書き換えられるため、必要がなければ無効にするか、書込み用の認証を厳格にする</b></td></tr>
+      <tr><th>GetResponse</th><td>要求に対する応答</td></tr>
+      <tr><th>Trap／Inform</th><td>エージェントからの自発的な通知</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>バージョンとセキュリティ <span class="star">頻出</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>SNMPのバージョン</caption>
+    <thead><tr><th>版</th><th>認証</th><th>暗号化</th><th>評価</th></tr></thead>
+    <tbody>
+      <tr><th>v1 / v2c</th><td><b>コミュニティ名</b>（平文の合言葉）のみ</td><td class="c"><b>なし</b></td><td>
+        <b>盗聴されればそのまま情報を読まれ、SetRequestが有効なら設定変更まで可能</b>。
+        既定値の <code>public</code>／<code>private</code> のまま運用するのは危険</td></tr>
+      <tr><th>v3 <span class="star">頻出</span></th><td><b>利用者単位の認証</b>（ユーザ名＋認証鍵）</td><td class="c"><b>あり</b></td><td>
+        <b>認証・暗号化・完全性のすべてに対応</b>。現在の推奨</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>v1/v2c を使わざるを得ない場合の対策。</b>
+    <b>①コミュニティ名を推測されにくいものに変更する　②アクセス元IPアドレスを監視サーバに限定する　
+    ③読み取り専用にする　④管理ネットワーク（帯域外）に限定して流す</b>——
+    これらを組み合わせる。<b>「暗号化されないプロトコルは、流す経路を限定する」</b>という考え方は
+    Syslog や TFTP にも共通する。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">18.2</span>監視の種類 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>監視の深さと検知できる範囲</caption>
+    <thead><tr><th>種別</th><th>方法</th><th>検知できること／できないこと</th></tr></thead>
+    <tbody>
+      <tr><th>死活監視<br>（ping監視）</th><td>ICMP Echo で応答を確認する</td><td>
+        機器の停止や経路断は検知できる／<b>機器は動いていてもサービスが停止している状態は検知できない</b></td></tr>
+      <tr><th>ポート監視</th><td>対象のTCPポートへ接続を試みる</td><td>プロセスが起動し待ち受けていることを確認できる／
+        <b>アプリケーションが内部エラーを返している状態は分からない</b></td></tr>
+      <tr><th>サービス監視</th><td>実際にリクエストを送り、<b>応答内容まで確認</b>する</td><td>
+        <b>業務として使える状態かどうかを確認できる</b>（第9章のL7ヘルスチェックと同じ考え方）</td></tr>
+      <tr><th>トラフィック監視</th><td>SNMPでインタフェースの送受信バイト数を取得しグラフ化する</td><td>
+        帯域の利用状況、増加傾向、異常なトラフィックの発生を把握できる</td></tr>
+      <tr><th>閾値監視</th><td><b>CPU使用率・メモリ・回線使用率・エラーカウンタ</b>などが
+        設定値を超えたら通知する</td><td><b>障害になる前に予兆を捉えられる</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">監視設計の要点 <span class="star">頻出</span></h4>
+    <ul style="margin-bottom:0">
+      <li><b>「pingが通る＝正常」ではない</b>。業務が使えるかどうかを確認するには、
+        <b>利用者と同じ経路・同じ手順でサービスを確認する</b>必要がある</li>
+      <li><b>監視間隔と検知時間はトレードオフ</b>。間隔を短くすれば早く気づけるが、
+        機器と監視サーバの負荷、そして通信量が増える</li>
+      <li><b>誤検知（一時的な応答遅れ）で夜間に呼び出されないよう</b>、
+        <b>連続◯回失敗で異常と判定する</b>といった条件を設ける</li>
+      <li><b>監視サーバ自身の冗長化と、監視経路の冗長化</b>も検討する。
+        監視サーバが落ちていることに誰も気づかない、という事態を避ける</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <b>キャパシティプランニングの観点。</b>
+    トラフィック監視は障害検知のためだけでなく、
+    <b>「回線やサーバの増強をいつ行うべきかを、傾向から判断する」</b>ために行う。
+    <b>ピーク時の使用率が継続的に上昇しているなら、限界に達する前に増速を計画する</b>——
+    という文脈で問われる。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">18.3</span>フロー監視とパケットキャプチャ <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    SNMPのトラフィック監視で分かるのは<b>「そのインタフェースに何バイト流れたか」という総量だけ</b>。
+    <b>「誰が、どこへ、何の通信で帯域を使っているのか」</b>を知るには別の手段が要る。
+  </p>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>詳細を知るための3つの手段</caption>
+    <thead><tr><th>手段</th><th>仕組み</th><th>分かること／負荷</th></tr></thead>
+    <tbody>
+      <tr><th>NetFlow／IPFIX <span class="star">頻出</span></th><td>
+        ルータが<b>フロー（送信元・宛先IP、ポート番号、プロトコルの組）ごとに統計を集計</b>し、
+        コレクタへ送信する。<b>IPFIX はこれを標準化したもの</b></td><td>
+        <b>どの端末がどのサーバへどれだけ通信したかが分かる</b>／全パケットを集計するため機器の負荷はやや大きい</td></tr>
+      <tr><th>sFlow</th><td><b>n個に1個の割合でパケットを抽出（サンプリング）</b>して送る</td><td>
+        <b>負荷が軽く高速回線に向く</b>／統計的な傾向は分かるが<b>少量の通信は取りこぼす</b></td></tr>
+      <tr><th>パケットキャプチャ</th><td><b>ミラーポート（SPAN）</b>で対象ポートのフレームを複製し、
+        解析装置へ送って記録する</td><td>
+        <b>通信の中身まで完全に分かる</b>／<b>データ量が膨大になり、常時記録には向かない</b>。
+        障害解析時に限定して使う</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 700 200" role="img" aria-label="ミラーポートによるパケットキャプチャ">
+      <rect x="230" y="60" width="200" height="60" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/>
+      <text x="330" y="95" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">L2スイッチ</text>
+      <rect x="20" y="70" width="110" height="40" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="75" y="95" font-size="11.5" text-anchor="middle" fill="#16232B">監視対象</text>
+      <rect x="530" y="70" width="140" height="40" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="600" y="95" font-size="11.5" text-anchor="middle" fill="#16232B">通信相手</text>
+      <line x1="130" y1="90" x2="226" y2="90" stroke="#16232B" stroke-width="2.2"/>
+      <line x1="430" y1="90" x2="526" y2="90" stroke="#16232B" stroke-width="2.2"/>
+
+      <line x1="330" y1="120" x2="330" y2="156" stroke="#A61E4D" stroke-width="2.4" stroke-dasharray="5 4" marker-end="url(#mr)"/>
+      <rect x="240" y="156" width="180" height="36" fill="#F7E6EC" stroke="#A61E4D" stroke-width="1.8"/>
+      <text x="330" y="179" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">キャプチャ用端末</text>
+      <text x="440" y="150" font-size="11" fill="#A61E4D">ミラーポート（SPAN）＝</text>
+      <text x="440" y="166" font-size="11" fill="#A61E4D">指定ポートのフレームを<tspan font-weight="700">複製して送る</tspan></text>
+      <text x="440" y="184" font-size="10.5" fill="#6C7F88">複製なので、本来の通信には影響しない</text>
+      <defs><marker id="mr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker></defs>
+    </svg>
+    <figcaption>注意点が2つ。<b>①ミラー先のポート帯域を超えると取りこぼす</b>（1Gポート2本分を1Gポートにミラーできない）。<b>②仮想スイッチ内で完結するVM間通信は、物理スイッチのミラーポートでは捕捉できない</b>（第10章）。</figcaption>
+  </figure>
+
+  <p>
+    <span class="kw">RMON</span><span class="star b">差がつく</span>は、
+    <b>機器自身が統計情報を継続的に収集・蓄積し、閾値を超えたら通知する</b>仕組み。
+    マネージャが頻繁にポーリングしなくても済むため、<b>監視トラフィックを削減できる</b>。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">18.4</span>トポロジ発見 ― LLDP と CDP <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    <span class="kw">LLDP</span><span class="en">（Link Layer Discovery Protocol／IEEE802.1AB）</span>は、
+    <b>隣接する機器どうしが、自分の機器名・ポート名・機種などを定期的に広告し合う</b>プロトコル。
+    受け取った情報は <b>LLDP-MIB</b> に蓄積され、SNMPで収集できる。
+  </p>
+
+  <div class="card">
+    <h4 style="margin-top:0">LLDP と SNMP の非対称性 <span class="star">頻出</span></h4>
+    <ul style="margin-bottom:0">
+      <li><b>LLDPはL2で動作する</b>——<b>IPアドレスが設定されていない機器でも情報を交換できる</b>。
+        ルータを越えず、直接つながっている隣接機器との間だけで完結する</li>
+      <li><b>SNMPはIPが前提</b>——アドレスが設定され、経路が通っていなければ収集できない</li>
+      <li>したがって<b>初期構築時や設定前の機器でも、LLDPなら接続状態を確認できる</b>という利点がある</li>
+    </ul>
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>LLDP の用途</caption>
+    <thead><tr><th>用途</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>接続構成の把握</th><td><b>どの機器のどのポートが、どの機器のどのポートにつながっているか</b>を
+        自動的に収集できる。<b>物理接続図の作成・維持</b>に使う</td></tr>
+      <tr><th>配線ミスの発見</th><td>設計と実際の接続の食い違いを検出できる</td></tr>
+      <tr><th>LLDP-MED</th><td>IP電話などに対して、<b>使用すべきVLAN・QoSの優先度・PoEの必要電力</b>を
+        スイッチ側から通知する拡張。<b>IP電話を挿すだけで適切なVLANに収容される</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="font-size:14px;color:#6C7F88">
+    <b>CDP</b> はシスコ独自の同等機能。異なるベンダの機器が混在する環境では、標準規格である LLDP を使う。
+  </p>
+
+  <div class="note">
+    <b>運用上のジレンマ。</b>LLDPは<b>機器の名称や機種、ソフトウェアの版数まで隣接機器へ広告する</b>ため、
+    <b>外部との接続ポートや、利用者が接続する端末ポートでは無効にする</b>のが望ましい。
+    <b>「便利さと情報漏えいのトレードオフ」</b>として問われることがある。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">18.5</span>管理ネットワークと運用基盤 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>帯域内管理と帯域外管理</h3>
+  <figure>
+    <svg viewBox="0 0 700 280" role="img" aria-label="帯域内管理と帯域外管理の比較">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#A61E4D">帯域内管理（In-Band）― 業務と同じ経路で管理する</text>
+      <rect x="0" y="26" width="700" height="100" fill="#F7E6EC" stroke="#A61E4D"/>
+      <rect x="30" y="60" width="130" height="44" fill="#FFFFFF" stroke="#0E7C86" stroke-width="1.6"/>
+      <text x="95" y="87" font-size="11.5" text-anchor="middle" fill="#0E7C86">監視サーバ</text>
+      <rect x="280" y="60" width="130" height="44" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="345" y="87" font-size="11.5" text-anchor="middle" fill="#16232B">業務用スイッチ</text>
+      <rect x="530" y="60" width="130" height="44" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="595" y="87" font-size="11.5" text-anchor="middle" fill="#16232B">管理対象機器</text>
+      <line x1="160" y1="82" x2="276" y2="82" stroke="#A61E4D" stroke-width="2.4"/>
+      <line x1="410" y1="82" x2="526" y2="82" stroke="#A61E4D" stroke-width="2.4"/>
+      <text x="345" y="46" font-size="10.5" text-anchor="middle" fill="#A61E4D">業務トラフィックと同じ経路を通る</text>
+      <text x="14" y="120" font-size="11.5" fill="#A61E4D">→ 安価で構成も単純／<tspan font-weight="700">業務網が輻輳・障害を起こすと、機器に到達できず対処もできなくなる</tspan></text>
+
+      <text x="0" y="158" font-size="12.5" font-weight="700" fill="#0E7C86">帯域外管理（Out-of-Band）― 独立した管理専用の経路を持つ</text>
+      <rect x="0" y="168" width="700" height="112" fill="#E4F0F1" stroke="#0E7C86"/>
+      <rect x="30" y="192" width="130" height="44" fill="#FFFFFF" stroke="#0E7C86" stroke-width="1.6"/>
+      <text x="95" y="219" font-size="11.5" text-anchor="middle" fill="#0E7C86">監視サーバ</text>
+      <rect x="280" y="192" width="130" height="44" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.8"/>
+      <text x="345" y="213" font-size="11.5" text-anchor="middle" font-weight="700" fill="#3B3E86">管理用スイッチ</text>
+      <text x="345" y="229" font-size="9.5" text-anchor="middle" fill="#3B3E86">業務網とは物理的に別</text>
+      <rect x="530" y="192" width="130" height="44" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="595" y="213" font-size="11.5" text-anchor="middle" fill="#16232B">管理対象機器</text>
+      <text x="595" y="229" font-size="9.5" text-anchor="middle" fill="#6C7F88">管理用ポート</text>
+      <line x1="160" y1="214" x2="276" y2="214" stroke="#0E7C86" stroke-width="2.6"/>
+      <line x1="410" y1="214" x2="526" y2="214" stroke="#0E7C86" stroke-width="2.6"/>
+      <text x="14" y="262" font-size="11.5" fill="#0E7C86">→ <tspan font-weight="700">業務網が停止していても機器へ到達でき、復旧作業を遠隔から行える</tspan></text>
+      <text x="14" y="276" font-size="11.5" fill="#0E7C86">→ 管理通信を業務網から分離でき、<tspan font-weight="700">SNMPやSyslogなど暗号化されない通信の露出も減らせる</tspan></text>
+    </svg>
+    <figcaption>帯域外管理の価値が最も出るのは<b>「障害でネットワークが落ちているときこそ、機器にアクセスしたい」</b>という場面。<b>業務網の障害と管理経路の障害が連動しないこと</b>が本質である。</figcaption>
+  </figure>
+
+  <div class="card">
+    <h4 style="margin-top:0">最後の手段としてのコンソールポート</h4>
+    <p style="margin-bottom:0">
+      ネットワーク経由でまったくアクセスできなくなった場合に頼るのが
+      <b>コンソールポート</b>（シリアル接続）である。<b>ネットワークの設定が壊れていても、
+      機器が起動さえしていれば操作できる</b>。
+      遠隔地の拠点では、<b>コンソールサーバを設置し、モバイル回線などの独立した経路から
+      コンソールポートへ接続できるようにしておく</b>設計をとることがある。
+    </p>
+  </div>
+
+  <h3>運用の土台となる4点</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>整えておくべきもの</caption>
+    <thead><tr><th>項目</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>NTP同期 <span class="star">頻出</span></th><td>
+        <b>全機器の時刻を合わせる</b>。ログの突合、Kerberos認証、証明書の有効期限判定に必須（第12章・第15章）。
+        <b>ログを取っていても時刻がずれていれば、事象の前後関係が追えず証跡にならない</b></td></tr>
+      <tr><th>ログの集約</th><td><b>Syslogサーバへ転送し、機器のローカルだけに残さない</b>。
+        機器の故障や、侵入者による改ざん・消去からログを守る（第13章・第15章）</td></tr>
+      <tr><th>コンフィグ管理</th><td><b>設定ファイルのバックアップと世代管理</b>。
+        <b>変更の前後で取得し、差分を記録する</b>のが鉄則。
+        機器故障時は同一機種に設定を流し込めば短時間で復旧でき、<b>MTTRの短縮に直結する</b>（第9章）</td></tr>
+      <tr><th>構成管理</th><td>機器の型番、ソフトウェア版数、保守期限、接続構成、IPアドレスの台帳。
+        <b>脆弱性が公表されたときに「自組織のどの機器が該当するか」を即座に判断できるかどうかは、
+        この台帳の精度で決まる</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">18.6</span>障害対応と切り分け <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>切り分けの2つの進め方</h3>
+  <div class="card">
+    <ol style="margin-bottom:0">
+      <li><b>下の層から順に上がる</b>：<b>リンクは上がっているか（物理）→ 同一セグメント内は通じるか（L2）→
+        ゲートウェイまで届くか（L3）→ ポートは開いているか（L4）→ サービスは応答するか（L7）</b>。
+        <b>下位層が正常でなければ上位層は絶対に正常にならない</b>ため、確実に範囲を狭められる</li>
+      <li><b>区間を二分する</b>：<b>「どこまでは通って、どこから通らないか」</b>を確認して範囲を絞る。
+        <b>traceroute</b> はこの用途に最も適している（第3章）</li>
+    </ol>
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>切り分けに使う情報源</caption>
+    <thead><tr><th>手段</th><th>分かること</th></tr></thead>
+    <tbody>
+      <tr><th>ping</th><td>到達性。<b>連続実行すれば、断続的な損失や応答時間の変動も見える</b></td></tr>
+      <tr><th>traceroute</th><td>経路と、どこまで到達しているか。
+        <b><code>* * *</code> はICMP応答が抑止されているだけの場合もあり、そこで切れているとは限らない</b>（第3章）</td></tr>
+      <tr><th>インタフェースの<br>統計・エラーカウンタ</th><td>
+        <b>FCSエラー・コリジョン・破棄（ドロップ）の増加</b>。
+        ケーブル不良、デュプレックスミスマッチ（第1章）、バッファ溢れの手がかりになる</td></tr>
+      <tr><th>ログ</th><td>リンクの上下、ルーティングの変化、認証の失敗、機器の再起動。
+        <b>発生時刻を特定できるのが最大の価値</b></td></tr>
+      <tr><th>パケットキャプチャ</th><td><b>実際に何が流れているか</b>。
+        「設定は正しいはずなのに動かない」という段階で最終的な答えを出す</td></tr>
+      <tr><th>直前の変更履歴</th><td><b>障害の多くは変更の直後に起きる</b>。
+        「いつから発生したか」と「直近で何を変更したか」を突き合わせるのが最短経路になることが多い</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <b>午後問題での典型的な問われ方。</b>
+    <b>「この事象の原因として考えられるものを挙げ、確認すべき箇所を答えよ」</b>という形式が多い。
+    答案では<b>①現象から想定される原因　②それを確認する具体的な手段（どの機器の何を見るか）</b>を
+    セットで書く。<b>「調べる」だけでなく「何を見れば切り分けられるか」まで書く</b>のが加点の分かれ目になる。
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">これまでの章に出てきた「症状 → 原因」の対応表</h4>
+    <div class="tbl-scroll" style="margin-bottom:0">
+    <table style="min-width:auto">
+      <thead><tr><th>症状</th><th>疑うべき原因</th><th>章</th></tr></thead>
+      <tbody>
+        <tr><td>リンクは正常だが極端に遅い</td><td>デュプレックスミスマッチ</td><td class="c">1</td></tr>
+        <tr><td>ネットワーク全体が停止、CPU高騰</td><td>L2ループによるブロードキャストストーム</td><td class="c">2</td></tr>
+        <tr><td>端末に <code>169.254.x.x</code> が付く</td><td>DHCPサーバに到達できていない</td><td class="c">3・5</td></tr>
+        <tr><td>小さい通信は通るが大きい通信だけ失敗</td><td>PMTUDブラックホール（ICMP遮断）</td><td class="c">3・4</td></tr>
+        <tr><td>FW冗長構成で通信が不安定</td><td>非対称経路</td><td class="c">3・13</td></tr>
+        <tr><td>放置後に再開すると必ず切れる</td><td>NATテーブルのタイムアウト</td><td class="c">6</td></tr>
+        <tr><td>社内からだけ自社サイトが見えない</td><td>ヘアピンNAT／スプリットDNS</td><td class="c">5・6</td></tr>
+        <tr><td>切り替えたのに一部が旧サーバへ行く</td><td>DNSキャッシュのTTLが残っている</td><td class="c">5</td></tr>
+        <tr><td>移動すると通話が途切れる</td><td>ローミング時の再認証（802.11r未導入）</td><td class="c">11</td></tr>
+        <tr><td>特定端末だけADにログオンできない</td><td>DNS設定の誤り／時刻のずれ</td><td class="c">12</td></tr>
+        <tr><td>発着信はできるが音声が無音</td><td>SDP内アドレスの未変換／RTPポート未開放</td><td class="c">6・15</td></tr>
+        <tr><td>配信が数分後に途切れる／溢れる</td><td>IGMPクエリア不在によるタイムアウト</td><td class="c">17</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 7 ===================== -->
+<section id="s7">
+<div class="wrap">
+  <h2><span class="num">18.7</span>移行と変更管理 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    午後Ⅱでは<b>「新システムへの移行手順を検討する」</b>という設定が頻繁に登場する。
+    問われるのは技術ではなく<b>「業務を止めずに、失敗しても戻れるようにする段取り」</b>である。
+  </p>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>移行計画で押さえる要素</caption>
+    <thead><tr><th>要素</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>検証環境での事前確認</th><td>本番と同等の構成で動作を確認する。
+        <b>本番と差異がある場合は、その差異が結果に影響しないかを明示する</b></td></tr>
+      <tr><th>試験項目</th><td><b>正常系だけでなく異常系（片系停止、回線断）も確認する</b>。
+        <b>冗長構成は「壊してみないと本当に切り替わるか分からない」</b>ため、
+        <b>切替試験を必ず項目に入れる</b></td></tr>
+      <tr><th>並行稼働 <span class="star">頻出</span></th><td>
+        <b>新旧のシステムを一定期間並行して動かし、結果を比較する</b>。
+        問題があれば旧系に戻せる。<b>期間中は両系の運用負荷がかかり、
+        データの二重管理が必要になる</b>という代償がある</td></tr>
+      <tr><th>切り戻し（ロールバック） <span class="star">頻出</span></th><td>
+        <b>元の状態に戻すための手順を、作業前に用意しておく</b>。
+        さらに重要なのが<b>「いつ、どういう状態になったら切り戻すか」という判断基準と、
+        その判断を行う時刻（デッドライン）をあらかじめ決めておく</b>こと。
+        <b>作業当日に判断していては間に合わない</b></td></tr>
+      <tr><th>作業時間帯</th><td>業務影響の少ない時間を選ぶ。<b>切り戻しに要する時間を含めて、
+        業務開始までに終わる計画にする</b></td></tr>
+      <tr><th>変更管理</th><td>変更の影響範囲を評価し、承認を得て、実施内容を記録する。
+        <b>記録が残っていれば、後の障害時に「直前の変更」を照合できる</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">移行方式の型</h4>
+    <ul style="margin-bottom:0">
+      <li><b>一斉移行</b>：すべてを一度に切り替える。期間が短く二重運用の負荷がないが、
+        <b>失敗時の影響が全体に及ぶ</b></li>
+      <li><b>段階移行</b>：拠点ごと・部署ごとに順次切り替える。
+        <b>問題があっても影響範囲が限定され、知見を次の段階に活かせる</b>。
+        ただし<b>移行期間中は新旧が混在するため、その間の相互通信をどう成立させるかの設計が必要</b>になる</li>
+    </ul>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>切り戻し手順を用意する理由 → <b>「移行後に想定外の問題が発生した場合に、
+        業務への影響を最小限に抑えて元の状態へ復旧できるようにするため」</b></li>
+      <li>切り戻しの判断時刻を決める理由 → <b>「切り戻しにも時間を要するため、
+        業務開始時刻までに復旧を完了できるよう、着手の期限をあらかじめ定めておく必要があるから」</b></li>
+      <li>並行稼働の利点と課題 → <b>利点は新旧の結果を比較検証でき、問題時に旧系へ戻せること。
+        課題は両系の運用負荷とデータの整合性維持</b></li>
+      <li>試験項目に冗長切替を含める理由 → <b>「冗長構成が設計どおりに機能するかは、
+        実際に片系を停止させて確認しなければ検証できないため」</b></li>
+      <li>変更前後でコンフィグを取得する理由 → <b>「変更内容を差分として記録でき、
+        問題発生時に変更前の設定へ確実に戻せるため」</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第18章 運用管理・監視 ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">18 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>

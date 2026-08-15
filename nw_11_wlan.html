@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第11章 無線LAN ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: band scale */
+  .band{margin-top:30px; display:flex; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .band div{
+    flex:1 1 0; padding:9px 12px; color:#fff;
+    font-family:var(--mono); font-size:10.5px; line-height:1.55;
+  }
+  .band div b{display:block; font-size:13.5px; letter-spacing:.04em}
+  .b1{background:#A61E4D}
+  .b2{background:#3B3E86}
+  .b3{background:#0E7C86}
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .band{flex-direction:column}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第11章　無線LAN
+      <span class="en">Wireless LAN</span>
+    </h1>
+    <p class="lede">
+      有線との決定的な違いは<b>「電波という共有媒体を、その場の全員で奪い合っている」</b>こと。
+      衝突を検出できないので回避するしかなく、盗聴は物理的に防げないので暗号化するしかない——
+      すべての技術がこの2つの制約から導かれる。
+      なお本章は<b>午後Ⅱで長期間出題されていない領域</b>であり、
+      裏を返せば<b>いつ大問として出てもおかしくない</b>。チャネル設計・認証・ローミングは特に厚く押さえておきたい。
+    </p>
+    <div class="band" aria-hidden="true">
+      <div class="b1">2.4 GHz<b>遠くまで届く／干渉が多い／非重複3ch</b></div>
+      <div class="b2">5 GHz<b>高速／チャネル多／DFSの制約</b></div>
+      <div class="b3">6 GHz<b>広帯域／干渉少／到達距離は短い</b></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 規格と周波数帯</a>
+    <a href="#s2">2 電波の共有とアクセス制御</a>
+    <a href="#s3">3 チャネル設計</a>
+    <a href="#s4">4 接続の仕組み</a>
+    <a href="#s5">5 AP構成とローミング</a>
+    <a href="#s6">6 セキュリティ</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">11.1</span>規格と周波数帯 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>IEEE802.11 規格の系譜</caption>
+    <thead><tr><th>規格</th><th>世代名</th><th>周波数帯</th><th>最大速度<br>（理論値）</th><th>主な技術</th></tr></thead>
+    <tbody>
+      <tr><th>802.11a</th><td>—</td><td class="c">5GHz</td><td class="c">54Mbps</td><td>OFDM</td></tr>
+      <tr><th>802.11b</th><td>—</td><td class="c">2.4GHz</td><td class="c">11Mbps</td><td>DSSS</td></tr>
+      <tr><th>802.11g</th><td>—</td><td class="c">2.4GHz</td><td class="c">54Mbps</td><td>OFDM</td></tr>
+      <tr><th>802.11n</th><td><b>Wi-Fi 4</b></td><td class="c">2.4／5GHz</td><td class="c">600Mbps</td><td><b>MIMO</b>、チャネルボンディング（40MHz）</td></tr>
+      <tr><th>802.11ac</th><td><b>Wi-Fi 5</b></td><td class="c"><b>5GHzのみ</b></td><td class="c">約6.9Gbps</td><td><b>MU-MIMO（下りのみ）</b>、160MHz、256QAM</td></tr>
+      <tr><th>802.11ax</th><td><b>Wi-Fi 6</b><br>（6E＝6GHz対応）</td><td class="c">2.4／5／<b>6GHz</b></td><td class="c">約9.6Gbps</td><td><b>OFDMA</b>、上り下りMU-MIMO、1024QAM、<b>BSSカラー</b>、<b>TWT</b></td></tr>
+      <tr><th>802.11be <span class="star b">差がつく</span></th><td><b>Wi-Fi 7</b></td><td class="c">2.4／5／6GHz</td><td class="c">約46Gbps</td><td>320MHz幅、4096QAM、複数帯域の同時利用（MLO）</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <b>Wi-Fi 6 の本質は「速度」ではなく「多数の端末をさばく効率」。</b>
+    最大速度の向上以上に、<b>OFDMA・BSSカラーによって、多数の端末が同時に存在する高密度環境での
+    実効スループットを改善した</b>点が評価されている。
+    「会議室やフロアで多数の端末が接続すると遅くなる」という課題文に対する答えになる。
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>周波数帯の特性 ― 設計の出発点</caption>
+    <thead><tr><th></th><th>2.4GHz帯</th><th>5GHz帯</th><th>6GHz帯</th></tr></thead>
+    <tbody>
+      <tr><th>電波の届き方</th><td><b>回折しやすく障害物に強い。遠くまで届く</b></td><td>直進性が強く<b>障害物に弱い</b></td><td>5GHzよりさらに減衰しやすい</td></tr>
+      <tr><th>干渉源</th><td><b>Bluetooth、電子レンジ、無線マウス、他社のAP</b>と競合し混雑しやすい</td><td>比較的少ない（気象レーダーを除く）</td><td><b>ほぼない</b></td></tr>
+      <tr><th>非重複チャネル</th><td><b>3つだけ（1・6・11）</b></td><td>多数（W52／W53／W56）</td><td>非常に多い</td></tr>
+      <tr><th>法的制約</th><td>—</td><td><b>W53・W56 はDFS必須</b>／W53・W56は屋外利用に制限あり</td><td>屋内中心</td></tr>
+      <tr><th>向く用途</th><td>広いエリアを少ないAPで覆う／IoT機器</td><td><b>オフィスの主力</b></td><td>高密度・高帯域が必要な環境</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">11.2</span>電波の共有とアクセス制御 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>CSMA/CA ― なぜ「検出」でなく「回避」なのか</h3>
+  <p>
+    有線の CSMA/CD（第2章）は<b>送信しながら衝突を検出</b>できた。
+    しかし無線では次の理由でそれができない。
+  </p>
+  <ul>
+    <li>自分の送信電波が強すぎて、<b>同時に他者の微弱な電波を聞き取れない</b></li>
+    <li>電波は距離とともに減衰するため、<b>衝突が起きている場所と自分の位置が違えば検出できない</b></li>
+  </ul>
+  <p>
+    そこで <span class="kw">CSMA/CA</span><span class="en">（Collision Avoidance＝衝突回避）</span>では、
+    <b>①送信前にキャリアセンスし、②空いていてもランダムな時間（バックオフ）待ってから送信し、
+    ③受信側が ACK を返すことで成功を確認する</b>という手順をとる。
+  </p>
+  <div class="note">
+    <b>実効スループットは理論値の半分程度になる。</b>
+    無線は<b>半二重</b>であり、バックオフの待ち時間、ACKの往復、ヘッダのオーバーヘッドが加わるためである。
+    <b>「規格上1Gbpsだが実測はどの程度か」といった帯域設計の問いでは、この点を必ず考慮する。</b>
+    さらに<b>1つのAPに接続する全端末で帯域を共有する</b>ため、接続台数で割った値が1台あたりの帯域になる。
+  </div>
+
+  <h3>隠れ端末問題と RTS/CTS <span class="star">頻出</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="隠れ端末問題とRTS/CTSによる解決">
+      <circle cx="350" cy="100" r="150" fill="none" stroke="#D3DBDF" stroke-dasharray="5 4"/>
+      <rect x="300" y="80" width="100" height="40" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.8"/>
+      <text x="350" y="105" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">AP</text>
+
+      <rect x="90" y="80" width="90" height="40" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="135" y="105" font-size="12" text-anchor="middle" fill="#16232B">端末A</text>
+      <rect x="520" y="80" width="90" height="40" fill="#FFFFFF" stroke="#16232B" stroke-width="1.4"/>
+      <text x="565" y="105" font-size="12" text-anchor="middle" fill="#16232B">端末C</text>
+
+      <line x1="180" y1="100" x2="296" y2="100" stroke="#0E7C86" stroke-width="2.2"/>
+      <line x1="404" y1="100" x2="516" y2="100" stroke="#0E7C86" stroke-width="2.2"/>
+      <text x="238" y="92" font-size="10.5" text-anchor="middle" fill="#0E7C86">届く</text>
+      <text x="462" y="92" font-size="10.5" text-anchor="middle" fill="#0E7C86">届く</text>
+
+      <path d="M180,140 L516,140" stroke="#A61E4D" stroke-width="2" stroke-dasharray="7 5"/>
+      <text x="350" y="160" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">A と C は互いの電波が届かない ＝ 互いに「隠れている」</text>
+      <text x="350" y="178" font-size="11.5" text-anchor="middle" fill="#A61E4D">→ キャリアセンスで相手の送信を検知できず、<tspan font-weight="700">APの位置で衝突する</tspan></text>
+
+      <rect x="0" y="196" width="700" height="54" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="14" y="216" font-size="12.5" font-weight="700" fill="#0E7C86">RTS/CTS による解決</text>
+      <text x="14" y="234" font-size="12" fill="#16232B">端末Aが <tspan font-family="monospace" font-weight="700">RTS（送信要求）</tspan> を送り、APが <tspan font-family="monospace" font-weight="700">CTS（送信可）</tspan> を返す。</text>
+      <text x="14" y="248" font-size="12" fill="#16232B"><tspan font-weight="700">CTSはAPの電波が届く全端末に届く</tspan>ため、Cもそれを見て「今は送るな」と分かり、送信を控える。</text>
+    </svg>
+    <figcaption>RTS/CTS は制御フレームのやり取りが増えるためオーバーヘッドになる。<b>常時有効にはせず、一定サイズ以上のフレームにのみ適用する</b>のが一般的。逆に<b>「さらし端末問題」</b>は、送っても衝突しないのに他の通信を検知して不要に待ってしまう現象を指す。</figcaption>
+  </figure>
+
+  <h3>高速化・高密度化の技術</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>速度と収容効率を上げる技術</caption>
+    <thead><tr><th>技術</th><th>内容</th><th>効果</th></tr></thead>
+    <tbody>
+      <tr><th>OFDM</th><td>周波数を多数の細いサブキャリアに分割して並列に送る</td><td>マルチパス（反射波）の影響に強く、周波数利用効率が高い</td></tr>
+      <tr><th>OFDMA <span class="star">頻出</span></th><td><b>サブキャリアを小さな単位に分け、1回の送信機会で複数の端末に割り当てる</b></td><td><b>小さなデータを送る端末が多数ある環境で効率が飛躍的に向上</b>する。
+        OFDMが「1台ずつ順番」だったのに対し、OFDMAは「同時に複数台」</td></tr>
+      <tr><th>MIMO</th><td>複数のアンテナで<b>複数の空間ストリームを同時送信</b>する</td><td>アンテナ数に応じて速度が向上（2×2、4×4など）</td></tr>
+      <tr><th>MU-MIMO</th><td><b>複数の端末に対して同時に</b>異なるストリームを送る</td><td>APの送信機会を効率的に使える</td></tr>
+      <tr><th>ビームフォーミング</th><td>アンテナごとの位相を制御し、<b>特定の端末の方向に電波を集中</b>させる</td><td>受信強度が上がり、通信速度と到達距離が改善する</td></tr>
+      <tr><th>BSSカラー <span class="star b">差がつく</span></th><td>各BSSに識別子（色）を付け、<b>受信したフレームが自分のBSSのものかを判別</b>する</td><td><b>隣接APの通信を検知しても、無関係なら送信を控えずに済む</b>。
+        高密度環境で待ち時間が減る</td></tr>
+      <tr><th>TWT <span class="star b">差がつく</span></th><td>APと端末が<b>起床して通信する時刻をあらかじめ取り決める</b></td><td>端末は残りの時間スリープできる。<b>IoT機器の電池寿命を大幅に延ばせる</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">11.3</span>チャネル設計 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>2.4GHz帯 ― 非重複チャネルは3つだけ</h3>
+  <figure>
+    <svg viewBox="0 0 700 200" role="img" aria-label="2.4GHz帯のチャネル配置と非重複チャネル">
+      <line x1="20" y1="120" x2="680" y2="120" stroke="#16232B" stroke-width="1.4"/>
+      <g font-family="monospace" font-size="9.5" text-anchor="middle" fill="#6C7F88">
+        <text x="60" y="138">1ch</text><text x="110" y="138">2</text><text x="160" y="138">3</text><text x="210" y="138">4</text>
+        <text x="260" y="138">5</text><text x="310" y="138">6ch</text><text x="360" y="138">7</text><text x="410" y="138">8</text>
+        <text x="460" y="138">9</text><text x="510" y="138">10</text><text x="560" y="138">11ch</text><text x="610" y="138">12</text><text x="660" y="138">13</text>
+      </g>
+      <g fill="none" stroke="#D3DBDF" stroke-width="1.4">
+        <path d="M60,120 Q110,54 160,120"/><path d="M110,120 Q160,54 210,120"/>
+        <path d="M160,120 Q210,54 260,120"/><path d="M210,120 Q260,54 310,120"/>
+        <path d="M260,120 Q310,54 360,120"/><path d="M360,120 Q410,54 460,120"/>
+        <path d="M410,120 Q460,54 510,120"/><path d="M460,120 Q510,54 560,120"/>
+        <path d="M510,120 Q560,54 610,120"/><path d="M560,120 Q610,54 660,120"/>
+      </g>
+      <g fill="none" stroke-width="2.6">
+        <path d="M10,120 Q60,40 110,120" stroke="#A61E4D"/>
+        <path d="M260,120 Q310,40 360,120" stroke="#3B3E86"/>
+        <path d="M510,120 Q560,40 610,120" stroke="#0E7C86"/>
+      </g>
+      <text x="60" y="32" font-size="11.5" text-anchor="middle" font-weight="700" fill="#A61E4D">1ch</text>
+      <text x="310" y="32" font-size="11.5" text-anchor="middle" font-weight="700" fill="#3B3E86">6ch</text>
+      <text x="560" y="32" font-size="11.5" text-anchor="middle" font-weight="700" fill="#0E7C86">11ch</text>
+
+      <text x="20" y="164" font-size="12" fill="#16232B">各チャネルは<tspan font-weight="700">約20MHz幅</tspan>だが、チャネル間隔は<tspan font-weight="700">5MHz</tspan>しかないため、隣接チャネルは電波が重なる。</text>
+      <text x="20" y="184" font-size="12" fill="#A61E4D"><tspan font-weight="700">互いに干渉しない組合せは 1ch／6ch／11ch の3つだけ</tspan>。隣り合うAPにはこの3つを繰り返し割り当てる。</text>
+    </svg>
+    <figcaption>APの台数が3を超えると、必ずどこかで同一チャネルが再利用される。<b>同一チャネルのAP同士は電波が届く範囲でCSMA/CAの譲り合いが発生し、スループットが落ちる</b>ため、離れた位置に配置する（チャネル再利用設計）。</figcaption>
+  </figure>
+
+  <h3>5GHz帯 と DFS <span class="star">頻出</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>5GHz帯の区分</caption>
+    <thead><tr><th>区分</th><th>チャネル</th><th>DFS</th><th>特徴</th></tr></thead>
+    <tbody>
+      <tr><th>W52</th><td class="c m">36 / 40 / 44 / 48</td><td class="c"><b>不要</b></td><td><b>レーダーの影響を受けないため通信が中断しない</b>。屋外利用に制限あり</td></tr>
+      <tr><th>W53</th><td class="c m">52 / 56 / 60 / 64</td><td class="c"><b>必要</b></td><td>気象レーダーと帯域を共用</td></tr>
+      <tr><th>W56</th><td class="c m">100〜140</td><td class="c"><b>必要</b></td><td>チャネル数が多い。屋外利用が可能</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="card">
+    <h4 style="margin-top:0">DFS（動的周波数選択）の動作と影響 <span class="star">頻出</span></h4>
+    <ol style="margin-bottom:0">
+      <li>APは利用開始前に<b>そのチャネルを1分間監視（CAC）</b>し、レーダー波がないことを確認する</li>
+      <li>運用中も監視を続け、<b>レーダー波を検知したら直ちにそのチャネルの使用を停止</b>して別チャネルへ移る</li>
+      <li>移動先チャネルでも再び1分間の監視が必要なため、<b>最大1分程度の通信断が発生する</b></li>
+    </ol>
+  </div>
+  <div class="note">
+    <b>設計上の判断。</b>空港・港湾の近隣など<b>気象レーダーの影響を受けやすい立地</b>や、
+    <b>音声通話・製造ラインなど瞬断が許されない用途</b>では、
+    <b>DFSの不要な W52 に限定してチャネルを割り当てる</b>という設計をとる。
+    ただし使えるチャネルが4つに減るため、AP台数が多いと干渉しやすくなる、というトレードオフになる。
+  </div>
+
+  <h3>チャネルボンディング</h3>
+  <p>
+    <span class="kw">チャネルボンディング</span>は、隣接するチャネルを束ねて帯域幅を広げる技術
+    （20MHz → 40／80／160MHz）。<b>帯域幅に比例して速度が上がる</b>が、代償がある。
+  </p>
+  <div class="card">
+    <ul style="margin-bottom:0">
+      <li><b>使えるチャネルの数が減る</b>：80MHz幅にすると、5GHz帯で確保できる非重複チャネルは数個になる</li>
+      <li><b>干渉に弱くなる</b>：束ねた範囲のどこか一部でも干渉があると、その影響を受ける</li>
+      <li>したがって<b>AP台数が多い高密度環境では、あえて20MHzや40MHzに絞って
+        チャネル数を確保するほうが全体のスループットが上がる</b></li>
+    </ul>
+  </div>
+
+  <h3>AP配置設計とサイトサーベイ</h3>
+  <ul>
+    <li><span class="kw">サイトサーベイ（電波調査）</span>：実際の現場で電波の到達範囲と干渉状況を測定する。
+      結果を<b>ヒートマップ</b>として可視化する。
+      <b>建物の構造・壁材・什器の配置によって電波の届き方は大きく変わるため、図面上の計算だけでは決められない</b></li>
+    <li><b>セルの重なり</b>：ローミングを成立させるため、<b>隣接APのカバレッジを10〜20%程度重ねる</b></li>
+    <li><b>電波出力の調整（TPC）</b>：出力を上げすぎると、<b>遠くの端末が低速で接続してAP全体の効率を下げる</b>ほか、
+      隣接APとの干渉範囲も広がる。<b>高密度環境ではあえて出力を絞り、セルを小さくして端末を分散させる</b></li>
+  </ul>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>2.4GHz帯で使うチャネルの組合せとその理由 → <b>1・6・11。互いの周波数帯が重ならず干渉しないため</b></li>
+      <li>W53／W56を避ける理由 → <b>「DFSによりレーダー検知時にチャネル変更が発生し、
+        その間通信が中断するため」</b></li>
+      <li>チャネルボンディングを広げない理由 → <b>「利用可能な非重複チャネル数が減り、
+        AP間の干渉が増えるため」</b></li>
+      <li>AP追加後にかえって遅くなった → <b>チャネルの重複、または電波出力が大きすぎることによる干渉</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">11.4</span>接続の仕組み <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>識別子の使い分け ― 混同しやすい3語</caption>
+    <thead><tr><th>用語</th><th>正体</th><th>意味</th></tr></thead>
+    <tbody>
+      <tr><th>SSID／ESSID</th><td>最大32文字の文字列</td><td><b>無線ネットワークの名前</b>。複数のAPで同じSSIDを使うことで、
+        利用者からは1つのネットワークに見える（これがESS＝拡張サービスセット）</td></tr>
+      <tr><th>BSSID</th><td><b>MACアドレス</b></td><td><b>個々のAPの無線インタフェースを識別</b>する。
+        1台のAPが複数のSSIDを提供する場合、<b>SSIDごとに異なるBSSIDを持つ</b></td></tr>
+      <tr><th>BSS</th><td>—</td><td>1台のAPとそれに接続する端末群からなる基本単位</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>接続までの流れ</h3>
+  <figure>
+    <svg viewBox="0 0 700 270" role="img" aria-label="無線LANの接続シーケンス">
+      <line x1="140" y1="34" x2="140" y2="250" stroke="#D3DBDF" stroke-width="1.5"/>
+      <line x1="560" y1="34" x2="560" y2="250" stroke="#D3DBDF" stroke-width="1.5"/>
+      <text x="140" y="22" font-size="12.5" text-anchor="middle" font-weight="700" fill="#16232B">端末</text>
+      <text x="560" y="22" font-size="12.5" text-anchor="middle" font-weight="700" fill="#16232B">AP</text>
+
+      <line x1="560" y1="58" x2="144" y2="58" stroke="#6C7F88" stroke-width="1.8" marker-end="url(#w2)"/>
+      <text x="350" y="50" font-size="11.5" text-anchor="middle" font-weight="700" fill="#6C7F88">① ビーコン（定期的に報知）</text>
+      <text x="350" y="72" font-size="10" text-anchor="middle" fill="#6C7F88">SSID・対応速度・セキュリティ方式などを含む　＝ 端末が待つのが「パッシブスキャン」</text>
+
+      <line x1="140" y1="100" x2="556" y2="100" stroke="#3B3E86" stroke-width="1.8" marker-end="url(#w1)"/>
+      <text x="350" y="92" font-size="11.5" text-anchor="middle" font-weight="700" fill="#3B3E86">② プローブ要求</text>
+      <line x1="560" y1="124" x2="144" y2="124" stroke="#3B3E86" stroke-width="1.8" marker-end="url(#w2)"/>
+      <text x="350" y="116" font-size="11.5" text-anchor="middle" font-weight="700" fill="#3B3E86">③ プローブ応答</text>
+      <text x="350" y="140" font-size="10" text-anchor="middle" fill="#6C7F88">端末から能動的に探すのが「アクティブスキャン」</text>
+
+      <line x1="140" y1="166" x2="556" y2="166" stroke="#0E7C86" stroke-width="1.8" marker-end="url(#w3)"/>
+      <text x="350" y="158" font-size="11.5" text-anchor="middle" font-weight="700" fill="#0E7C86">④ 認証フレーム（Authentication）</text>
+
+      <line x1="140" y1="196" x2="556" y2="196" stroke="#0E7C86" stroke-width="1.8" marker-end="url(#w3)"/>
+      <text x="350" y="188" font-size="11.5" text-anchor="middle" font-weight="700" fill="#0E7C86">⑤ アソシエーション要求／応答</text>
+      <text x="350" y="212" font-size="10" text-anchor="middle" fill="#6C7F88">このAPに帰属することが確定する</text>
+
+      <rect x="140" y="226" width="420" height="26" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="350" y="244" font-size="11.5" text-anchor="middle" font-weight="700" fill="#A61E4D">⑥ WPA2/WPA3 の鍵交換（4wayハンドシェイク）→ 通信開始</text>
+      <defs>
+        <marker id="w1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#3B3E86"/></marker>
+        <marker id="w2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#6C7F88"/></marker>
+        <marker id="w3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+      </defs>
+    </svg>
+    <figcaption>④の「認証フレーム」は WPA2/WPA3 の認証ではなく、規格上の形式的な手続き。実質的な認証と鍵交換は⑥で行われる。</figcaption>
+  </figure>
+
+  <div class="note">
+    <b>SSIDステルスは security by obscurity にすぎない。</b>
+    ビーコンにSSIDを載せない設定だが、<b>端末が接続する際のプローブ要求やアソシエーション要求には
+    SSIDが平文で含まれる</b>ため、電波を傍受すれば容易に判明する。
+    同様に<b>MACアドレスフィルタリングも、正規端末のMACアドレスを傍受して詐称すれば突破できる</b>。
+    <b>どちらも「気休め」であり、本質的な対策は暗号化と認証である</b>——という整理が問われる。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">11.5</span>AP構成とローミング <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>AP の管理形態</h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>3つの管理形態</caption>
+    <thead><tr><th>形態</th><th>特徴</th><th>適する規模</th></tr></thead>
+    <tbody>
+      <tr><th>自律型AP</th><td>各APが独立して設定を保持する。<b>1台ずつ設定・更新が必要</b></td><td>数台程度の小規模</td></tr>
+      <tr><th>集中制御型AP<br>（WLC構成） <span class="star">頻出</span></th><td><b>無線LANコントローラ（WLC）</b>が全APの設定・チャネル・電波出力・
+        ローミング・認証を一元管理する</td><td>中〜大規模。<b>オフィス・キャンパスの標準</b></td></tr>
+      <tr><th>クラウド管理型AP</th><td>管理機能がクラウド上にある。<b>専用のコントローラ機器が不要</b>で、
+        多拠点をまとめて管理できる</td><td>多拠点・店舗展開</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="WLCによる集中制御構成とCAPWAP">
+      <rect x="270" y="20" width="170" height="50" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/>
+      <text x="355" y="42" font-size="12.5" text-anchor="middle" font-weight="700" fill="#0E7C86">無線LANコントローラ</text>
+      <text x="355" y="60" font-size="11" text-anchor="middle" fill="#0E7C86">（WLC）</text>
+
+      <g fill="#FFFFFF" stroke="#16232B" stroke-width="1.3">
+        <rect x="60" y="140" width="110" height="40"/><rect x="295" y="140" width="110" height="40"/><rect x="530" y="140" width="110" height="40"/>
+      </g>
+      <g font-size="11.5" text-anchor="middle" fill="#16232B">
+        <text x="115" y="165">AP-1</text><text x="350" y="165">AP-2</text><text x="585" y="165">AP-3</text>
+      </g>
+      <g stroke="#0E7C86" stroke-width="1.8" stroke-dasharray="6 4">
+        <line x1="300" y1="70" x2="130" y2="140"/><line x1="355" y1="70" x2="352" y2="140"/><line x1="410" y1="70" x2="570" y2="140"/>
+      </g>
+      <text x="470" y="106" font-size="11" fill="#0E7C86" font-weight="700">CAPWAP トンネル</text>
+      <text x="470" y="122" font-size="10" font-family="monospace" fill="#6C7F88">制御 UDP5246 ／ データ UDP5247</text>
+
+      <rect x="0" y="196" width="700" height="54" fill="#E7EDEE"/>
+      <text x="14" y="216" font-size="12.5" font-weight="700" fill="#16232B">WLC が集中管理するもの</text>
+      <text x="14" y="234" font-size="12" fill="#16232B">チャネルと送信出力の自動調整（干渉の最小化）／設定とファームウェアの一括配布／</text>
+      <text x="14" y="248" font-size="12" fill="#16232B">認証（RADIUSとの連携）／ローミングの制御／不正APの検知</text>
+    </svg>
+    <figcaption><b>APがWLCを見つける方法</b>として、<b>DHCPオプション43でWLCのIPアドレスを通知する</b>方式が代表的（第5章）。DNSによる探索やブロードキャストも用いられる。この連携は設問になりやすい。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>データの転送方式</caption>
+    <thead><tr><th>方式</th><th>動作</th><th>長所／短所</th></tr></thead>
+    <tbody>
+      <tr><th>集中転送<br>（トンネル転送）</th><td>端末の通信を<b>すべてCAPWAPトンネルでWLCまで運び</b>、そこからネットワークへ出す</td><td>
+        ポリシーを一元適用でき、ローミング時もIPアドレスが変わらない／<b>WLCがボトルネックになり、経路も遠回りになる</b></td></tr>
+      <tr><th>ローカルブリッジ<br>（分散転送）</th><td>APが<b>その場で有線側のVLANへ直接転送する</b></td><td>
+        WLCを経由しないため効率的／<b>拠点ごとにVLAN設計が必要になり、ローミング範囲が限られる</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>ローミング <span class="star">頻出</span></h3>
+  <p>
+    端末が移動しながら<b>接続先APを切り替える</b>こと。問題は<b>切替のたびに認証と鍵交換をやり直すと
+    数百ミリ秒〜数秒かかり、その間通信が途切れる</b>点。
+    Web閲覧なら気づかないが、<b>音声通話やビデオ会議では明確な音切れ・映像の乱れになる</b>。
+  </p>
+  <div class="tbl-scroll">
+  <table>
+    <caption>ローミングを速くする仕組み</caption>
+    <thead><tr><th>規格・機能</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><th>IEEE802.11r <span class="star">頻出</span></th><td><b>Fast BSS Transition</b>。
+        <b>移動先APにあらかじめ鍵情報を配っておき、認証手続きを簡略化する</b>。切替時間を大幅に短縮できる</td></tr>
+      <tr><th>IEEE802.11k</th><td>APが<b>近隣APの一覧（ネイバーレポート）を端末に通知</b>する。
+        端末が全チャネルをスキャンする必要がなくなり、<b>移動先の探索時間が短くなる</b></td></tr>
+      <tr><th>IEEE802.11v</th><td>ネットワーク側から端末に対し、<b>より適切なAPへの移動を促す</b>。
+        端末が電波の弱いAPに固執する問題への対策</td></tr>
+      <tr><th>PMKキャッシュ</th><td>一度認証したAPとの鍵情報を保持しておき、<b>戻ってきたときの再接続を高速化</b>する</td></tr>
+      <tr><th>バンドステアリング</th><td>2.4GHzと5GHzの両方に対応する端末を、<b>意図的に5GHzへ誘導する</b>。
+        混雑しがちな2.4GHz帯の負荷を下げる</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>ローミングするかどうかを決めるのは端末側である。</b>
+    APやWLCは強制できない（11vで「促す」ことはできる）。
+    そのため<b>端末が電波の弱いAPにつながり続ける「スティッキークライアント」</b>という現象が起き、
+    これがローミング設計の難しさの根本にある。
+    <b>セルの重なりを適切に確保し、電波出力を絞って切替を促す</b>という物理設計が重要になる理由でもある。
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>IP電話やビデオ会議で「移動すると音が途切れる」→ <b>ローミング時の再認証に時間がかかるため。
+        対策は IEEE802.11r（および802.11k）の導入</b></li>
+      <li>WLCを導入する理由 → <b>「AP台数が多く、個別設定では設定の均一性が保てず運用負荷が大きいため。
+        またチャネルと送信出力を全体最適に自動調整でき、干渉を抑えられるため」</b></li>
+      <li>APがWLCのアドレスを知る方法 → <b>DHCPオプション43</b></li>
+      <li>ローミングしてもIPアドレスが変わらない理由 → <b>WLCで集中転送しており、
+        端末は常に同一のセグメントに所属しているため</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">11.6</span>無線LANのセキュリティ <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    無線は<b>電波が届く範囲なら誰でも傍受できる</b>。
+    ケーブルに物理的に接続するという関門が存在しないため、
+    <b>暗号化と認証がセキュリティのすべて</b>になる。
+  </p>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>暗号化方式の変遷</caption>
+    <thead><tr><th>方式</th><th>暗号アルゴリズム</th><th>評価</th></tr></thead>
+    <tbody>
+      <tr><th>WEP</th><td>RC4（固定鍵）</td><td><b>短時間で解読可能。使用してはならない</b></td></tr>
+      <tr><th>WPA</th><td><b>TKIP</b>（RC4ベースで鍵を都度変更）</td><td>WEPの緊急対策として作られた暫定規格。現在は非推奨</td></tr>
+      <tr><th>WPA2</th><td><b>AES／CCMP</b></td><td>長く標準として使われた。<b>PSKの場合、事前共有鍵に対する
+        オフライン辞書攻撃が可能</b>という弱点がある</td></tr>
+      <tr><th>WPA3 <span class="star">頻出</span></th><td>AES／CCMP、GCMP</td><td><b>SAE</b> による鍵交換を採用。
+        <b>管理フレームの保護（PMF）が必須</b>。現在の推奨</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">WPA3 の SAE が解決したこと <span class="star">頻出</span></h4>
+    <p style="margin-bottom:0">
+      WPA2-PSK では、<b>4wayハンドシェイクを傍受して記録しておけば、
+      オフラインで総当たり・辞書攻撃を行い、事前共有鍵を割り出せる</b>可能性があった。
+      <span class="kw">SAE</span><span class="en">（Simultaneous Authentication of Equals）</span>は、
+      <b>鍵交換のたびにやり取りが必要な方式にすることで、傍受した記録からのオフライン解析を成立させない</b>。
+      加えて、<b>過去の通信を後から復号できない（前方秘匿性）</b>という性質も持つ。
+    </p>
+  </div>
+
+  <h3>PSK と Enterprise <span class="star">最重要</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>認証方式の比較 ― 記述で最も問われる</caption>
+    <thead><tr><th></th><th>Personal（PSK）</th><th>Enterprise（IEEE802.1X）</th></tr></thead>
+    <tbody>
+      <tr><th>認証の単位</th><td><b>ネットワーク単位</b>（全員が同じ鍵）</td><td><b>利用者・端末単位</b></td></tr>
+      <tr><th>必要な設備</th><td>なし</td><td><b>RADIUSサーバ</b>（＋証明書を使うならCA）</td></tr>
+      <tr><th>退職者が出たら</th><td><b>全端末の事前共有鍵を変更する必要がある</b></td><td><b>その利用者のアカウントを無効化するだけでよい</b></td></tr>
+      <tr><th>鍵の漏えい</th><td>鍵を知る者は誰でも接続でき、<b>同じ鍵を使う他者の通信も復号されうる</b></td><td>利用者ごとに異なる鍵が生成されるため影響が波及しない</td></tr>
+      <tr><th>接続後の制御</th><td>一律</td><td><b>認証結果に応じてVLANを動的に割り当てられる</b>（ダイナミックVLAN、第2章・第12章）</td></tr>
+      <tr><th>適する規模</th><td>家庭・小規模・ゲスト用</td><td><b>企業の業務用ネットワーク</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>4wayハンドシェイクと鍵の階層</h3>
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="無線LANの鍵階層と4wayハンドシェイク">
+      <rect x="220" y="18" width="260" height="42" fill="#E6E7F2" stroke="#3B3E86" stroke-width="1.8"/>
+      <text x="350" y="38" font-size="12.5" text-anchor="middle" font-weight="700" fill="#3B3E86">PMK（Pairwise Master Key）</text>
+      <text x="350" y="53" font-size="10" text-anchor="middle" fill="#3B3E86">PSKから生成、または802.1X認証の結果として得られる</text>
+
+      <line x1="350" y1="60" x2="350" y2="86" stroke="#16232B"/>
+      <rect x="180" y="86" width="340" height="34" fill="#F7E6EC" stroke="#A61E4D" stroke-width="1.6"/>
+      <text x="350" y="108" font-size="12" text-anchor="middle" font-weight="700" fill="#A61E4D">4wayハンドシェイク（PMKを直接送らずに鍵を導出）</text>
+
+      <g stroke="#16232B">
+        <line x1="280" y1="120" x2="200" y2="146"/><line x1="420" y1="120" x2="500" y2="146"/>
+      </g>
+      <rect x="60" y="146" width="280" height="52" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.6"/>
+      <text x="200" y="166" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">PTK（Pairwise Transient Key）</text>
+      <text x="200" y="184" font-size="10.5" text-anchor="middle" fill="#0E7C86"><tspan font-weight="700">端末ごとに異なる</tspan>／ユニキャスト通信の暗号化</text>
+
+      <rect x="380" y="146" width="280" height="52" fill="#E4F0F1" stroke="#0E7C86" stroke-width="1.6"/>
+      <text x="520" y="166" font-size="12" text-anchor="middle" font-weight="700" fill="#0E7C86">GTK（Group Temporal Key）</text>
+      <text x="520" y="184" font-size="10.5" text-anchor="middle" fill="#0E7C86"><tspan font-weight="700">BSS内で共通</tspan>／ブロードキャスト・マルチキャスト用</text>
+
+      <rect x="0" y="214" width="700" height="36" fill="#E7EDEE"/>
+      <text x="14" y="236" font-size="12" fill="#16232B">4wayハンドシェイクでは <tspan font-weight="700">PMK そのものは送らず</tspan>、双方が生成した乱数を交換して PTK を導出する。GTK は PTK で暗号化して配布される。</text>
+    </svg>
+    <figcaption><b>PTK＝1対1用（端末ごと）、GTK＝グループ用（全員共通）</b>という役割分担を押さえる。端末が離脱したときにGTKを更新するのは、離脱した端末に以後のブロードキャストを読ませないためである。</figcaption>
+  </figure>
+
+  <h3>ゲストネットワークの設計 <span class="star">頻出</span></h3>
+  <div class="card">
+    <ul style="margin-bottom:0">
+      <li><b>SSIDを業務用と分け、VLANも分離する</b>（第2章）</li>
+      <li><b>インターネットへの通信のみ許可し、社内ネットワークへのアクセスを遮断する</b></li>
+      <li><b>ゲスト端末どうしの通信も禁止する</b>（プライバシーセパレータ／プライベートVLAN相当）</li>
+      <li>利用者を識別する必要があれば <b>Web認証</b>（ブラウザでID/パスワードを入力させる方式）を用いる</li>
+      <li>DHCPのリース期間を短くして、アドレスの回転を上げる（第5章）</li>
+    </ul>
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>PSKからEnterpriseへ移行する理由 → <b>「事前共有鍵は全利用者で共通のため、
+        退職者が出た場合や鍵が漏えいした場合に全端末の設定変更が必要になる。
+        IEEE802.1X認証であれば利用者単位で認証・失効を管理できるため」</b></li>
+      <li>SSIDステルスやMACアドレスフィルタリングでは不十分な理由 → <b>SSIDはプローブ要求などから、
+        MACアドレスは通信の傍受から容易に取得でき、詐称も可能なため</b></li>
+      <li>WPA3を採用する理由 → <b>「SAEにより、傍受した鍵交換の記録からのオフラインでの
+        パスワード解析を困難にできるため」</b></li>
+      <li>認証結果に応じて接続先を分ける → <b>ダイナミックVLAN（RADIUSからVLAN情報を返す）</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第11章 無線LAN ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">11 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>

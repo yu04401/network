@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第16章 QoS・トラフィック制御 ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: quality metrics */
+  .qm{margin-top:30px; display:flex; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .qm div{
+    flex:1 1 0; padding:9px 12px; color:#fff;
+    font-family:var(--mono); font-size:10.5px; line-height:1.55;
+  }
+  .qm div b{display:block; font-size:13.5px; letter-spacing:.04em}
+  .q1{background:#3B3E86}
+  .q2{background:#0E7C86}
+  .q3{background:#A61E4D}
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  .calc{
+    background:#F2F5F6; border:1px dashed var(--muted); border-radius:4px;
+    padding:14px 18px; margin:0 0 20px; font-family:var(--mono); font-size:13px;
+    line-height:2; overflow-x:auto;
+  }
+  .calc > :last-child{margin-bottom:0}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .qm{flex-direction:column}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第16章　QoS・トラフィック制御
+      <span class="en">Quality of Service</span>
+    </h1>
+    <p class="lede">
+      最初に押さえるべき前提は<b>「QoS は帯域を増やす技術ではない」</b>ということ。
+      できるのは<b>限られた帯域が足りなくなったときに、何を先に通し、何を我慢させるかを決める</b>ことだけである。
+      したがって設問は必ず<b>①どのトラフィックを　②どうやって見分け　③どう優先するか</b>という
+      3段階の形をとる。この流れで章を組み立てていく。
+    </p>
+    <div class="qm" aria-hidden="true">
+      <div class="q1">遅延<b>届くまでの時間</b></div>
+      <div class="q2">ジッタ<b>到着間隔のゆらぎ</b></div>
+      <div class="q3">パケットロス<b>届かなかった割合</b></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 品質指標とQoSの前提</a>
+    <a href="#s2">2 分類とマーキング</a>
+    <a href="#s3">3 キューイング</a>
+    <a href="#s4">4 帯域制御</a>
+    <a href="#s5">5 輻輳回避</a>
+    <a href="#s6">6 帯域計算</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">16.1</span>品質指標とQoSの前提 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>4つの品質指標</caption>
+    <thead><tr><th>指標</th><th>内容</th><th>影響を受けるもの</th></tr></thead>
+    <tbody>
+      <tr><th>遅延<br>（レイテンシ）</th><td>送信から到着までの時間。伝搬・伝送・処理・キューイングの合計（第1章）</td><td>
+        <b>音声通話は片道150ms程度を超えると会話が成立しにくくなる</b>。VDIの操作感、対話型アプリ</td></tr>
+      <tr><th>ジッタ</th><td><b>到着間隔のばらつき</b>。パケットごとに遅延量が異なると発生する</td><td>
+        <b>音声・映像</b>。受信側でバッファに貯めて吸収するが、<b>バッファ自体が遅延を増やす</b>というトレードオフがある</td></tr>
+      <tr><th>パケットロス</th><td>届かなかった割合</td><td>
+        TCPは再送で回復するが<b>スループットが落ちる</b>。<b>UDPの音声は再送しないので直接音切れになる</b></td></tr>
+      <tr><th>スループット</th><td>実際に流せたデータ量</td><td>ファイル転送・バックアップ</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>アプリケーションごとの要求 ― 優先度を決める根拠</caption>
+    <thead><tr><th>種別</th><th>帯域</th><th>遅延</th><th>ジッタ</th><th>ロス</th></tr></thead>
+    <tbody>
+      <tr><th>音声（VoIP）</th><td class="c">小さい</td><td class="c"><b>非常に敏感</b></td><td class="c"><b>非常に敏感</b></td><td class="c"><b>敏感</b></td></tr>
+      <tr><th>ビデオ会議</th><td class="c"><b>大きい</b></td><td class="c">敏感</td><td class="c">敏感</td><td class="c">敏感</td></tr>
+      <tr><th>VDI・画面転送</th><td class="c">中</td><td class="c"><b>敏感</b></td><td class="c">中</td><td class="c">中</td></tr>
+      <tr><th>業務Webアプリ</th><td class="c">小〜中</td><td class="c">中</td><td class="c">鈍感</td><td class="c">中</td></tr>
+      <tr><th>ファイル転送<br>バックアップ</th><td class="c"><b>大きい</b></td><td class="c">鈍感</td><td class="c">鈍感</td><td class="c">鈍感</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>この表が優先度設計の根拠になる。</b>
+    「音声は帯域はわずかしか使わないが、遅延とジッタに極端に弱い」——
+    だからこそ<b>少ない帯域を最優先で確保してやる</b>のが合理的である。
+    逆に<b>バックアップは大量の帯域を使うが、多少遅れても業務に影響しない</b>ので後回しでよい。
+    <b>「帯域を多く使うものを優先する」のではない</b>という点に注意。
+  </div>
+
+  <h3>QoS の2つのアプローチ</h3>
+  <div class="card">
+    <ul style="margin-bottom:0">
+      <li><b>優先制御</b>：<b>混雑したときに、どの順番で送り出すかを決める</b>（相対的な制御）。
+        キューイングで実現する</li>
+      <li><b>帯域制御</b>：<b>使ってよい帯域の上限や下限を決める</b>（絶対的な制御）。
+        シェーピング／ポリシングで実現する</li>
+    </ul>
+  </div>
+  <div class="note">
+    <b>QoS が効くのは輻輳しているときだけ。</b>
+    帯域に余裕がある状態では、すべてのパケットが待たずに送出されるため、
+    優先度をつけても差は生じない。
+    <b>「QoSを導入したのに改善しない」場合は、そもそも帯域が恒常的に不足している</b>可能性が高く、
+    その場合の解は<b>回線の増速</b>である。
+    <b>QoSは「一時的なバーストや輻輳の際に、重要な通信を守る」ための仕組み</b>だと位置づける。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">16.2</span>分類とマーキング <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    QoSの第一歩は<b>「このパケットは何のトラフィックか」を見分ける</b>こと
+    （<span class="kw">分類／クラシフィケーション</span>）。
+    そして、その判定結果を<b>パケット自身に書き込んでおく</b>のが
+    <span class="kw">マーキング</span>である。
+  </p>
+  <div class="card">
+    <p style="margin-bottom:0">
+      <b>なぜマーキングするのか</b>——経路上のすべての機器が、毎回ポート番号やアプリケーションを
+      調べ直すのは非効率である。<b>入口の1台で判定してパケットに印を付けておけば、
+      以降の機器はその印を見るだけで優先度を判断できる</b>。
+    </p>
+  </div>
+
+  <h3>どこに印を付けるか</h3>
+  <figure>
+    <svg viewBox="0 0 700 230" role="img" aria-label="CoSとDSCPのマーキング位置">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#3B3E86">L2 のマーキング：CoS（IEEE802.1p）</text>
+      <g font-size="10.5" text-anchor="middle">
+        <rect x="0" y="26" width="120" height="32" fill="#E6E7F2" stroke="#3B3E86"/><text x="60" y="46" fill="#3B3E86">宛先／送信元MAC</text>
+        <rect x="120" y="26" width="200" height="32" fill="#F7E6EC" stroke="#A61E4D" stroke-width="2"/><text x="220" y="41" fill="#A61E4D" font-weight="700">802.1Q VLANタグ</text><text x="220" y="54" fill="#A61E4D" font-size="9.5">PCP 3bit ＝ CoS 値（0〜7）</text>
+        <rect x="320" y="26" width="380" height="32" fill="#F2F5F6" stroke="#D3DBDF"/><text x="510" y="46" fill="#6C7F88">タイプ／データ</text>
+      </g>
+      <text x="0" y="78" font-size="11.5" fill="#A61E4D">→ <tspan font-weight="700">VLANタグの中にあるため、タグを付けないリンク（アクセスポート）では運べない</tspan>。</text>
+      <text x="0" y="96" font-size="11.5" fill="#A61E4D">→ <tspan font-weight="700">ルータを越えると失われる</tspan>（L2ヘッダは書き換えられるため）。</text>
+
+      <text x="0" y="134" font-size="12.5" font-weight="700" fill="#0E7C86">L3 のマーキング：DSCP</text>
+      <g font-size="10.5" text-anchor="middle">
+        <rect x="0" y="144" width="90" height="32" fill="#E4F0F1" stroke="#0E7C86"/><text x="45" y="164" fill="#0E7C86">バージョン等</text>
+        <rect x="90" y="144" width="200" height="32" fill="#F7E6EC" stroke="#A61E4D" stroke-width="2"/><text x="190" y="159" fill="#A61E4D" font-weight="700">ToS フィールド（8bit）</text><text x="190" y="172" fill="#A61E4D" font-size="9.5">上位 6bit ＝ DSCP</text>
+        <rect x="290" y="144" width="410" height="32" fill="#F2F5F6" stroke="#D3DBDF"/><text x="495" y="164" fill="#6C7F88">TTL／プロトコル／アドレス／データ</text>
+      </g>
+      <text x="0" y="196" font-size="11.5" fill="#0E7C86">→ <tspan font-weight="700">IPヘッダにあるため、ルータを越えても保持される</tspan>。エンドツーエンドのQoS設計はこちらが主役。</text>
+      <text x="0" y="216" font-size="11" fill="#6C7F88">※ DSCP の前身が「IPプレシデンス」（ToS上位3bit）。互換のため CS0〜CS7 という値が用意されている。</text>
+    </svg>
+    <figcaption><b>CoSはL2で完結、DSCPはL3を越えて生き残る</b>——この違いが「どこでマーキングし、どこで書き換えるか」という設計判断につながる。WAN区間を越えて優先度を伝えたいならDSCPを使う。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>DSCP の代表的な値</caption>
+    <thead><tr><th>クラス</th><th>値</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr><th>EF<br>（Expedited Forwarding）</th><td class="c m">46</td><td><b>音声（VoIP）</b>。
+        最も低い遅延・ジッタ・ロスを要求するクラス。<b>厳密な優先キューに割り当てる</b></td></tr>
+      <tr><th>AF<br>（Assured Forwarding）</th><td class="c m">AF11〜AF43</td><td>
+        <b>一定の帯域を保証するクラス</b>。<b>AFxy の x が優先度クラス、y が廃棄されやすさ</b>を表す。
+        映像や重要な業務データに割り当てる</td></tr>
+      <tr><th>CS<br>（Class Selector）</th><td class="c m">CS0〜CS7</td><td>旧来のIPプレシデンスとの互換用。
+        <b>CS6・CS7 はルーティングプロトコルなどの制御通信</b>に使われる</td></tr>
+      <tr><th>BE<br>（Best Effort）</th><td class="c m">0</td><td><b>既定値</b>。特別扱いしない通常のトラフィック</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>信頼境界（トラストバウンダリ） <span class="star">頻出</span></h3>
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="信頼境界の設定">
+      <rect x="0" y="30" width="700" height="94" fill="#F7E6EC" stroke="#A61E4D"/>
+      <text x="14" y="52" font-size="12.5" font-weight="700" fill="#A61E4D">信頼境界を設けないと ── 端末が自称した優先度がそのまま通ってしまう</text>
+      <rect x="30" y="64" width="130" height="42" fill="#FFFFFF" stroke="#A61E4D" stroke-width="1.6"/>
+      <text x="95" y="82" font-size="11" text-anchor="middle" fill="#A61E4D">利用者PC</text>
+      <text x="95" y="98" font-size="9.5" text-anchor="middle" font-family="monospace" fill="#A61E4D">勝手に DSCP=46 を付与</text>
+      <line x1="160" y1="85" x2="300" y2="85" stroke="#A61E4D" stroke-width="2.2" marker-end="url(#t1)"/>
+      <rect x="300" y="64" width="130" height="42" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="365" y="90" font-size="11" text-anchor="middle" fill="#16232B">スイッチ（無条件に信頼）</text>
+      <line x1="430" y1="85" x2="560" y2="85" stroke="#A61E4D" stroke-width="2.2" marker-end="url(#t1)"/>
+      <text x="620" y="82" font-size="10.5" fill="#A61E4D" font-weight="700">大容量ダウンロードが</text>
+      <text x="620" y="96" font-size="10.5" fill="#A61E4D" font-weight="700">音声より優先される</text>
+
+      <rect x="0" y="140" width="700" height="106" fill="#E4F0F1" stroke="#0E7C86"/>
+      <text x="14" y="162" font-size="12.5" font-weight="700" fill="#0E7C86">信頼境界を設ける ── どこまでのマーキングを信じるかを決める</text>
+      <rect x="30" y="176" width="120" height="42" fill="#FFFFFF" stroke="#16232B" stroke-width="1.3"/>
+      <text x="90" y="202" font-size="11" text-anchor="middle" fill="#16232B">利用者PC</text>
+      <rect x="230" y="170" width="150" height="54" fill="#FFFFFF" stroke="#0E7C86" stroke-width="2.2"/>
+      <text x="305" y="190" font-size="11.5" text-anchor="middle" font-weight="700" fill="#0E7C86">アクセススイッチ</text>
+      <text x="305" y="207" font-size="10" text-anchor="middle" fill="#0E7C86">端末のマーキングを信頼せず</text>
+      <text x="305" y="219" font-size="10" text-anchor="middle" fill="#0E7C86">0 に書き換える／再分類する</text>
+      <line x1="150" y1="197" x2="226" y2="197" stroke="#16232B" stroke-width="2"/>
+      <line x1="380" y1="197" x2="560" y2="197" stroke="#0E7C86" stroke-width="2.6" marker-end="url(#t2)"/>
+      <text x="470" y="188" font-size="10.5" text-anchor="middle" fill="#0E7C86" font-weight="700">ここから先は信頼できる</text>
+      <text x="600" y="200" font-size="10.5" fill="#0E7C86">上位ネットワークへ</text>
+
+      <line x1="230" y1="150" x2="230" y2="240" stroke="#A61E4D" stroke-width="2" stroke-dasharray="6 4"/>
+      <text x="180" y="240" font-size="10.5" text-anchor="middle" fill="#A61E4D" font-weight="700">信頼境界</text>
+      <defs>
+        <marker id="t1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A61E4D"/></marker>
+        <marker id="t2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+      </defs>
+    </svg>
+    <figcaption>IP電話のように<b>正しくマーキングすることが分かっている機器は信頼し</b>、一般のPCは信頼せずネットワーク側で再分類する、という設計をとる。<b>「端末の自己申告を信じてよいか」</b>という問いが信頼境界の本質である。</figcaption>
+  </figure>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li>信頼境界を設ける理由 → <b>「利用者の端末が意図的または誤って高い優先度を設定した場合、
+        本来優先すべき通信が妨げられるため、ネットワーク側で分類し直す」</b></li>
+      <li>DSCPを使いCoSを使わない理由 → <b>「CoSはVLANタグ内にあるためルータを越えると失われるが、
+        DSCPはIPヘッダにあるため経路全体で保持されるから」</b></li>
+      <li>マーキングを行う場所 → <b>できるだけ入口（発生源に近いアクセススイッチ）で行い、
+        以降の機器はその値を参照するだけにする</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">16.3</span>キューイング ― 優先制御 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    出力インタフェースが混雑すると、送信待ちのパケットは<b>キュー（送信待ち行列）</b>に並ぶ。
+    <b>このキューをどう構成し、どの順番で取り出すか</b>が優先制御の実体である。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 300" role="img" aria-label="キューイング方式の比較">
+      <!-- FIFO -->
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#6C7F88">FIFO ― 到着順に送る（QoSなし）</text>
+      <rect x="0" y="26" width="400" height="30" fill="#F2F5F6" stroke="#D3DBDF"/>
+      <g font-size="10" text-anchor="middle">
+        <rect x="8" y="32" width="40" height="18" fill="#E7EDEE" stroke="#6C7F88"/><text x="28" y="45" fill="#6C7F88">FTP</text>
+        <rect x="52" y="32" width="40" height="18" fill="#E7EDEE" stroke="#6C7F88"/><text x="72" y="45" fill="#6C7F88">FTP</text>
+        <rect x="96" y="32" width="40" height="18" fill="#F7E6EC" stroke="#A61E4D"/><text x="116" y="45" fill="#A61E4D">音声</text>
+        <rect x="140" y="32" width="40" height="18" fill="#E7EDEE" stroke="#6C7F88"/><text x="160" y="45" fill="#6C7F88">FTP</text>
+      </g>
+      <line x1="400" y1="41" x2="450" y2="41" stroke="#16232B" stroke-width="2" marker-end="url(#k1)"/>
+      <text x="470" y="45" font-size="11" fill="#A61E4D">音声が前のFTPを待つ → 遅延・ジッタ増</text>
+
+      <!-- PQ -->
+      <text x="0" y="90" font-size="12.5" font-weight="700" fill="#A61E4D">PQ（優先キューイング）― 高優先を必ず先に</text>
+      <g font-size="10" text-anchor="middle">
+        <rect x="0" y="100" width="220" height="24" fill="#F7E6EC" stroke="#A61E4D" stroke-width="1.6"/><text x="110" y="116" fill="#A61E4D" font-weight="700">高優先キュー（音声）</text>
+        <rect x="0" y="128" width="220" height="24" fill="#E7EDEE" stroke="#6C7F88"/><text x="110" y="144" fill="#6C7F88">中優先キュー</text>
+        <rect x="0" y="156" width="220" height="24" fill="#E7EDEE" stroke="#6C7F88"/><text x="110" y="172" fill="#6C7F88">低優先キュー</text>
+      </g>
+      <path d="M220,112 L280,140 M220,140 L280,140 M220,168 L280,140" fill="none" stroke="#16232B" stroke-width="1.4"/>
+      <line x1="280" y1="140" x2="340" y2="140" stroke="#16232B" stroke-width="2" marker-end="url(#k1)"/>
+      <text x="356" y="128" font-size="11" fill="#16232B"><tspan font-weight="700">高優先キューが空になるまで</tspan>、下位のキューからは</text>
+      <text x="356" y="144" font-size="11" fill="#16232B">1つも送出しない。</text>
+      <text x="356" y="166" font-size="11" fill="#A61E4D">→ <tspan font-weight="700">高優先が多いと下位が全く送れなくなる（スタベーション）</tspan></text>
+
+      <!-- CBWFQ -->
+      <text x="0" y="212" font-size="12.5" font-weight="700" fill="#0E7C86">CBWFQ ― クラスごとに帯域を割り当てて公平に送る</text>
+      <g font-size="10" text-anchor="middle">
+        <rect x="0" y="222" width="220" height="22" fill="#E4F0F1" stroke="#0E7C86"/><text x="110" y="237" fill="#0E7C86">業務系クラス（50%）</text>
+        <rect x="0" y="248" width="220" height="22" fill="#E4F0F1" stroke="#0E7C86"/><text x="110" y="263" fill="#0E7C86">映像クラス（30%）</text>
+        <rect x="0" y="274" width="220" height="22" fill="#E7EDEE" stroke="#6C7F88"/><text x="110" y="289" fill="#6C7F88">その他（残り）</text>
+      </g>
+      <path d="M220,233 L280,258 M220,259 L280,258 M220,285 L280,258" fill="none" stroke="#0E7C86" stroke-width="1.4"/>
+      <line x1="280" y1="258" x2="340" y2="258" stroke="#0E7C86" stroke-width="2" marker-end="url(#k2)"/>
+      <text x="356" y="248" font-size="11" fill="#0E7C86"><tspan font-weight="700">各クラスに最低帯域を保証する</tspan>ため、どのクラスも</text>
+      <text x="356" y="264" font-size="11" fill="#0E7C86">完全には止まらない。空いていれば他クラスも使える。</text>
+      <text x="356" y="286" font-size="11" fill="#16232B">実務では <tspan font-weight="700">音声だけPQ、他はCBWFQ</tspan> の組合せ（LLQ）が定番。</text>
+      <defs>
+        <marker id="k1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#16232B"/></marker>
+        <marker id="k2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C86"/></marker>
+      </defs>
+    </svg>
+    <figcaption>PQ の欠点（スタベーション）を避けるため、実際には<b>優先キューに入れられる帯域に上限を設ける</b>。音声は帯域をわずかしか使わないので、上限付きのPQで完全に守っても他への影響が小さい——これが「音声はPQ、他はCBWFQ」が定番になる理由。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>キューイング方式のまとめ</caption>
+    <thead><tr><th>方式</th><th>動作</th><th>特徴</th></tr></thead>
+    <tbody>
+      <tr><th>FIFO</th><td>到着順にそのまま送出</td><td>QoSなし。既定の動作</td></tr>
+      <tr><th>PQ<br>（優先キューイング）</th><td><b>優先度の高いキューを空になるまで処理してから、次のキューへ移る</b></td><td>
+        最優先トラフィックの遅延を最小化できる／<b>低優先が送れなくなる危険（スタベーション）</b></td></tr>
+      <tr><th>WFQ</th><td>フローごとに<b>公平に</b>帯域を配分する</td><td>特定のフローが独占するのを防ぐ／クラス単位の制御はできない</td></tr>
+      <tr><th>CBWFQ</th><td><b>クラスごとに最低帯域を保証</b>して配分する</td><td>
+        業務要件に沿った設計ができる。<b>保証帯域を超える分は、空きがあれば使える</b></td></tr>
+      <tr><th>WRR</th><td>キューを順番に見るが、<b>重みに応じて取り出す量を変える</b></td><td>実装が単純。厳密な保証ではない</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">16.4</span>帯域制御 ― シェーピングとポリシング <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    どちらも<b>「決められた速度を超えた分をどう扱うか」</b>を決める仕組みだが、
+    <b>超過分の扱いが正反対</b>である。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 300" role="img" aria-label="シェーピングとポリシングの動作の違い">
+      <!-- shaping -->
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#0E7C86">シェーピング ― 超過分をいったん貯めて、ならして送る</text>
+      <line x1="40" y1="120" x2="330" y2="120" stroke="#16232B" stroke-width="1.4"/>
+      <line x1="40" y1="30" x2="40" y2="120" stroke="#16232B" stroke-width="1.4"/>
+      <line x1="40" y1="70" x2="330" y2="70" stroke="#A61E4D" stroke-width="1.4" stroke-dasharray="5 4"/>
+      <text x="336" y="74" font-size="10" fill="#A61E4D">契約速度</text>
+      <path d="M50,120 L80,120 L80,40 L130,40 L130,120 L180,120 L180,50 L230,50 L230,120 L320,120"
+            fill="none" stroke="#6C7F88" stroke-width="1.6" stroke-dasharray="4 3"/>
+      <path d="M50,120 L80,120 L80,70 L200,70 L200,120 L230,120 L230,70 L300,70 L300,120 L320,120"
+            fill="none" stroke="#0E7C86" stroke-width="2.6"/>
+      <text x="50" y="140" font-size="10.5" fill="#6C7F88">破線＝入力（バースト）　実線＝出力</text>
+      <text x="50" y="158" font-size="11" fill="#0E7C86"><tspan font-weight="700">超過分はバッファに貯めて後から送るので破棄しない</tspan></text>
+      <text x="50" y="176" font-size="11" fill="#A61E4D">代償：<tspan font-weight="700">バッファに滞留する分だけ遅延とジッタが増える</tspan></text>
+      <text x="50" y="194" font-size="11" fill="#16232B">使う場所：<tspan font-weight="700">送信側（自拠点のWANルータで契約帯域に合わせる）</tspan></text>
+
+      <!-- policing -->
+      <text x="380" y="16" font-size="12.5" font-weight="700" fill="#A61E4D">ポリシング ― 超過分をその場で破棄する</text>
+      <line x1="410" y1="120" x2="690" y2="120" stroke="#16232B" stroke-width="1.4"/>
+      <line x1="410" y1="30" x2="410" y2="120" stroke="#16232B" stroke-width="1.4"/>
+      <line x1="410" y1="70" x2="690" y2="70" stroke="#A61E4D" stroke-width="1.4" stroke-dasharray="5 4"/>
+      <path d="M420,120 L450,120 L450,40 L500,40 L500,120 L550,120 L550,50 L600,50 L600,120 L680,120"
+            fill="none" stroke="#6C7F88" stroke-width="1.6" stroke-dasharray="4 3"/>
+      <path d="M420,120 L450,120 L450,70 L500,70 L500,120 L550,120 L550,70 L600,70 L600,120 L680,120"
+            fill="none" stroke="#A61E4D" stroke-width="2.6"/>
+      <text x="462" y="36" font-size="10" fill="#A61E4D" font-weight="700">この部分は破棄</text>
+      <text x="420" y="158" font-size="11" fill="#A61E4D"><tspan font-weight="700">超過分はその場で捨てる（または優先度を下げる）</tspan></text>
+      <text x="420" y="176" font-size="11" fill="#0E7C86">利点：<tspan font-weight="700">バッファを使わないので遅延は増えない</tspan></text>
+      <text x="420" y="194" font-size="11" fill="#16232B">使う場所：<tspan font-weight="700">受信側（事業者が契約超過を取り締まる）</tspan></text>
+
+      <rect x="0" y="216" width="700" height="80" fill="#E7EDEE"/>
+      <text x="14" y="238" font-size="12.5" font-weight="700" fill="#16232B">トークンバケットという考え方</text>
+      <text x="14" y="258" font-size="12" fill="#16232B">バケツに<tspan font-weight="700">一定の速度でトークンを補充</tspan>し、パケットを送るたびにトークンを消費する。</text>
+      <text x="14" y="276" font-size="12" fill="#16232B">トークンがなければ送れない（＝速度が制限される）。</text>
+      <text x="14" y="292" font-size="12" fill="#0E7C86"><tspan font-weight="700">バケツの大きさが「どれだけのバーストを許容するか」を決める</tspan> ── 貯まっていれば一時的に高速で送れる。</text>
+    </svg>
+    <figcaption><b>覚え方</b>：シェーピングは「<b>整える</b>」（貯めてならす、捨てない、遅延が増える）、ポリシングは「<b>取り締まる</b>」（超過は容赦なく捨てる、遅延は増えない）。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>シェーピングとポリシング</caption>
+    <thead><tr><th></th><th>シェーピング</th><th>ポリシング</th></tr></thead>
+    <tbody>
+      <tr><th>超過分の扱い</th><td><b>バッファに貯めて後で送る</b></td><td><b>破棄する（または優先度を下げて通す）</b></td></tr>
+      <tr><th>遅延</th><td><b>増える</b></td><td>増えない</td></tr>
+      <tr><th>パケットロス</th><td>原則なし（バッファが溢れなければ）</td><td><b>発生する</b></td></tr>
+      <tr><th>TCPへの影響</th><td>再送が起きにくく<b>スループットが安定する</b></td><td>破棄により<b>再送と輻輳制御が働き、スループットが落ちる</b></td></tr>
+      <tr><th>適用箇所</th><td>出力方向（送信側）</td><td>入力・出力どちらも（契約の境界）</td></tr>
+      <tr><th>典型的な用途</th><td>WAN回線の契約帯域に合わせて自分で送出量を抑える</td><td>事業者が契約帯域の超過を取り締まる／
+        特定の通信の帯域を上限で抑え込む</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <b>なぜ自拠点でシェーピングするのか。</b>
+    事業者側でポリシングされると<b>超過分が問答無用で破棄され、TCPの再送が多発してかえって効率が落ちる</b>。
+    それなら<b>自分でバッファに貯めて契約帯域内にならして送ったほうが、破棄されず結果的にスループットが安定する</b>。
+    「アクセス回線の速度と契約帯域が違う場合にシェーピングが必要な理由」として問われる。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">16.5</span>輻輳回避 <span class="star b">差がつく</span></h2>
+  <div class="rule"></div>
+
+  <p>
+    キューが満杯になってから対処するのでは遅い。
+    <b>溢れる前に、あらかじめ一部のパケットを捨てて送信側に減速を促す</b>——というのが輻輳回避の考え方である。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 280" role="img" aria-label="テールドロップとREDの違い">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#A61E4D">テールドロップ ― 溢れたら後着を全部捨てる</text>
+      <rect x="0" y="26" width="700" height="106" fill="#F7E6EC" stroke="#A61E4D"/>
+      <rect x="20" y="44" width="240" height="30" fill="#FFFFFF" stroke="#A61E4D" stroke-width="1.6"/>
+      <text x="140" y="64" font-size="11" text-anchor="middle" fill="#A61E4D">キュー（満杯）</text>
+      <line x1="260" y1="59" x2="330" y2="59" stroke="#A61E4D" stroke-width="2.4" stroke-dasharray="5 4"/>
+      <text x="352" y="52" font-size="11" fill="#A61E4D" font-weight="700">以降のパケットは無差別に破棄</text>
+      <text x="352" y="68" font-size="10.5" fill="#A61E4D">多数のTCPフローが同時に損失を検知する</text>
+      <text x="20" y="96" font-size="11.5" fill="#16232B"><tspan font-weight="700">TCPグローバル同期</tspan>：多数のフローが<tspan font-weight="700">一斉に</tspan>輻輳制御に入って減速し、</text>
+      <text x="20" y="114" font-size="11.5" fill="#16232B">その後<tspan font-weight="700">一斉に</tspan>回復する。結果として<tspan font-weight="700">回線利用率が波打ち、平均すると帯域を使い切れない</tspan>。</text>
+
+      <text x="0" y="164" font-size="12.5" font-weight="700" fill="#0E7C86">RED ― 溢れる前に、確率的に少しずつ捨てる</text>
+      <rect x="0" y="174" width="700" height="106" fill="#E4F0F1" stroke="#0E7C86"/>
+      <line x1="40" y1="256" x2="330" y2="256" stroke="#16232B" stroke-width="1.3"/>
+      <line x1="40" y1="192" x2="40" y2="256" stroke="#16232B" stroke-width="1.3"/>
+      <text x="185" y="272" font-size="10" text-anchor="middle" fill="#6C7F88">キューの長さ →</text>
+      <text x="24" y="200" font-size="10" fill="#6C7F88" transform="rotate(-90 24,224)">破棄確率</text>
+      <path d="M40,256 L140,256 L260,200 L260,192 L320,192" fill="none" stroke="#0E7C86" stroke-width="2.6"/>
+      <text x="145" y="250" font-size="9.5" fill="#6C7F88">最小閾値</text>
+      <text x="240" y="216" font-size="9.5" fill="#6C7F88">最大閾値</text>
+      <text x="350" y="200" font-size="11.5" fill="#0E7C86">キューが伸びてきたら<tspan font-weight="700">確率的に一部だけ破棄</tspan>する。</text>
+      <text x="350" y="220" font-size="11.5" fill="#0E7C86">→ <tspan font-weight="700">一部のフローだけが先に減速する</tspan>ため、</text>
+      <text x="350" y="238" font-size="11.5" fill="#0E7C86">　 全体が同時に落ち込む同期が起きない。</text>
+      <text x="350" y="262" font-size="11.5" fill="#16232B"><tspan font-weight="700">WRED</tspan>：DSCPの廃棄優先度に応じて<tspan font-weight="700">捨てやすさを変える</tspan>。</text>
+    </svg>
+    <figcaption>REDが有効なのは<b>TCPのように「損失を検知して自ら減速する」トラフィック</b>に対して。<b>UDPの音声はロスに弱く減速もしない</b>ため、REDの対象からは外し、優先キューで守るのが定石。</figcaption>
+  </figure>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">16.6</span>帯域計算 <span class="star">計算</span></h2>
+  <div class="rule"></div>
+
+  <h3>基本の式</h3>
+  <div class="calc">
+    <p><b>回線使用率 ＝ 実際に流れているトラフィック量 ÷ 回線速度</b></p>
+    <p><b>伝送時間 ＝ データ量 ÷ 回線速度</b>（＋ 伝搬遅延・処理遅延）</p>
+    <p style="margin-bottom:0"><b>必要帯域 ＝ 1セッションの帯域 × 同時セッション数</b></p>
+  </div>
+  <div class="note">
+    <b>単位の変換で落とさない。</b>
+    データ量は<b>バイト</b>、回線速度は<b>ビット/秒</b>で表されることが多い。
+    <b>必ず8倍する</b>。また、通信分野では <code>1k = 1,000</code>（1,024ではない）で計算するのが通例だが、
+    <b>問題文に指定があればそれに従う</b>。
+  </div>
+
+  <h3>オーバーヘッドを含めた計算</h3>
+  <div class="card">
+    <h4 style="margin-top:0">例：1MBのファイルを100Mbpsの回線で転送する時間</h4>
+    <div class="calc" style="margin-bottom:12px">
+      <p>単純計算：1,000,000 × 8 ÷ 100,000,000 ＝ <b>0.08 秒</b></p>
+      <p>実際は、TCP／IP／イーサネットのヘッダとフレーム間隔（IFG）が加わる。</p>
+      <p>ペイロード1460バイトに対し、ヘッダ等は 20＋20＋18＋12 ＝ 70バイト程度。</p>
+      <p style="margin-bottom:0">効率 ≒ 1460 ÷ 1530 ≒ 0.954 → 実効的な所要時間は <b>約0.084 秒</b></p>
+    </div>
+    <p style="margin-bottom:0">
+      <b>どこまでを計算に含めるかは問題文が指定する。</b>
+      「ヘッダは考慮しないものとする」「オーバーヘッドを10%とする」といった条件が必ず書かれているので、
+      <b>その指示を最優先する</b>。
+    </p>
+  </div>
+
+  <h3>VoIP を含む回線設計（第15章の応用）</h3>
+  <div class="card">
+    <h4 style="margin-top:0">例題の型</h4>
+    <div class="calc" style="margin-bottom:12px">
+      <p>【条件】拠点間WAN 10Mbps。G.711（1通話あたり片方向80kbps）で最大20通話。</p>
+      <p>　　　　業務データは平常時 5Mbps、バックアップ時は帯域を使い切る。</p>
+      <p>① 音声の所要帯域 ＝ 80kbps × 20 ＝ <b>1.6 Mbps</b></p>
+      <p>② 回線に占める割合 ＝ 1.6 ÷ 10 ＝ <b>16 %</b></p>
+      <p style="margin-bottom:0">③ 設計：<b>音声用に優先キューへ20%程度を割り当て、残りを業務データとバックアップで分け合う</b></p>
+    </div>
+    <p style="margin-bottom:0">
+      <b>ここでQoSが効く理由</b>：バックアップが回線を使い切ろうとしても、
+      <b>音声用に確保した優先キューの分は必ず先に送出される</b>ため、通話品質が守られる。
+      QoSがなければ、バックアップのパケットがキューを埋めて音声が待たされ、遅延とジッタが悪化する。
+    </p>
+  </div>
+
+  <h3>バーストトラフィックへの配慮</h3>
+  <p>
+    <span class="kw">バーストトラフィック</span>は、<b>短時間に集中して発生する通信</b>。
+    始業時の一斉ログイン、日次バックアップ、ソフトウェアの一斉配布などがこれにあたる。
+  </p>
+  <div class="note">
+    <b>平均値だけで設計してはいけない。</b>
+    「1日の平均使用率が20%だから余裕がある」と判断しても、
+    <b>特定の時間帯に100%に張り付いていれば、その時間の業務は成立しない</b>。
+    <b>ピーク時の値で設計し、必要ならバックアップの実行時刻をずらす</b>といった運用面の対策も併せて検討する。
+  </div>
+
+  <div class="exam">
+    <span class="tag">■ 午後での問われ方</span>
+    <ul>
+      <li><b>同時通話数から必要帯域を算出し、回線速度に対する割合を求めさせる</b>（第15章の計算とセット）</li>
+      <li>QoS導入の理由 → <b>「輻輳時にも音声・映像などの遅延に敏感な通信の品質を確保するため」</b>。
+        <b>「帯域が恒常的に不足している場合は回線の増速が必要であり、QoSでは解決しない」</b>と付記できると強い</li>
+      <li>シェーピングを行う理由 → <b>「契約帯域を超えた分が事業者側で破棄されると再送が発生して
+        かえって効率が下がるため、自拠点で送出量を平準化する」</b></li>
+      <li>音声トラフィックの扱い → <b>DSCPでEF（46）にマーキングし、優先キューに割り当てる</b></li>
+      <li>優先キューに上限を設ける理由 → <b>「優先トラフィックが増えた際に、
+        他の通信が全く送出できなくなる状態を防ぐため」</b></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第16章 QoS・トラフィック制御 ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">16 / 21</span>
+  </div>
+</footer>
+
+</body>
+</html>

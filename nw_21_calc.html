@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第21章 計算問題で使う概念 ｜ ネットワークスペシャリスト キーワード解説</title>
+<style>
+  :root{
+    --paper:#EDF0F2;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#3C4E58;
+    --muted:#6C7F88;
+    --line:#D3DBDF;
+    --teal:#0E7C86;
+    --teal-bg:#E4F0F1;
+    --rose:#A61E4D;
+    --rose-bg:#F7E6EC;
+    --indigo:#3B3E86;
+    --indigo-bg:#E6E7F2;
+
+    --jp-serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+    --jp-sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Menlo","Consolas",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:76px}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--jp-sans);
+    font-size:16px; line-height:1.9;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 22px}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--surface); border-bottom:1px solid var(--line)}
+  .masthead .wrap{padding-top:52px; padding-bottom:34px}
+  .chapno{
+    font-family:var(--jp-serif); font-size:13px; letter-spacing:.34em;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--jp-serif); font-weight:600;
+    font-size:clamp(30px,6vw,46px); line-height:1.25;
+    margin:0 0 4px; letter-spacing:.04em;
+  }
+  .masthead h1 .en{
+    display:block; font-family:var(--mono); font-size:12px; font-weight:400;
+    letter-spacing:.24em; color:var(--muted); margin-top:12px; text-transform:uppercase;
+  }
+  .lede{margin:22px 0 0; color:var(--ink-soft); font-size:15px; max-width:64ch}
+
+  /* signature: formulas */
+  .fml{margin-top:30px; display:flex; border:1px solid var(--line); border-radius:2px; overflow:hidden}
+  .fml div{
+    flex:1 1 0; padding:10px 12px; color:#fff;
+    font-family:var(--mono); font-size:10px; line-height:1.6;
+  }
+  .fml div b{display:block; font-size:12.5px; letter-spacing:.02em}
+  .n1{background:#3B3E86}
+  .n2{background:#0E7C86}
+  .n3{background:#A61E4D}
+
+  /* ---------- nav ---------- */
+  nav.toc{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,240,242,.94);
+    backdrop-filter:saturate(150%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .wrap{display:flex; gap:4px; overflow-x:auto; padding-top:9px; padding-bottom:9px}
+  nav.toc a{
+    flex:0 0 auto; text-decoration:none; color:var(--ink-soft);
+    font-size:12.5px; padding:5px 10px; border-radius:3px; white-space:nowrap;
+  }
+  nav.toc a:hover{background:var(--teal-bg); color:var(--teal)}
+  nav.toc a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 6px}
+  section > .wrap > h2{
+    font-family:var(--jp-serif); font-size:25px; font-weight:600;
+    margin:0 0 6px; letter-spacing:.05em; line-height:1.5;
+  }
+  section > .wrap > h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    letter-spacing:.2em; display:block; margin-bottom:8px; font-weight:400;
+  }
+  .rule{height:2px; background:var(--ink); width:46px; margin:14px 0 26px}
+
+  h3{
+    font-size:16.5px; font-weight:700; margin:34px 0 10px;
+    padding-left:11px; border-left:3px solid var(--teal); line-height:1.6;
+  }
+  h4{font-size:14.5px; font-weight:700; margin:24px 0 8px; color:var(--ink-soft)}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 16px; padding-left:1.3em}
+  li{margin-bottom:6px}
+
+  /* ---------- inline devices ---------- */
+  .kw{
+    font-weight:700; background:linear-gradient(transparent 62%, var(--teal-bg) 62%);
+    padding:0 1px;
+  }
+  .en{font-family:var(--mono); font-size:.86em; color:var(--muted); letter-spacing:.04em}
+  code{
+    font-family:var(--mono); font-size:.87em; background:#E3E8EA;
+    padding:1px 5px; border-radius:3px;
+  }
+  .star{
+    display:inline-block; font-size:10.5px; font-family:var(--mono); letter-spacing:.08em;
+    color:var(--rose); background:var(--rose-bg); border-radius:2px;
+    padding:1px 5px; vertical-align:2px; margin-left:5px; font-weight:700;
+  }
+  .star.b{color:var(--indigo); background:var(--indigo-bg)}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:20px 22px; margin:0 0 20px;
+  }
+  .card > :last-child{margin-bottom:0}
+
+  .exam{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--rose); border-radius:0 4px 4px 0;
+    padding:18px 22px; margin:22px 0 24px;
+  }
+  .exam .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--rose);
+    display:block; margin-bottom:8px; font-weight:700;
+  }
+  .exam > :last-child{margin-bottom:0}
+  .exam ul{margin-bottom:0}
+
+  .note{
+    background:#E7EDEE; border-radius:4px; padding:14px 18px;
+    font-size:14px; color:var(--ink-soft); margin:0 0 20px;
+  }
+  .note > :last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+
+  .calc{
+    background:#F2F5F6; border:1px dashed var(--muted); border-radius:4px;
+    padding:14px 18px; margin:0 0 20px; font-family:var(--mono); font-size:12.5px;
+    line-height:2; overflow-x:auto;
+  }
+  .calc p{margin:0 0 2px}
+  .calc > :last-child{margin-bottom:0}
+  .calc .q{color:var(--rose); font-weight:700}
+  .calc .a{color:var(--teal); font-weight:700}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto; margin:0 0 22px; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; min-width:520px;
+    background:var(--surface); font-size:13.5px; line-height:1.7;
+  }
+  caption{
+    text-align:left; font-size:12px; font-family:var(--mono); letter-spacing:.14em;
+    color:var(--muted); padding-bottom:8px;
+  }
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:top}
+  thead th{background:#E3E9EA; font-weight:700; white-space:nowrap; text-align:left}
+  tbody th{background:#F2F5F6; font-weight:700; white-space:nowrap}
+  td.c,th.c{text-align:center}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px}
+
+  /* ---------- figures ---------- */
+  figure{
+    margin:0 0 24px; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; padding:20px 18px 14px;
+  }
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{
+    font-size:12.5px; color:var(--muted); margin-top:12px;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:60px; border-top:1px solid var(--line);
+    background:var(--surface); padding:26px 0 40px;
+  }
+  footer .wrap{
+    font-size:12.5px; color:var(--muted);
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  footer .mini-bar{
+    height:4px; margin-bottom:22px;
+    background:linear-gradient(90deg,#3B3E86,#0E7C86,#A61E4D);
+  }
+
+  @media (max-width:640px){
+    body{font-size:15px; line-height:1.85}
+    section{padding-top:42px}
+    .card,.exam{padding:16px 16px}
+    figure{padding:16px 12px 12px}
+    .fml{flex-direction:column}
+    .calc{font-size:11px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+  @media print{
+    nav.toc{display:none}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="chapno">ネットワークスペシャリスト ／ 午後対策キーワード解説</p>
+    <h1>第21章　計算問題で使う概念
+      <span class="en">Calculations</span>
+    </h1>
+    <p class="lede">
+      計算問題は<b>知識ではなく手順の問題</b>であり、型を身体に入れておけば確実に得点できる。
+      逆に落とす原因はほぼ決まっている——<b>単位の取り違え、オーバーヘッドの扱い、
+      そして問題文の「〜とする」という条件の読み落とし</b>である。
+      本章はこれまでの各章に散らばっていた計算を横断的にまとめ、
+      <b>解く順序と落とし穴</b>を整理する。
+    </p>
+    <div class="fml" aria-hidden="true">
+      <div class="n1">アドレス<b>使用可能ホスト数 ＝ 2ⁿ − 2</b></div>
+      <div class="n2">帯域<b>伝送時間 ＝ データ量 ÷ 回線速度</b></div>
+      <div class="n3">可用性<b>稼働率 ＝ MTBF ÷（MTBF＋MTTR）</b></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章内目次">
+  <div class="wrap">
+    <a href="#s1">1 解く前の作法</a>
+    <a href="#s2">2 アドレス計算</a>
+    <a href="#s3">3 帯域・スループット</a>
+    <a href="#s4">4 オーバーヘッド</a>
+    <a href="#s5">5 稼働率</a>
+    <a href="#s6">6 トラヒック理論</a>
+    <a href="#s7">7 時間に関する計算</a>
+  </div>
+</nav>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+<div class="wrap">
+  <h2><span class="num">21.1</span>解く前の作法 <span class="star">最重要</span></h2>
+  <div class="rule"></div>
+
+  <div class="card">
+    <h4 style="margin-top:0">落とす原因はこの5つに集約される</h4>
+    <ol style="margin-bottom:0">
+      <li><b>単位の取り違え</b>——データ量は<b>バイト</b>、回線速度は<b>ビット/秒</b>。
+        <b>必ず8倍または8で割る</b>。ms・μs の換算も同様</li>
+      <li><b>k の解釈</b>——通信分野では <code>1k = 1,000</code> が通例だが、
+        記憶容量では 1,024 のこともある。<b>問題文に指定があれば無条件でそちらに従う</b></li>
+      <li><b>オーバーヘッドの扱い</b>——ヘッダを含めるのか含めないのか。
+        <b>「考慮しないものとする」「オーバーヘッドを10%とする」といった条件が必ず書かれている</b></li>
+      <li><b>端数処理</b>——<b>「必要な数」は切り上げ、「収容できる数」は切り捨て</b>。
+        機器台数や通話数で方向を間違えると全滅する</li>
+      <li><b>片方向か双方向か</b>——通話帯域やリンク使用率で、
+        <b>片方向の値なのか往復合計なのかを確認する</b></li>
+    </ol>
+  </div>
+
+  <div class="note">
+    <b>問題文の「〜とする」は解答の土台である。</b>
+    午後問題の計算には必ず前提条件が付されており、
+    <b>これは背景説明ではなく「この条件で計算せよ」という指示</b>である。
+    一般論として正しい計算をしても、条件を無視すれば不正解になる。
+    <b>計算に入る前に、条件文に線を引いて拾い出す</b>ことを習慣にする。
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>覚えておく換算値</caption>
+    <thead><tr><th>項目</th><th>値</th></tr></thead>
+    <tbody>
+      <tr><th>1バイト</th><td class="m">8ビット</td></tr>
+      <tr><th>時間</th><td class="m">1ms ＝ 0.001秒　／　1μs ＝ 0.000001秒</td></tr>
+      <tr><th>電気・光の伝搬速度</th><td class="m">約200,000km/s ＝ <b>5μs/km</b>（第1章）</td></tr>
+      <tr><th>イーサネットのMTU</th><td class="m">1,500バイト　／　ジャンボフレームは9,000バイト程度</td></tr>
+      <tr><th>期間</th><td class="m">1日 ＝ 86,400秒　／　1年 ＝ 8,760時間（365×24）</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+<div class="wrap">
+  <h2><span class="num">21.2</span>アドレス計算 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>プレフィックス長とホスト数 ― 暗記推奨（第3章の再掲）</caption>
+    <thead><tr><th>プレフィックス</th><th class="c m">/24</th><th class="c m">/25</th><th class="c m">/26</th><th class="c m">/27</th><th class="c m">/28</th><th class="c m">/29</th><th class="c m">/30</th></tr></thead>
+    <tbody>
+      <tr><th>ブロック単位</th><td class="c m">256</td><td class="c m">128</td><td class="c m">64</td><td class="c m">32</td><td class="c m">16</td><td class="c m">8</td><td class="c m">4</td></tr>
+      <tr><th>使用可能ホスト数</th><td class="c"><b>254</b></td><td class="c"><b>126</b></td><td class="c"><b>62</b></td><td class="c"><b>30</b></td><td class="c"><b>14</b></td><td class="c"><b>6</b></td><td class="c"><b>2</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <b>ブロック単位</b>とは、第4オクテットが何個おきに区切られるかを示す値で、
+    <b>ネットワークアドレスの境界を求めるとき</b>に使う。
+  </p>
+
+  <h3>型①：必要台数からプレフィックス長を求める</h3>
+  <div class="calc">
+    <p class="q">【問】部署の端末は120台。将来20%の増加を見込む場合、必要なプレフィックス長は？</p>
+    <p>① 将来を含む台数 ＝ 120 × 1.2 ＝ 144台</p>
+    <p>② デフォルトゲートウェイ等の分を加えて 145台とする</p>
+    <p>③ 2ⁿ − 2 ≧ 145 を満たす最小の n を探す</p>
+    <p>　 n＝7 → 2⁷−2 ＝ 126　✕　／　n＝8 → 2⁸−2 ＝ 254　○</p>
+    <p class="a">④ ホスト部8ビット → プレフィックス長は 32 − 8 ＝ /24</p>
+  </div>
+  <div class="note">
+    <b>忘れやすい2点。</b>
+    <b>①ネットワークアドレスとブロードキャストアドレスの2つを引く</b>こと。
+    <b>②端末以外にIPアドレスを必要とするもの</b>——デフォルトゲートウェイ、プリンタ、
+    無線AP、サーバ、<b>VRRPなら実IPが2つ＋仮想IPが1つで計3つ</b>——を数え漏らさないこと。
+  </div>
+
+  <h3>型②：あるアドレスが属するネットワークを求める</h3>
+  <div class="calc">
+    <p class="q">【問】172.16.35.200/27 のネットワークアドレスとブロードキャストアドレスは？</p>
+    <p>① /27 → 第4オクテットのホスト部は5ビット → ブロック単位 ＝ 2⁵ ＝ 32</p>
+    <p>② 境界を並べる：0／32／64／96／128／160／192／224</p>
+    <p>③ 200 は 192 ≦ 200 &lt; 224 の区間にある</p>
+    <p class="a">④ ネットワークアドレス ＝ 172.16.35.192</p>
+    <p class="a">　 ブロードキャスト ＝ 172.16.35.223</p>
+    <p class="a">　 使用可能範囲 ＝ .193 〜 .222（30個）</p>
+  </div>
+
+  <h3>型③：VLSM による割当て設計</h3>
+  <div class="calc">
+    <p class="q">【問】10.1.0.0/22 を、拠点A 500台・拠点B 200台・拠点C 60台・</p>
+    <p class="q">　　　ルータ間リンク2区間（各2アドレス）に分割せよ。</p>
+    <p>① <b>必要数の大きい順に割り当てる</b>のが鉄則（小さい順だと隙間が生じて足りなくなる）</p>
+    <p>② 拠点A 500台 → 2⁹−2 ＝ 510 ≧ 500 → /23 → 10.1.0.0/23</p>
+    <p>③ 拠点B 200台 → 2⁸−2 ＝ 254 ≧ 200 → /24 → 10.1.2.0/24</p>
+    <p>④ 拠点C 60台　→ 2⁶−2 ＝ 62 ≧ 60　 → /26 → 10.1.3.0/26</p>
+    <p class="a">⑤ ルータ間リンク → /30 → 10.1.3.64/30 と 10.1.3.68/30</p>
+  </div>
+
+  <h3>型④：経路集約</h3>
+  <div class="calc">
+    <p class="q">【問】192.168.8.0/24 ／ 9.0/24 ／ 10.0/24 ／ 11.0/24 を1つに集約せよ。</p>
+    <p>① 第3オクテットを2進数にする</p>
+    <p>　 8 ＝ 00001000　9 ＝ 00001001　10 ＝ 00001010　11 ＝ 00001011</p>
+    <p>② 共通する上位ビットは 000010 の6ビット（下位2ビットが変化）</p>
+    <p class="a">③ 8 ＋ 8 ＋ 6 ＝ /22 → 集約結果は 192.168.8.0/22</p>
+  </div>
+  <div class="note">
+    <b>集約できる条件は2つ。</b>
+    <b>①アドレスが連続していること　②開始アドレスがそのブロックサイズの境界に揃っていること</b>。
+    たとえば 192.168.<b>9</b>.0 から4つ（9・10・11・12）は連続していても、
+    <b>9 は /22 の境界（8の倍数）ではない</b>ため1つには集約できない。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+<div class="wrap">
+  <h2><span class="num">21.3</span>帯域・スループット・伝送時間 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="calc">
+    <p><b>伝送時間 ＝ データ量［bit］÷ 回線速度［bps］</b></p>
+    <p><b>回線使用率 ＝ 実トラフィック量［bps］÷ 回線速度［bps］</b></p>
+    <p style="margin-bottom:0"><b>実効スループット ＝ min（回線速度, ウィンドウサイズ ÷ RTT）</b></p>
+  </div>
+
+  <h3>型①：転送時間</h3>
+  <div class="calc">
+    <p class="q">【問】500MBのファイルを100Mbpsの回線で転送する時間は？（オーバーヘッドは考慮しない）</p>
+    <p>① ビットに換算 ＝ 500 × 10⁶ × 8 ＝ 4 × 10⁹ ビット</p>
+    <p class="a">② 4 × 10⁹ ÷ （100 × 10⁶） ＝ 40秒</p>
+    <p>　 ※「オーバーヘッドを10%とする」条件があれば → 40 ÷ 0.9 ≒ 44.4秒</p>
+  </div>
+
+  <h3>型②：拠点の必要帯域</h3>
+  <div class="calc">
+    <p class="q">【問】拠点の利用者50名、1人あたり平均100kbps、同時利用率30%。</p>
+    <p class="q">　　　回線使用率を50%以下に抑えるとき、必要な回線速度は？</p>
+    <p>① 同時利用者数 ＝ 50 × 0.3 ＝ 15名</p>
+    <p>② 必要トラフィック ＝ 100kbps × 15 ＝ 1,500kbps ＝ 1.5Mbps</p>
+    <p class="a">③ 回線速度 ＝ 1.5 ÷ 0.5 ＝ 3Mbps 以上</p>
+  </div>
+  <div class="note">
+    <b>「回線使用率を◯%以下に抑える」は頻出条件。</b>
+    バースト（第16章）に備えるための余裕であり、<b>必要帯域を使用率で割る</b>ことで回線速度を求める。
+    <b>「平均では足りていてもピーク時に輻輳する」</b>という設計思想がこの条件の背景にある。
+  </div>
+
+  <h3>型③：ウィンドウサイズによる上限（第4章）</h3>
+  <div class="calc">
+    <p class="q">【問】回線1Gbps、RTT 30ms、TCPウィンドウ64KB（1KB＝1,000バイトとする）。</p>
+    <p class="q">　　　1セッションの実効スループットは？</p>
+    <p>① ウィンドウ ＝ 64 × 1,000 × 8 ＝ 512,000 ビット</p>
+    <p>② スループット ＝ 512,000 ÷ 0.03 ≒ 17.07 × 10⁶</p>
+    <p class="a">③ 約17Mbps —— 回線が1Gbpsでも、1セッションではここが上限になる</p>
+    <p>　 改善策：ウィンドウスケールでウィンドウを拡大する／並列セッション数を増やす</p>
+  </div>
+  <div class="note">
+    <b>帯域遅延積（BDP）＝ 帯域幅 × RTT。</b>
+    これが「回線を満たすために必要なウィンドウサイズ」であり、
+    <b>ウィンドウがBDPを下回ると、回線に余裕があってもACK待ちで頭打ちになる</b>。
+    <b>「回線を増速したのに転送時間が変わらない」</b>という設問はこの筋で読む。
+  </div>
+</div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+<div class="wrap">
+  <h2><span class="num">21.4</span>オーバーヘッドとカプセル化 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <figure>
+    <svg viewBox="0 0 700 180" role="img" aria-label="イーサネットフレームのオーバーヘッド構造">
+      <text x="0" y="16" font-size="12.5" font-weight="700" fill="#16232B">回線上を実際に占める長さ（最大長の場合）</text>
+      <g font-size="9.5" text-anchor="middle">
+        <rect x="0" y="26" width="60" height="34" fill="#E7EDEE" stroke="#6C7F88"/><text x="30" y="41" fill="#6C7F88">プリ</text><text x="30" y="53" fill="#6C7F88">アンブル 8</text>
+        <rect x="60" y="26" width="70" height="34" fill="#E6E7F2" stroke="#3B3E86"/><text x="95" y="41" fill="#3B3E86">Etherヘッダ</text><text x="95" y="53" fill="#3B3E86">14</text>
+        <rect x="130" y="26" width="60" height="34" fill="#E6E7F2" stroke="#3B3E86"/><text x="160" y="41" fill="#3B3E86">IP</text><text x="160" y="53" fill="#3B3E86">20</text>
+        <rect x="190" y="26" width="60" height="34" fill="#E6E7F2" stroke="#3B3E86"/><text x="220" y="41" fill="#3B3E86">TCP</text><text x="220" y="53" fill="#3B3E86">20</text>
+        <rect x="250" y="26" width="320" height="34" fill="#E4F0F1" stroke="#0E7C86" stroke-width="2"/><text x="410" y="41" fill="#0E7C86" font-weight="700">データ（MSS）</text><text x="410" y="53" fill="#0E7C86" font-weight="700">1460</text>
+        <rect x="570" y="26" width="55" height="34" fill="#F7E6EC" stroke="#A61E4D"/><text x="597" y="41" fill="#A61E4D">FCS</text><text x="597" y="53" fill="#A61E4D">4</text>
+        <rect x="625" y="26" width="60" height="34" fill="#E7EDEE" stroke="#6C7F88"/><text x="655" y="41" fill="#6C7F88">IFG</text><text x="655" y="53" fill="#6C7F88">12</text>
+      </g>
+      <path d="M130,66 L130,80 L570,80 L570,66" fill="none" stroke="#3B3E86"/>
+      <text x="350" y="94" font-size="10.5" text-anchor="middle" fill="#3B3E86">MTU ＝ 1500（IPヘッダ＋TCPヘッダ＋データ）</text>
+      <path d="M60,102 L60,116 L625,116 L625,102" fill="none" stroke="#A61E4D"/>
+      <text x="343" y="130" font-size="10.5" text-anchor="middle" fill="#A61E4D">イーサネットフレーム ＝ 1518（タグ付きなら1522）</text>
+
+      <rect x="0" y="144" width="700" height="36" fill="#E7EDEE"/>
+      <text x="12" y="164" font-size="11.5" fill="#16232B">回線上の実占有 ＝ 8 ＋ 1518 ＋ 12 ＝ 1538バイト　に対し、運べるデータは 1460バイト</text>
+      <text x="12" y="178" font-size="11.5" fill="#0E7C86">→ 伝送効率 ＝ 1460 ÷ 1538 ≒ 94.9%（最良の場合。小さいパケットが多いほど効率は落ちる）</text>
+    </svg>
+    <figcaption>問題文が<b>「イーサネットヘッダとフレーム間隔を含める」</b>と指定するかどうかで答えが変わる。<b>どの範囲を数えるかを最初に確定させてから計算に入る</b>。</figcaption>
+  </figure>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>カプセル化で増えるサイズ ― 各章の総まとめ</caption>
+    <thead><tr><th>技術</th><th>増加サイズ</th><th>影響</th><th>章</th></tr></thead>
+    <tbody>
+      <tr><th>802.1Q タグVLAN</th><td class="c">4バイト</td><td>フレーム長が1522になる</td><td class="c">2</td></tr>
+      <tr><th>PPPoE</th><td class="c">8バイト</td><td class="m">MTU 1492 → MSS 1452</td><td class="c">7</td></tr>
+      <tr><th>GRE</th><td class="c">24バイト</td><td class="m">MTU 1476</td><td class="c">8</td></tr>
+      <tr><th>IPsec ESP<br>トンネルモード</th><td class="c">約50〜60バイト</td><td class="m">MTU 約1440前後</td><td class="c">8</td></tr>
+      <tr><th>NAT-T（UDP追加）</th><td class="c">＋8バイト</td><td>さらに減る</td><td class="c">6・8</td></tr>
+      <tr><th>VXLAN</th><td class="c"><b>50バイト</b></td><td><b>アンダーレイのMTUを1600以上にする</b></td><td class="c">10</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>型①：MSS の算出</h3>
+  <div class="calc">
+    <p class="q">【問】IPsec（ESPトンネルモード、オーバーヘッド56バイト）経由の適切なMSSは？</p>
+    <p>① トンネル通過後の実効MTU ＝ 1500 − 56 ＝ 1444</p>
+    <p class="a">② MSS ＝ 1444 − IPヘッダ20 − TCPヘッダ20 ＝ 1404バイト</p>
+    <p>　 → この値をルータのMSSクランプに設定する（第4章）</p>
+  </div>
+
+  <h3>型②：フラグメント数</h3>
+  <div class="calc">
+    <p class="q">【問】データ部3,000バイトのIPパケットを、MTU 1,500 の経路へ送るときの分割数は？</p>
+    <p>① 1フラグメントに入るデータ ＝ 1500 − IPヘッダ20 ＝ 1480バイト</p>
+    <p>② フラグメントオフセットは<b>8バイト単位</b>のため、途中の断片は8の倍数である必要がある</p>
+    <p>　 1480 ÷ 8 ＝ 185 → 8の倍数なのでそのまま使える</p>
+    <p>③ 3000 ÷ 1480 ＝ 2.03… → 切り上げて3個</p>
+    <p class="a">④ 内訳 1480 ＋ 1480 ＋ 40 ＝ 3000 → 3フラグメント</p>
+  </div>
+  <div class="note">
+    <b>MTUが8の倍数でない場合に注意。</b>たとえばMTUが1,000ならデータ部は980だが、
+    <b>980は8の倍数ではない（980÷8＝122.5）</b>ため、
+    <b>8の倍数に切り下げて976バイト</b>とする。この一手間が問われることがある。
+  </div>
+
+  <h3>型③：VoIP の必要帯域（第15章）</h3>
+  <div class="calc">
+    <p class="q">【問】G.711（64kbps）、パケット化間隔20ms、同時通話30。必要帯域は？（IPまでを含める）</p>
+    <p>① 音声ペイロード ＝ 64,000 × 0.02 ÷ 8 ＝ 160バイト</p>
+    <p>② オーバーヘッド ＝ RTP 12 ＋ UDP 8 ＋ IP 20 ＝ 40バイト</p>
+    <p>③ 1パケット ＝ 200バイト　／　パケットレート ＝ 1 ÷ 0.02 ＝ 50pps</p>
+    <p>④ 1通話あたり ＝ 200 × 8 × 50 ＝ 80,000bps ＝ 80kbps（片方向）</p>
+    <p class="a">⑤ 30通話 ＝ 80 × 30 ＝ 2,400kbps ＝ 2.4Mbps</p>
+    <p>　 ※イーサネットヘッダ18バイトを含める条件なら 218×8×50 ＝ 87.2kbps → 約2.6Mbps</p>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+<div class="wrap">
+  <h2><span class="num">21.5</span>稼働率の計算 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <div class="calc">
+    <p><b>稼働率 ＝ MTBF ÷（MTBF ＋ MTTR）</b></p>
+    <p><b>直列（どれか1つでも止まれば全体が停止）＝ A × B × C</b></p>
+    <p style="margin-bottom:0"><b>並列（どれか1つでも動いていれば継続）＝ 1 −（1−A）×（1−B）</b></p>
+  </div>
+  <p>
+    並列の式は<b>「全部が同時に止まる確率を求めて、1から引く」</b>と覚えると忘れない。
+    構成図に直列と並列が混在する場合は、<b>並列部分を先に1つの値にまとめてから、直列として掛け合わせる</b>。
+  </p>
+
+  <h3>型①：MTBF・MTTR から稼働率を求める</h3>
+  <div class="calc">
+    <p class="q">【問】MTBFが2,000時間、MTTRが4時間の機器の稼働率は？ 年間停止時間は？</p>
+    <p>① 稼働率 ＝ 2000 ÷ （2000 ＋ 4） ＝ 2000 ÷ 2004 ≒ 0.998004</p>
+    <p class="a">② 稼働率 ≒ 99.80%</p>
+    <p class="a">③ 年間停止時間 ＝ （1 − 0.998004） × 8,760時間 ≒ 17.5時間</p>
+  </div>
+
+  <h3>型②：混在構成の稼働率</h3>
+  <div class="calc">
+    <p class="q">【問】次の構成の全体稼働率を求めよ。</p>
+    <p class="q">　　　［ルータ 0.99］─［LB 0.98 × 2台（並列）］─［サーバ 0.95 × 2台（並列）］</p>
+    <p>① LB部分　 ＝ 1 − （1 − 0.98）² ＝ 1 − 0.0004 ＝ 0.9996</p>
+    <p>② サーバ部分 ＝ 1 − （1 − 0.95）² ＝ 1 − 0.0025 ＝ 0.9975</p>
+    <p class="a">③ 全体 ＝ 0.99 × 0.9996 × 0.9975 ≒ 0.9871（約98.7%）</p>
+    <p>　 → <b>ルータが単一構成であることが全体の稼働率を最も引き下げている＝SPOF</b></p>
+  </div>
+  <div class="note">
+    <b>この計算は「どこを冗長化すべきか」を示す道具でもある。</b>
+    上の例でサーバをさらに増やしても効果は小さく、
+    <b>0.99 のルータを冗長化すれば全体が大きく改善する</b>。
+    <b>「最も稼働率の低い直列要素が全体の上限を決める」</b>という読み方ができると、
+    設問の「改善策を述べよ」に答えられる（第9章）。
+  </div>
+
+  <h3>型③：n台中k台で運用できる構成</h3>
+  <div class="calc">
+    <p class="q">【問】稼働率0.9のサーバ3台のうち、2台以上が動いていれば運用できる。全体の稼働率は？</p>
+    <p>① 3台とも稼働 ＝ 0.9³ ＝ 0.729</p>
+    <p>② ちょうど2台稼働 ＝ ₃C₂ × 0.9² × 0.1 ＝ 3 × 0.81 × 0.1 ＝ 0.243</p>
+    <p class="a">③ 合計 ＝ 0.729 ＋ 0.243 ＝ 0.972</p>
+  </div>
+  <div class="note">
+    <b>アクティブ／アクティブ構成の落とし穴（第9章）。</b>
+    「2台以上で運用できる」とは、<b>残った台数で全負荷を処理できる容量を持っている</b>ことが前提。
+    <b>平常時に各機を50%以下の負荷で運用しておかなければ、片系障害時に処理しきれない</b>。
+    計算上は稼働していても、実務上はサービスが破綻する——という点まで押さえる。
+  </div>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>稼働率と年間停止時間（第9章の再掲）</caption>
+    <thead><tr><th class="c">99%</th><th class="c">99.9%</th><th class="c">99.99%</th><th class="c">99.999%</th></tr></thead>
+    <tbody><tr><td class="c">約3.65日</td><td class="c">約8.76時間</td><td class="c">約52.6分</td><td class="c">約5.26分</td></tr></tbody>
+  </table>
+  </div>
+</div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+<div class="wrap">
+  <h2><span class="num">21.6</span>トラヒック理論 <span class="star b">差がつく</span></h2>
+  <div class="rule"></div>
+
+  <h3>呼量（アーラン）</h3>
+  <div class="calc">
+    <p><b>呼量［アーラン］＝ 呼数 × 平均保留時間 ÷ 観測時間</b></p>
+    <p style="margin-bottom:0">＝ <b>「観測時間のうち、平均して何回線分が同時に使われていたか」</b></p>
+  </div>
+  <div class="calc">
+    <p class="q">【問】1時間に90回の通話があり、平均通話時間は4分だった。呼量は？</p>
+    <p>① 総通話時間 ＝ 90 × 4分 ＝ 360分</p>
+    <p class="a">② 呼量 ＝ 360 ÷ 60 ＝ 6アーラン</p>
+    <p>　 → 平均すると常時6回線が使われている状態に相当する</p>
+  </div>
+  <div class="note">
+    <b>1アーランの意味。</b>
+    <b>1回線が観測時間中ずっと使われている状態が1アーラン</b>である。
+    したがって<b>「6アーラン」なら回線が6本必要かというと、そうではない</b>——
+    これはあくまで平均であり、<b>ピーク時にはそれ以上が同時に発生する</b>。
+    実際の回線数は次項の呼損率から決める。
+  </div>
+
+  <h3>呼損率と回線数</h3>
+  <p>
+    <span class="kw">呼損率</span>は、<b>回線が塞がっていて接続できなかった呼の割合</b>。
+    「呼損率を1%以下にするには何回線必要か」という問いには、
+    <b>アーランB表（問題文に与えられる）</b>を使って呼量から回線数を読み取る。
+  </p>
+  <div class="calc">
+    <p class="q">【問】呼量6アーラン、呼損率1%以下とする。下表から必要な回線数を求めよ。</p>
+    <p>　　 （回線数10 → 呼損率4.3%／回線数12 → 1.3%／回線数13 → 0.7%）</p>
+    <p class="a">→ 呼損率が1%以下になるのは回線数13。よって13回線が必要。</p>
+  </div>
+  <div class="note">
+    <b>回線数を増やすほど効率が上がる（大数効果）。</b>
+    呼量が2倍になっても必要回線数は2倍にはならない。
+    <b>拠点ごとに回線を持つより、集約したほうが少ない回線で同じ品質を確保できる</b>——
+    これが集約・多重化の経済的な根拠になる。
+  </div>
+
+  <h3>多重化率・集線比</h3>
+  <div class="calc">
+    <p><b>多重化率（集線比）＝ 収容する端末数 ÷ 同時に通信できる数</b></p>
+    <p style="margin-bottom:0">例：100台を収容し、上位リンクで20台分の帯域しか用意しない → <b>集線比 5:1</b></p>
+  </div>
+  <p>
+    全員が同時に通信するわけではない、という前提に立って<b>意図的に上位の帯域を絞る</b>設計。
+    <b>第10章のオーバーサブスクリプション</b>と同じ考え方であり、
+    <b>「同時利用率」の見積もりが妥当かどうかが設計の成否を決める</b>。
+  </p>
+</div>
+</section>
+
+<!-- ===================== 7 ===================== -->
+<section id="s7">
+<div class="wrap">
+  <h2><span class="num">21.7</span>時間に関する計算 <span class="star">頻出</span></h2>
+  <div class="rule"></div>
+
+  <h3>遅延の内訳（第1章）</h3>
+  <div class="calc">
+    <p><b>合計遅延 ＝ 伝搬遅延 ＋ 伝送遅延 ＋ 処理遅延 ＋ キューイング遅延</b></p>
+    <p><b>伝搬遅延 ＝ 距離 ÷ 伝搬速度（5μs/km）</b></p>
+    <p style="margin-bottom:0"><b>伝送遅延 ＝ データ量 ÷ 回線速度</b></p>
+  </div>
+  <div class="calc">
+    <p class="q">【問】東京〜大阪 500km、回線100Mbps。1,500バイトのフレーム1つが届くまでの時間は？</p>
+    <p>① 伝搬遅延 ＝ 500km × 5μs ＝ 2,500μs ＝ 2.5ms</p>
+    <p>② 伝送遅延 ＝ 1,500 × 8 ÷ （100 × 10⁶） ＝ 0.00012秒 ＝ 0.12ms</p>
+    <p class="a">③ 合計（処理遅延を除く）≒ 2.62ms　／　往復（RTT）≒ 5.2ms</p>
+    <p>　 → <b>長距離では伝搬遅延が支配的</b>。回線を増速しても伝搬遅延は減らない</p>
+  </div>
+
+  <h3>切替・収束時間の一覧 <span class="star">頻出</span></h3>
+  <div class="tbl-scroll">
+  <table>
+    <caption>各プロトコルの切替に要する時間 ― 横断まとめ</caption>
+    <thead><tr><th>技術</th><th>時間</th><th>内訳・根拠</th><th>章</th></tr></thead>
+    <tbody>
+      <tr><th>STP（直接リンク障害）</th><td class="c"><b>約30秒</b></td><td>リスニング15秒 ＋ ラーニング15秒</td><td class="c">2</td></tr>
+      <tr><th>STP（間接リンク障害）</th><td class="c"><b>約50秒</b></td><td>Max Age 20秒 ＋ 15秒 ＋ 15秒</td><td class="c">2</td></tr>
+      <tr><th>RSTP</th><td class="c"><b>約1秒</b></td><td>代替ポートの事前計算と、プロポーザル／アグリーメントによる合意</td><td class="c">2</td></tr>
+      <tr><th>OSPF</th><td class="c"><b>最大40秒</b></td><td>Dead インターバル（Hello 10秒 × 4）</td><td class="c">3</td></tr>
+      <tr><th>BFD 併用時</th><td class="c"><b>1秒未満</b></td><td>ミリ秒間隔の死活監視で障害を即座に検知</td><td class="c">3</td></tr>
+      <tr><th>VRRP</th><td class="c"><b>約3秒</b></td><td>アドバタイズメント1秒 × 3回分の途絶を検知</td><td class="c">9</td></tr>
+      <tr><th>リンクアグリゲーション</th><td class="c">瞬断程度</td><td>論理リンクは維持されたままメンバが減るだけ</td><td class="c">2</td></tr>
+      <tr><th>DFS（レーダー検知）</th><td class="c"><b>最大1分</b></td><td>チャネル移動後の監視（CAC）に1分を要する</td><td class="c">11</td></tr>
+      <tr><th>DNSによる切替</th><td class="c">TTL依存</td><td>キャッシュが切れるまで旧アドレスが使われ続ける</td><td class="c">5</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <b>この表は設計判断の根拠そのものである。</b>
+    「業務要件が断時間5秒以内」なら<b>STPは使えず、RSTPかスタック＋LAG</b>を選ぶことになる。
+    「OSPFの40秒では長すぎる」なら<b>BFDを併用する</b>。
+    <b>要件の数値と、この表の数値を突き合わせて方式を決める</b>——という形で午後Ⅱに登場する。
+  </div>
+
+  <h3>OSPF のコスト計算（第3章）</h3>
+  <div class="calc">
+    <p><b>コスト ＝ 参照帯域幅 ÷ インタフェースの帯域幅</b>（既定の参照帯域幅は100Mbps）</p>
+  </div>
+  <div class="calc">
+    <p class="q">【問】既定の参照帯域幅のとき、次の各リンクのコストは？</p>
+    <p>　 10Mbps → 100 ÷ 10 ＝ 10</p>
+    <p>　 100Mbps → 100 ÷ 100 ＝ 1</p>
+    <p>　 1Gbps → 100 ÷ 1000 ＝ 0.1 → <b>1未満は1に切り上げ</b> → 1</p>
+    <p class="a">→ <b>1Gbpsも10Gbpsもコスト1になり区別できない</b>ため、参照帯域幅の変更が必要になる</p>
+  </div>
+  <p>
+    経路全体のコストは<b>途中のリンクのコストを合計した値</b>。
+    複数経路がある場合は<b>合計コストが最小の経路</b>が選ばれ、
+    <b>同値なら ECMP で負荷分散される</b>。
+  </p>
+
+  <div class="exam">
+    <span class="tag">■ 総まとめ ― 計算問題への向き合い方</span>
+    <ul>
+      <li><b>まず条件を拾う</b>：「〜とする」「〜は考慮しない」に線を引き、計算に反映する</li>
+      <li><b>単位を最初に揃える</b>：バイト↔ビット、秒↔ミリ秒を式に入れる前に変換しておく</li>
+      <li><b>式を書いてから数値を入れる</b>：暗算で進めず、途中式を残す。
+        <b>部分点が得られることがあり、見直しもできる</b></li>
+      <li><b>答えの妥当性を確かめる</b>：桁が1つずれていないか、
+        <b>「回線速度を超えるスループット」など、あり得ない答えになっていないか</b>を確認する</li>
+      <li><b>端数処理の方向を確認する</b>：必要数なら切り上げ、収容数なら切り捨て</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="mini-bar"></div>
+  <div class="wrap">
+    <span>第21章 計算問題で使う概念 ／ ネットワークスペシャリスト 午後Ⅰ・午後Ⅱ 対策</span>
+    <span class="en">21 / 21 ― 完</span>
+  </div>
+</footer>
+
+</body>
+</html>
